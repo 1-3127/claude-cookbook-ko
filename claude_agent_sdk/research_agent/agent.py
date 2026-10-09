@@ -1,14 +1,14 @@
 """
-Research Agent - Using Claude SDK with built-in session management.
+Research Agent - 내장 session 관리와 함께 Claude SDK 사용.
 
-This agent demonstrates web search and multimodal research capabilities
-using the Claude Agent SDK. It uses WebSearch for information gathering
-and Read for analyzing images and documents.
+이 agent는 Claude Agent SDK를 사용하는 web 검색 및 multimodal 조사 기능을
+보여 줍니다. 정보 수집에는 WebSearch를, image 및 문서 분석에는 Read를
+사용합니다.
 
-Key design decisions:
-- Uses shared visualization utilities for consistent display
-- Includes citation requirements in system prompt for verifiable research
-- Supports multi-turn conversations for iterative research
+핵심 설계 결정:
+- 일관된 표시를 위해 공유 시각화 utility 사용
+- 검증 가능한 조사를 위해 system prompt에 citation 요구사항 포함
+- 반복적 조사를 위한 multi-turn 대화 지원
 """
 
 import asyncio
@@ -26,10 +26,10 @@ from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient
 
 load_dotenv()
 
-# Default model for the research agent
+# Research agent의 기본 model
 DEFAULT_MODEL = "claude-opus-4-6"
 
-# System prompt with citation requirements for research quality
+# 조사 품질을 위한 citation 요구사항이 있는 system prompt
 RESEARCH_SYSTEM_PROMPT = """You are a research agent specialized in AI.
 
 When providing research findings:
@@ -40,20 +40,20 @@ When providing research findings:
 
 def get_activity_text(msg: Any) -> str | None:
     """
-    Extract activity text from a message for custom logging/monitoring.
+    Custom logging/monitoring용 activity text를 message에서 추출합니다.
 
-    This function is provided for users who want to implement custom
-    activity handlers (e.g., for logging, WebSocket streaming, etc.)
+    이 function은 custom activity handler(예: logging, WebSocket streaming 등)를
+    구현하려는 사용자를 위해 제공됩니다.
 
     Args:
-        msg: A message object from the agent response stream
+        msg: Agent response stream의 message 객체
 
     Returns:
-        A formatted activity string, or None if not applicable
+        Formatting한 activity 문자열. 해당하지 않으면 None
     """
     try:
         if "Assistant" in msg.__class__.__name__:
-            # Check if content exists and has items
+            # Content가 존재하고 항목이 있는지 확인
             if hasattr(msg, "content") and msg.content:
                 first_content = msg.content[0] if isinstance(msg.content, list) else msg.content
                 if hasattr(first_content, "name"):
@@ -74,27 +74,27 @@ async def send_query(
     display_result: bool = True,
 ) -> str | None:
     """
-    Send a query to the research agent with web search and multimodal support.
+    Web 검색 및 multimodal 지원이 있는 research agent에 query를 전송합니다.
 
     Args:
-        prompt: The query to send
-        activity_handler: Callback for activity updates (default: print_activity)
-        continue_conversation: Continue the previous conversation if True
-        model: Model to use (default: claude-sonnet-4-6)
-        display_result: If True, display the response using display_agent_response()
-            after completion. Set to False for programmatic use.
+        prompt: 전송할 query
+        activity_handler: Activity 갱신 callback(기본값: print_activity)
+        continue_conversation: True이면 이전 대화를 이어감
+        model: 사용할 model(기본값: claude-sonnet-4-6)
+        display_result: True이면 완료 후 display_agent_response()로 응답 표시.
+            Programmatic 사용은 False로 설정.
 
     Note:
-        For the activity_handler - we support both sync and async handlers
-        to make the module work in different contexts:
-            - Sync handlers (like print_activity) for simple console output
-            - Async handlers for web apps that need WebSocket/network I/O
-        In production, you'd typically use just one type based on your needs
+        서로 다른 context에서 module이 작동하도록 activity_handler에는
+        sync 및 async handler를 모두 지원합니다:
+            - 단순 console 출력용 sync handler(print_activity 등)
+            - WebSocket/network I/O가 필요한 web app용 async handler
+        Production에서는 보통 필요에 따라 하나의 type만 사용할 것입니다
 
     Returns:
-        The final result text or None if no result
+        최종 result text. 결과가 없으면 None
     """
-    # Only reset activity context for new conversations, not continuations
+    # 이어가는 대화가 아닌 새 대화에만 activity context 초기화
     if not continue_conversation:
         reset_activity_context()
 
@@ -103,7 +103,7 @@ async def send_query(
         allowed_tools=["WebSearch", "Read"],
         continue_conversation=continue_conversation,
         system_prompt=RESEARCH_SYSTEM_PROMPT,
-        max_buffer_size=10 * 1024 * 1024,  # 10MB buffer for handling images and large responses
+        max_buffer_size=10 * 1024 * 1024,  # Image 및 큰 응답 처리를 위한 10MB buffer
     )
 
     result = None
@@ -125,7 +125,7 @@ async def send_query(
         print(f"❌ Query error: {e}")
         raise
 
-    # Display the result using the shared visualization utility
+    # 공유 시각화 utility로 결과 표시
     if display_result and messages:
         display_agent_response(messages)
 

@@ -1,11 +1,10 @@
-"""Generate the fully synthetic ad creatives used by samples.jsonl.
+"""samples.jsonl에서 사용하는 완전한 synthetic 광고 creative 생성.
 
-Every image is composed programmatically (Pillow), so the ground-truth labels in
-samples.jsonl are correct by construction — we placed the disclaimer strip, the age
-badge, the before/after panels ourselves. All brands are fictional.
+모든 이미지는 programmatically(Pillow) 구성되므로 samples.jsonl의
+ ground-truth label은 구성 자체로 정확함 — disclaimer strip, 나이 badge,
+전후 panel을 직접 배치했음. 모든 brand는 가상.
 
-Run:  python build_creatives.py     (writes PNGs into ./images/)
-"""
+실행:  python build_creatives.py     (./images/에 PNG 기록)"""
 
 import pathlib
 
@@ -30,7 +29,7 @@ def font(size: int, bold: bool = True):
 
 
 def strip(d, text, bg="#1E2630", fg="#9AA4AE"):
-    """Bottom small-print strip — the classic disclaimer placement."""
+    """하단의 작은 글씨 strip — 전형적인 disclaimer 위치."""
     d.rectangle([0, 1010, W, H], fill=bg)
     d.text((70, 1028), text, font=font(28, bold=False), fill=fg)
 
@@ -41,15 +40,15 @@ def badge(d, text, x=880, y=60):
 
 
 def northpeak_trail():
-    """Clean sneaker ad: low text, brand visible, nothing restricted."""
+    """깔끔한 sneaker 광고: 적은 텍스트, 보이는 brand, 제한 대상 없음."""
     img = Image.new("RGB", (W, H), "#2E4A3A")
     d = ImageDraw.Draw(img)
     d.polygon(
         [(0, 800), (300, 500), (560, 700), (820, 420), (1080, 640), (1080, 1080), (0, 1080)],
         fill="#22382C",
     )
-    d.ellipse([340, 620, 740, 820], fill="#4A5A50")  # rock
-    # the shoe
+    d.ellipse([340, 620, 740, 820], fill="#4A5A50")  # 바위
+    # 신발
     d.rounded_rectangle([400, 520, 700, 640], 40, fill="#D7DBD2")
     d.rounded_rectangle([390, 610, 720, 660], 20, fill="#B3261E")
     d.arc([420, 500, 650, 640], 180, 360, fill="#3B3F44", width=14)
@@ -60,8 +59,8 @@ def northpeak_trail():
 
 
 def betpeak_bonus():
-    """Sportsbook: $1,500 bonus figure, 21+ badge, generic responsible-gambling strip
-    (deliberately NO 1-800-GAMBLER — the NJ rule should catch it)."""
+    """Sportsbook: $1,500 bonus 수치, 21+ badge, 일반적인 책임 있는 도박 strip
+    (의도적으로 1-800-GAMBLER 없음 — NJ rule이 이를 잡아내야 함)."""
     img = Image.new("RGB", (W, H), "#101820")
     d = ImageDraw.Draw(img)
     for x, y, r, c in [
@@ -82,7 +81,7 @@ def betpeak_bonus():
 
 
 def peaklend_rate():
-    """Finance: big promotional rate, no APR small print anywhere."""
+    """Finance: 큰 홍보 금리, APR 작은 글씨는 어디에도 없음."""
     img = Image.new("RGB", (W, H), "#123B2E")
     d = ImageDraw.Draw(img)
     for i in range(6):
@@ -102,19 +101,19 @@ def peaklend_rate():
 
 
 def luma_before_after():
-    """Skincare: side-by-side before/after skin panels with DAY labels — prohibited
-    imagery in every category under clause 1.4."""
+    """Skincare: DAY label이 있는 나란한 전후 피부 panel — 1.4 조항에 따라
+    모든 category에서 금지된 이미지."""
     img = Image.new("RGB", (W, H), "#F3EDE7")
     d = ImageDraw.Draw(img)
     d.text((70, 70), "Visibly clearer skin", font=font(64), fill="#3A322C")
     d.text((70, 150), "in 14 days", font=font(64), fill="#3A322C")
-    # before panel: blotchy skin swatch
+    # 전 panel: 얼룩진 피부 swatch
     d.rectangle([70, 300, 510, 860], fill="#D9A98F", outline="#3A322C", width=3)
     for x, y, r in [(160, 420, 26), (300, 520, 34), (220, 660, 22), (400, 430, 18), (360, 740, 28)]:
         d.ellipse([x - r, y - r, x + r, y + r], fill="#B96A55")
     d.rectangle([70, 300, 510, 360], fill="#3A322C")
     d.text((90, 310), "DAY 1", font=font(38), fill="#F3EDE7")
-    # after panel: clear swatch
+    # 후 panel: 깨끗한 swatch
     d.rectangle([570, 300, 1010, 860], fill="#E7C3AC", outline="#3A322C", width=3)
     d.rectangle([570, 300, 1010, 360], fill="#3A322C")
     d.text((590, 310), "DAY 14", font=font(38), fill="#F3EDE7")
@@ -123,16 +122,16 @@ def luma_before_after():
 
 
 def vinepeak_wine():
-    """Alcohol done right: responsible-drinking strip, 21+ badge, no people."""
+    """올바른 주류 광고: 책임 있는 음주 strip, 21+ badge, 사람 없음."""
     img = Image.new("RGB", (W, H), "#2A1E2B")
     d = ImageDraw.Draw(img)
-    # bottle
+    # 병
     d.rounded_rectangle([470, 300, 610, 860], 40, fill="#3E2233")
     d.rectangle([515, 180, 565, 320], fill="#3E2233")
     d.rectangle([515, 150, 565, 200], fill="#7A4A28")
     d.rectangle([485, 480, 595, 700], fill="#EDE4D4")
     d.text((500, 520), "VINE\nPEAK", font=font(40), fill="#3E2233")
-    # glass
+    # 잔
     d.polygon([(760, 420), (900, 420), (830, 560)], fill="#5C2E44")
     d.line([830, 560, 830, 680], fill="#EDE4D4", width=8)
     d.line([770, 690, 890, 690], fill="#EDE4D4", width=8)

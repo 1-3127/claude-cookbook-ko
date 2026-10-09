@@ -1,4 +1,4 @@
-# Python-generated files
+# Python이 생성한 파일
 __pycache__/
 *.py[oc]
 build/
@@ -6,31 +6,31 @@ dist/
 wheels/
 *.egg-info
 
-# Virtual environments
+# Virtual environment
 .venv
 .env
 .python-version
 
-# Claude Code settings
+# Claude Code 설정
 .claude-code/
 /CLAUDE.md
 
-# Package manager lock files (optional for tutorials)
+# Package manager lock 파일(tutorial에서는 선택 사항)
 uv.lock
 
-# Jupyter notebook checkpoints
+# Jupyter Notebook checkpoint
 .ipynb_checkpoints/
 *.ipynb_checkpoints/
 
-# Workspace created at runtime by 08_Dynamic_workflows.ipynb
+# 08_Dynamic_workflows.ipynb이 runtime에 생성하는 workspace
 orbitcart_data/
 
 # macOS
 .DS_Store
 
-# Runtime artifacts of scheduled_repository_reviewer. The root .gitignore
-# anchors demo_repo/ at its two documented paths; the unanchored entry
-# below covers any other execution directory.
+# Scheduled_repository_reviewer의 runtime artifact. Root .gitignore는
+# 문서화된 두 경로에 demo_repo/를 고정하며, 아래의 고정되지 않은 항목은
+# 그 외 실행 디렉터리를 포함합니다.
 .last_review_session
 .last_review_session.tmp
 .review.lock

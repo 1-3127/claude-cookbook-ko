@@ -45,7 +45,7 @@ jobs:
         id: validate
         run: |
           uv run python scripts/validate_notebooks.py | tee validation_output.txt
-          # Check if validation found issues
+          # 검증에서 문제가 발견되었는지 확인
           if grep -q "❌" validation_output.txt; then
             echo "has_issues=true" >> $GITHUB_OUTPUT
             exit 1
@@ -56,11 +56,11 @@ jobs:
 
       - name: Summarize validation issues with Claude
         if: github.event_name == 'pull_request' && steps.validate.outputs.has_issues == 'true'
-        uses: anthropics/claude-code-action@bbfaf8e1ffe3e688f7ab65ceee78de241e24a238 # v1.0.132 (>=v1.0.130 for WIF inputs)
+        uses: anthropics/claude-code-action@bbfaf8e1ffe3e688f7ab65ceee78de241e24a238 # v1.0.132 (WIF 입력에는 >=v1.0.130)
         with:
-          # Anthropic auth via Workload Identity Federation — the action
-          # exchanges this job's GitHub OIDC token (id-token: write above)
-          # for a short-lived access token instead of a static API key.
+          # Workload Identity Federation을 통한 Anthropic auth — action이
+          # 이 job의 GitHub OIDC token(위 id-token: write)을
+          # 정적 API key 대신 단기 access token으로 교환합니다.
           anthropic_federation_rule_id: fdrl_01SqmTwzmEE547mtaYN1mqHL
           anthropic_organization_id: 1ec12c5c-6542-4da8-bf2f-c15919aef01c
           anthropic_service_account_id: svac_01BHcCBa1UWFvNrHMqJjuaUZ
@@ -87,12 +87,12 @@ jobs:
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
 
-      # Only run API tests on main branch or for maintainers (costs money)
-      # TODO: this step still reads the static ANTHROPIC_API_KEY secret. The
-      # claude-code-action steps above use Workload Identity Federation; this
-      # direct-API step needs a separate inline OIDC mint+exchange (or the
-      # anthropic SDK's WIF env-var trio). Non-fatal in the meantime — each
-      # notebook execution failure is caught by the `|| echo` below.
+      # Main branch 또는 maintainer에 대해서만 API 테스트 실행(비용 발생)
+      # TODO: 이 단계는 여전히 정적 ANTHROPIC_API_KEY secret을 읽습니다.
+      # 위 claude-code-action 단계들은 Workload Identity Federation을 사용합니다. 이
+      # Direct-API 단계에는 별도의 inline OIDC mint+exchange(또는
+      # Anthropic SDK의 WIF 환경 변수 세 가지)가 필요합니다. 그동안은 치명적이지 않습니다. 각
+      # Notebook 실행 실패를 아래 `|| echo`가 포착합니다.
       - name: Execute notebooks (API Testing)
         if: |
           github.event_name == 'push' || 
@@ -105,7 +105,7 @@ jobs:
           for notebook in $(find . -name "*.ipynb" -not -path "*/.*" -not -path "*/test_outputs/*"); do
             echo "📓 Testing: $notebook"
             output_name=$(echo "$notebook" | sed 's|/|_|g' | sed 's|\.|_|g')
-            # Use nbconvert to execute notebooks and save outputs
+            # Nbconvert로 Notebook 실행 및 출력 저장
             uv run jupyter nbconvert --to notebook \
               --execute "$notebook" \
               --ExecutePreprocessor.kernel_name=python3 \
@@ -115,7 +115,7 @@ jobs:
               || echo "⚠️  Failed: $notebook"
           done
       
-      # Mock testing for external contributors
+      # 외부 기여자용 mock 테스트
       - name: Execute notebooks (Mock Testing)
         if: |
           github.event_name == 'pull_request' && 

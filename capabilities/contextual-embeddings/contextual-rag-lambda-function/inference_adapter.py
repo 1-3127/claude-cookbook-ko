@@ -8,7 +8,7 @@ class InferenceAdapter:
     def __init__(self):
         self.bedrock_runtime = boto3.client(
             service_name="bedrock-runtime",
-            region_name="us-east-1",  # change region as needed
+            region_name="us-east-1",  # 필요에 따라 region 변경
         )
         self.model_id = "anthropic.claude-haiku-4-5-20251001-v1:0"
 
@@ -22,7 +22,7 @@ class InferenceAdapter:
             }
         )
 
-        # Invoke the model
+        # 모델 호출
         try:
             response = self.bedrock_runtime.invoke_model_with_response_stream(
                 modelId=self.model_id,

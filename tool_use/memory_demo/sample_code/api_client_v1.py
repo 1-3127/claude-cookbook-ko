@@ -1,6 +1,6 @@
 """
-Async API client with similar concurrency issues.
-This demonstrates Claude applying thread-safety patterns to async code.
+비슷한 동시성 문제가 있는 async API client.
+Claude가 thread-safety 패턴을 async 코드에 적용하는 모습을 보여줍니다.
 """
 
 import asyncio
@@ -10,15 +10,15 @@ import aiohttp
 
 
 class AsyncAPIClient:
-    """Async API client for fetching data from multiple endpoints."""
+    """여러 endpoint에서 데이터를 가져오는 async API client."""
 
     def __init__(self, base_url: str):
         self.base_url = base_url
-        self.responses = []  # BUG: Shared state accessed from multiple coroutines!
-        self.error_count = 0  # BUG: Race condition on counter increment!
+        self.responses = []  # BUG: 여러 coroutine이 shared state에 접근합니다!
+        self.error_count = 0  # BUG: Counter 증가 시 race condition!
 
     async def fetch_endpoint(self, session: aiohttp.ClientSession, endpoint: str) -> dict[str, Any]:
-        """Fetch a single endpoint."""
+        """Endpoint 하나를 조회합니다."""
         url = f"{self.base_url}/{endpoint}"
         try:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as response:
@@ -36,12 +36,12 @@ class AsyncAPIClient:
 
     async def fetch_all(self, endpoints: list[str]) -> list[dict[str, Any]]:
         """
-        Fetch multiple endpoints concurrently.
+        여러 endpoint를 동시에 조회합니다.
 
-        BUG: Similar to the threading issue, multiple coroutines
-        modify self.responses and self.error_count without coordination!
-        While Python's GIL prevents some race conditions in threads,
-        async code can still have interleaving issues.
+        BUG: Threading 문제와 비슷하게 여러 coroutine이
+        조정 없이 self.responses와 self.error_count를 수정합니다!
+        Python의 GIL이 thread의 일부 race condition을 방지하더라도
+        async 코드는 여전히 interleaving 문제가 있을 수 있습니다.
         """
         async with aiohttp.ClientSession() as session:
             tasks = [self.fetch_endpoint(session, endpoint) for endpoint in endpoints]
@@ -49,16 +49,16 @@ class AsyncAPIClient:
             for coro in asyncio.as_completed(tasks):
                 result = await coro
 
-                # RACE CONDITION: Multiple coroutines modify shared state
+                # RACE CONDITION: 여러 coroutine이 shared state 수정
                 if "error" in result:
-                    self.error_count += 1  # Not atomic!
+                    self.error_count += 1  # Atomic하지 않습니다!
                 else:
-                    self.responses.append(result)  # Not thread-safe in async context!
+                    self.responses.append(result)  # Async context에서 thread-safe하지 않습니다!
 
         return self.responses
 
     def get_summary(self) -> dict[str, Any]:
-        """Get summary statistics."""
+        """요약 통계를 가져옵니다."""
         return {
             "total_responses": len(self.responses),
             "errors": self.error_count,
@@ -71,7 +71,7 @@ class AsyncAPIClient:
 
 
 async def main():
-    """Test the async API client."""
+    """Async API client를 테스트합니다."""
     client = AsyncAPIClient("https://jsonplaceholder.typicode.com")
 
     endpoints = [
@@ -80,8 +80,8 @@ async def main():
         "posts/3",
         "users/1",
         "users/2",
-        "invalid/endpoint",  # Will error
-    ] * 20  # 120 requests total
+        "invalid/endpoint",  # 오류 발생
+    ] * 20  # 총 요청 120개
 
     results = await client.fetch_all(endpoints)
 

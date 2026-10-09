@@ -30,7 +30,7 @@ def lambda_handler(event, context):
     s3_adapter = S3Adapter()
     inference_adapter = InferenceAdapter()
 
-    # Extract relevant information from the input event
+    # Input event에서 관련 정보 추출
     input_files = event.get("inputFiles")
     input_bucket = event.get("bucketName")
 
@@ -41,39 +41,39 @@ def lambda_handler(event, context):
     for input_file in input_files:
         processed_batches = []
         for batch in input_file.get("contentBatches"):
-            # Get chunks from S3
+            # S3에서 chunk 조회
             input_key = batch.get("key")
 
             if not input_key:
                 raise ValueError("Missing uri in content batch")
 
-            # Read file from S3
+            # S3에서 파일 읽기
             file_content = s3_adapter.read_from_s3(bucket_name=input_bucket, file_name=input_key)
             print(file_content.get("fileContents"))
 
-            # Combine all chunks together to build content of original file
-            # Alternatively we can also read original file and extract text from it
+            # 모든 chunk를 결합하여 원본 파일 내용 구성
+            # 또는 원본 파일을 읽어 텍스트 추출 가능
             original_document_content = "".join(
                 content.get("contentBody")
                 for content in file_content.get("fileContents")
                 if content
             )
 
-            # Process one chunk at a time
+            # 한 번에 chunk 하나 처리
             chunked_content = {"fileContents": []}
             for content in file_content.get("fileContents"):
                 content_body = content.get("contentBody", "")
                 content_type = content.get("contentType", "")
                 content_metadata = content.get("contentMetadata", {})
 
-                # Update chunk with additional context
+                # 추가 context로 chunk 업데이트
                 prompt = contextual_retrieval_prompt.format(
                     doc_content=original_document_content, chunk_content=content_body
                 )
                 response_stream = inference_adapter.invoke_model_with_response_stream(prompt)
                 chunk_context = "".join(chunk for chunk in response_stream if chunk)
 
-                # append chunk to output file content
+                # Output 파일 내용에 chunk 추가
                 chunked_content["fileContents"].append(
                     {
                         "contentBody": chunk_context + "\n\n" + content_body,
@@ -84,10 +84,10 @@ def lambda_handler(event, context):
 
             output_key = f"Output/{input_key}"
 
-            # write updated chunk to output S3
+            # 업데이트한 chunk를 output S3에 기록
             s3_adapter.write_output_to_s3(input_bucket, output_key, chunked_content)
 
-            # Append the processed chunks file to list of files
+            # 파일 목록에 처리된 chunk 파일 추가
             processed_batches.append({"key": output_key})
         output_files.append(
             {

@@ -1,6 +1,6 @@
 """
-Financial ratio calculation module.
-Provides functions to calculate key financial metrics and ratios.
+재무 비율 계산 module입니다.
+핵심 재무 metric과 비율을 계산하는 함수를 제공합니다.
 """
 
 import json
@@ -8,15 +8,15 @@ from typing import Any
 
 
 class FinancialRatioCalculator:
-    """Calculate financial ratios from financial statement data."""
+    """재무제표 data에서 재무 비율을 계산합니다."""
 
     def __init__(self, financial_data: dict[str, Any]):
         """
-        Initialize with financial statement data.
+        재무제표 data로 초기화합니다.
 
         Args:
-            financial_data: Dictionary containing income_statement, balance_sheet,
-                          cash_flow, and market_data
+            financial_data: income_statement, balance_sheet,
+                          cash_flow, market_data가 포함된 dictionary
         """
         self.income_statement = financial_data.get("income_statement", {})
         self.balance_sheet = financial_data.get("balance_sheet", {})
@@ -25,13 +25,13 @@ class FinancialRatioCalculator:
         self.ratios = {}
 
     def safe_divide(self, numerator: float, denominator: float, default: float = 0.0) -> float:
-        """Safely divide two numbers, returning default if denominator is zero."""
+        """두 숫자를 안전하게 나누며 분모가 0이면 기본값을 반환합니다."""
         if denominator == 0:
             return default
         return numerator / denominator
 
     def calculate_profitability_ratios(self) -> dict[str, float]:
-        """Calculate profitability ratios."""
+        """수익성 비율을 계산합니다."""
         ratios = {}
 
         # ROE (Return on Equity)
@@ -59,7 +59,7 @@ class FinancialRatioCalculator:
         return ratios
 
     def calculate_liquidity_ratios(self) -> dict[str, float]:
-        """Calculate liquidity ratios."""
+        """유동성 비율을 계산합니다."""
         ratios = {}
 
         current_assets = self.balance_sheet.get("current_assets", 0)
@@ -80,7 +80,7 @@ class FinancialRatioCalculator:
         return ratios
 
     def calculate_leverage_ratios(self) -> dict[str, float]:
-        """Calculate leverage/solvency ratios."""
+        """leverage/solvency 비율을 계산합니다."""
         ratios = {}
 
         total_debt = self.balance_sheet.get("total_debt", 0)
@@ -104,7 +104,7 @@ class FinancialRatioCalculator:
         return ratios
 
     def calculate_efficiency_ratios(self) -> dict[str, float]:
-        """Calculate efficiency/activity ratios."""
+        """효율성/활동성 비율을 계산합니다."""
         ratios = {}
 
         revenue = self.income_statement.get("revenue", 0)
@@ -128,7 +128,7 @@ class FinancialRatioCalculator:
         return ratios
 
     def calculate_valuation_ratios(self) -> dict[str, float]:
-        """Calculate valuation ratios."""
+        """valuation 비율을 계산합니다."""
         ratios = {}
 
         share_price = self.market_data.get("share_price", 0)
@@ -158,7 +158,7 @@ class FinancialRatioCalculator:
         enterprise_value = market_cap + total_debt - cash
         ratios["ev_to_ebitda"] = self.safe_divide(enterprise_value, ebitda)
 
-        # PEG Ratio (if growth rate available)
+        # PEG Ratio(성장률이 있으면)
         earnings_growth = self.market_data.get("earnings_growth_rate", 0)
         if earnings_growth > 0:
             ratios["peg_ratio"] = self.safe_divide(ratios["pe_ratio"], earnings_growth * 100)
@@ -166,7 +166,7 @@ class FinancialRatioCalculator:
         return ratios
 
     def calculate_all_ratios(self) -> dict[str, Any]:
-        """Calculate all financial ratios."""
+        """모든 재무 비율을 계산합니다."""
         return {
             "profitability": self.calculate_profitability_ratios(),
             "liquidity": self.calculate_liquidity_ratios(),
@@ -176,7 +176,7 @@ class FinancialRatioCalculator:
         }
 
     def interpret_ratio(self, ratio_name: str, value: float) -> str:
-        """Provide interpretation for a specific ratio."""
+        """특정 비율의 해석을 제공합니다."""
         interpretations = {
             "current_ratio": lambda v: (
                 "Strong liquidity"
@@ -227,7 +227,7 @@ class FinancialRatioCalculator:
         return "No interpretation available"
 
     def format_ratio(self, name: str, value: float, format_type: str = "ratio") -> str:
-        """Format ratio value for display."""
+        """표시용 비율 값의 형식을 지정합니다."""
         if format_type == "percentage":
             return f"{value * 100:.2f}%"
         elif format_type == "times":
@@ -242,18 +242,18 @@ class FinancialRatioCalculator:
 
 def calculate_ratios_from_data(financial_data: dict[str, Any]) -> dict[str, Any]:
     """
-    Main function to calculate all ratios from financial data.
+    재무 data에서 모든 비율을 계산하는 주요 함수입니다.
 
     Args:
-        financial_data: Dictionary with financial statement data
+        financial_data: 재무제표 data dictionary
 
     Returns:
-        Dictionary with calculated ratios and interpretations
+        계산한 비율과 해석 dictionary
     """
     calculator = FinancialRatioCalculator(financial_data)
     ratios = calculator.calculate_all_ratios()
 
-    # Add interpretations
+    # 해석 추가
     interpretations = {}
     for category, category_ratios in ratios.items():
         interpretations[category] = {}
@@ -272,31 +272,31 @@ def calculate_ratios_from_data(financial_data: dict[str, Any]) -> dict[str, Any]
 
 
 def generate_summary(ratios: dict[str, Any]) -> str:
-    """Generate a text summary of the financial analysis."""
+    """재무 분석의 텍스트 요약을 생성합니다."""
     summary_parts = []
 
-    # Profitability summary
+    # 수익성 요약
     prof = ratios.get("profitability", {})
     if prof.get("roe", 0) > 0:
         summary_parts.append(
             f"ROE of {prof['roe'] * 100:.1f}% indicates {'strong' if prof['roe'] > 0.15 else 'moderate'} shareholder returns."
         )
 
-    # Liquidity summary
+    # 유동성 요약
     liq = ratios.get("liquidity", {})
     if liq.get("current_ratio", 0) > 0:
         summary_parts.append(
             f"Current ratio of {liq['current_ratio']:.2f} suggests {'good' if liq['current_ratio'] > 1.5 else 'potential'} liquidity {'position' if liq['current_ratio'] > 1.5 else 'concerns'}."
         )
 
-    # Leverage summary
+    # Leverage 요약
     lev = ratios.get("leverage", {})
     if lev.get("debt_to_equity", 0) >= 0:
         summary_parts.append(
             f"Debt-to-equity of {lev['debt_to_equity']:.2f} indicates {'conservative' if lev['debt_to_equity'] < 0.5 else 'moderate' if lev['debt_to_equity'] < 1 else 'high'} leverage."
         )
 
-    # Valuation summary
+    # Valuation 요약
     val = ratios.get("valuation", {})
     if val.get("pe_ratio", 0) > 0:
         summary_parts.append(
@@ -306,9 +306,9 @@ def generate_summary(ratios: dict[str, Any]) -> str:
     return " ".join(summary_parts) if summary_parts else "Insufficient data for summary."
 
 
-# Example usage
+# 사용 예제
 if __name__ == "__main__":
-    # Sample financial data
+    # sample 재무 data
     sample_data = {
         "income_statement": {
             "revenue": 1000000,

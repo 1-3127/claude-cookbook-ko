@@ -1,14 +1,14 @@
 """
-Observability Agent - GitHub monitoring with MCP servers.
+Observability Agent - MCP server로 GitHub 모니터링.
 
-This agent demonstrates MCP (Model Context Protocol) integration for GitHub
-monitoring and CI/CD workflow analysis. It uses the official GitHub MCP server
-to interact with the GitHub API.
+이 agent는 GitHub 모니터링 및 CI/CD workflow 분석을 위한
+MCP(Model Context Protocol) 통합을 보여 줍니다. 공식 GitHub MCP server를
+사용하여 GitHub API와 상호작용합니다.
 
-Key design decisions:
-- Uses disallowed_tools to ensure MCP tools are used (not Bash with gh CLI)
-- Focused on read-only GitHub operations for observability
-- Supports multi-turn conversations for deep-dive analysis
+핵심 설계 결정:
+- disallowed_tools로 MCP tool 사용 보장(gh CLI를 사용하는 Bash 대신)
+- Observability를 위한 읽기 전용 GitHub 작업에 집중
+- 심층 분석용 multi-turn 대화 지원
 """
 
 import asyncio
@@ -27,10 +27,10 @@ from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient, McpServerConfi
 
 load_dotenv()
 
-# Default model for the observability agent
+# Observability agent의 기본 model
 DEFAULT_MODEL = "claude-opus-4-6"
 
-# System prompt optimized for observability tasks
+# Observability 작업에 최적화한 system prompt
 DEFAULT_SYSTEM_PROMPT = """You are an observability agent specialized in monitoring \
 GitHub repositories and CI/CD workflows. Provide concise, actionable insights \
 suitable for on-call engineers. Focus on identifying issues, assessing severity, \
@@ -39,10 +39,10 @@ and recommending next steps."""
 
 def get_github_mcp_server() -> dict[str, McpServerConfig]:
     """
-    Get the GitHub MCP server configuration.
+    GitHub MCP server 구성을 가져옵니다.
 
     Returns:
-        MCP server config dict, or empty dict if GITHUB_TOKEN not set.
+        MCP server config dict. GITHUB_TOKEN이 없으면 빈 dict.
     """
     token = os.environ.get("GITHUB_TOKEN")
     if not token:
@@ -75,39 +75,39 @@ async def send_query(
     display_result: bool = True,
 ) -> str | None:
     """
-    Send a query to the observability agent with MCP server support.
+    MCP server 지원이 있는 observability agent에 query를 전송합니다.
 
     Args:
-        prompt: The query to send
-        activity_handler: Callback for activity updates (default: print_activity)
-        continue_conversation: Continue the previous conversation if True
-        mcp_servers: Custom MCP servers configuration (merged with GitHub if enabled)
-        use_github: Include GitHub MCP server (default: True)
-        model: Model to use (default: claude-opus-4-6)
-        restrict_to_mcp: If True, disallow Bash/Task to ensure MCP tools are used.
-            Set to False if you want the agent to have fallback options.
-        display_result: If True, display the response using display_agent_response()
-            after completion. Set to False for programmatic use.
+        prompt: 전송할 query
+        activity_handler: Activity 갱신 callback(기본값: print_activity)
+        continue_conversation: True이면 이전 대화를 이어감
+        mcp_servers: Custom MCP server 구성(활성화되면 GitHub와 병합)
+        use_github: GitHub MCP server 포함(기본값: True)
+        model: 사용할 model(기본값: claude-opus-4-6)
+        restrict_to_mcp: True이면 MCP tool 사용을 보장하도록 Bash/Task 금지.
+            Agent에 fallback 선택지를 제공하려면 False로 설정.
+        display_result: True이면 완료 후 display_agent_response()로 응답 표시.
+            Programmatic 사용은 False로 설정.
 
     Returns:
-        The final result text or None if no result.
+        최종 result text. 결과가 없으면 None.
     """
-    # Only reset activity context for new conversations, not continuations
+    # 이어가는 대화가 아닌 새 대화에만 activity context 초기화
     if not continue_conversation:
         reset_activity_context()
 
-    # Build MCP servers config
+    # MCP server 구성 만들기
     servers: dict[str, McpServerConfig] = {}
     if use_github:
         servers.update(get_github_mcp_server())
     if mcp_servers:
         servers.update(mcp_servers)
 
-    # Build allowed tools list based on configured MCP servers
+    # 구성한 MCP server를 기준으로 allowed tool 목록 만들기
     allowed_tools = [f"mcp__{name}" for name in servers]
 
-    # Configure disallowed tools to ensure MCP usage
-    # Without this, the agent could bypass MCP by using Bash with gh CLI
+    # MCP 사용을 보장하도록 disallowed tool 구성
+    # 이것이 없으면 agent가 gh CLI를 사용하는 Bash로 MCP를 우회할 수 있음
     disallowed_tools = ["Bash", "Task", "WebSearch", "WebFetch"] if restrict_to_mcp else []
 
     options = ClaudeAgentOptions(
@@ -116,7 +116,7 @@ async def send_query(
         disallowed_tools=disallowed_tools,
         continue_conversation=continue_conversation,
         system_prompt=DEFAULT_SYSTEM_PROMPT,
-        mcp_servers=servers,  # Empty dict is valid, no need for None
+        mcp_servers=servers,  # 빈 dict는 유효하며 None이 필요하지 않음
         permission_mode="acceptEdits",
     )
 
@@ -139,7 +139,7 @@ async def send_query(
         print(f"❌ Query error: {e}")
         raise
 
-    # Display the result using the shared visualization utility
+    # 공유 시각화 utility로 결과 표시
     if display_result and messages:
         display_agent_response(messages)
 

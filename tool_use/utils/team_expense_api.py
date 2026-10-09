@@ -1,9 +1,9 @@
 """
-Example Mock API for Team Expense Management Demo
+팀 지출 관리 Demo용 Mock API 예제
 
-This is a domain-specific API used in the programmatic tool calling cookbook.
-It provides mock tools for retrieving team member information, expense records,
-and budget limits by employee level.
+Programmatic tool calling cookbook에 사용하는 domain-specific API입니다.
+팀 구성원 정보, 지출 기록, 직원 level별 budget limit를 가져오는
+mock tool을 제공합니다.
 """
 
 import json
@@ -14,27 +14,27 @@ from datetime import datetime, timedelta
 # Configuration
 EXPENSE_LINE_ITEMS_PER_PERSON_MIN = 20
 EXPENSE_LINE_ITEMS_PER_PERSON_MAX = 50
-DELAY_MULTIPLIER = 0  # Adjust this to simulate API latency
+DELAY_MULTIPLIER = 0  # API latency를 모사하려면 조정
 
 
 def get_team_members(department: str) -> str:
-    """Returns a list of team members for a given department.
+    """지정한 부서의 팀 구성원 목록을 반환합니다.
 
-    Each team member includes their ID, name, role, level, and contact information.
-    Use this to get a list of people whose expenses you want to analyze.
+    각 구성원에는 ID, 이름, role, level, 연락처가 포함됩니다.
+    지출을 분석할 사람들의 목록을 가져올 때 사용합니다.
 
     Args:
-        department: The department name (e.g., 'engineering', 'sales', 'marketing').
-            Case-insensitive.
+        department: 부서 이름 (예: 'engineering', 'sales', 'marketing').
+            대소문자를 구분하지 않습니다.
 
     Returns:
-        JSON string containing an array of team member objects with fields:
-        - id: Unique employee identifier
-        - name: Full name
-        - role: Job title
-        - level: Employee level (junior, mid, senior, staff, principal)
-        - email: Contact email
-        - department: Department name
+        다음 field를 가진 팀 구성원 object 배열의 JSON string:
+        - id: 직원의 고유 식별자
+        - name: 전체 이름
+        - role: 직무명
+        - level: 직원 level (junior, mid, senior, staff, principal)
+        - email: 연락용 email
+        - department: 부서 이름
     """
     import time
 
@@ -42,7 +42,7 @@ def get_team_members(department: str) -> str:
 
     department = department.lower()
 
-    # Mock team data by department
+    # 부서별 mock 팀 데이터
     teams = {
         "engineering": [
             {
@@ -215,45 +215,45 @@ def get_team_members(department: str) -> str:
 
 
 def get_expenses(employee_id: str, quarter: str) -> str:
-    """Returns all expense line items for a given employee in a specific quarter.
+    """특정 분기에 지정한 직원의 모든 지출 항목을 반환합니다.
 
-    Each expense includes comprehensive metadata: date, category, description, amount,
-    receipt details, approval chain, merchant information, and more. An employee may
-    have anywhere from a few to 150+ expense line items per quarter, and each line
-    item contains substantial metadata for audit and compliance purposes.
+    각 지출에는 날짜, category, 설명, 금액, 영수증 세부 사항, 승인 chain,
+    판매자 정보 등 포괄적인 metadata가 포함됩니다. 직원은 분기당 몇 개부터
+    150개 이상의 지출 항목을 가질 수 있으며, 각 항목에는 감사와 compliance를 위한
+    상당한 metadata가 포함됩니다.
 
     Args:
-        employee_id: The unique employee identifier (e.g., 'ENG001', 'SAL002')
-        quarter: Quarter identifier (e.g., 'Q1', 'Q2', 'Q3', 'Q4')
+        employee_id: 직원의 고유 식별자 (예: 'ENG001', 'SAL002')
+        quarter: 분기 식별자 (예: 'Q1', 'Q2', 'Q3', 'Q4')
 
     Returns:
-        JSON string containing an array of expense objects with fields:
-        - expense_id: Unique expense identifier
-        - date: ISO format date when expense occurred
-        - category: Expense type (travel, meals, lodging, software, equipment, etc.)
-        - description: Details about the expense
-        - amount: Dollar amount (float)
-        - currency: Currency code (default 'USD')
-        - status: Approval status (approved, pending, rejected)
-        - receipt_url: URL to uploaded receipt image
-        - approved_by: Manager or finance person who approved
-        - store_name: Merchant or vendor name
-        - store_location: City and state of merchant
-        - reimbursement_date: When the expense was reimbursed (if applicable)
-        - payment_method: How it was paid (corporate_card, personal_reimbursement)
-        - project_code: Project or cost center code
-        - notes: Employee justification or additional context
+        다음 field를 가진 지출 object 배열의 JSON string:
+        - expense_id: 지출의 고유 식별자
+        - date: 지출 발생일의 ISO 형식 날짜
+        - category: 지출 종류 (travel, meals, lodging, software, equipment 등)
+        - description: 지출 세부 사항
+        - amount: 달러 금액 (float)
+        - currency: 통화 code (기본값 'USD')
+        - status: 승인 상태 (approved, pending, rejected)
+        - receipt_url: 업로드된 영수증 이미지 URL
+        - approved_by: 승인한 manager 또는 재무 담당자
+        - store_name: 판매자 또는 공급업체 이름
+        - store_location: 판매자가 있는 도시와 주
+        - reimbursement_date: 지출을 정산한 날짜 (해당하는 경우)
+        - payment_method: 결제 방법 (corporate_card, personal_reimbursement)
+        - project_code: Project 또는 cost center code
+        - notes: 직원의 사유 또는 추가 context
     """
 
     time.sleep(DELAY_MULTIPLIER * 0.2)
 
-    # Generate a deterministic but varied number of expenses based on employee_id
+    # employee_id 기반으로 deterministic하지만 다양한 지출 건수 생성
     random.seed(hash(employee_id + quarter))
     num_expenses = random.randint(
         EXPENSE_LINE_ITEMS_PER_PERSON_MIN, EXPENSE_LINE_ITEMS_PER_PERSON_MAX
     )
 
-    # Quarter date ranges
+    # 분기 날짜 범위
     quarter_dates = {
         "Q1": (datetime(2024, 1, 1), datetime(2024, 3, 31)),
         "Q2": (datetime(2024, 4, 1), datetime(2024, 6, 30)),
@@ -266,7 +266,7 @@ def get_expenses(employee_id: str, quarter: str) -> str:
 
     start_date, end_date = quarter_dates[quarter.upper()]
 
-    # Expense categories and typical amounts
+    # 지출 category와 일반적인 금액
     expense_categories = [
         ("travel", "Flight to client meeting", 400, 1500),
         ("travel", "Train ticket", 1000, 1500),
@@ -293,7 +293,7 @@ def get_expenses(employee_id: str, quarter: str) -> str:
         ("internet", "WiFi hotspot", 20, 60),
     ]
 
-    # Manager names for approvals
+    # 승인 담당 manager 이름
     managers = [
         "Sarah Johnson",
         "Michael Chen",
@@ -302,7 +302,7 @@ def get_expenses(employee_id: str, quarter: str) -> str:
         "Jennifer Martinez",
     ]
 
-    # Store/merchant names by category
+    # Category별 상점/판매자 이름
     merchants = {
         "travel": [
             "United Airlines",
@@ -320,7 +320,7 @@ def get_expenses(employee_id: str, quarter: str) -> str:
         "internet": ["Verizon", "AT&T", "T-Mobile", "Comcast"],
     }
 
-    # US cities for store locations
+    # 상점 위치용 미국 도시
     cities = [
         "San Francisco, CA",
         "New York, NY",
@@ -334,7 +334,7 @@ def get_expenses(employee_id: str, quarter: str) -> str:
         "Miami, FL",
     ]
 
-    # Project codes
+    # Project code
     project_codes = [
         "PROJ-1001",
         "PROJ-1002",
@@ -345,7 +345,7 @@ def get_expenses(employee_id: str, quarter: str) -> str:
         "CLIENT-B",
     ]
 
-    # Justification templates
+    # 사유 template
     justifications = {
         "travel": [
             "Client meeting to discuss Q4 roadmap and requirements",
@@ -400,18 +400,18 @@ def get_expenses(employee_id: str, quarter: str) -> str:
     for i in range(num_expenses):
         category, desc_template, min_amt, max_amt = random.choice(expense_categories)
 
-        # Generate random date within quarter
+        # 분기 내 무작위 날짜 생성
         days_diff = (end_date - start_date).days
         random_days = random.randint(0, days_diff)
         expense_date = start_date + timedelta(days=random_days)
 
-        # Generate amount
+        # 금액 생성
         amount = round(random.uniform(min_amt, max_amt), 2)
 
-        # Status (most are approved)
+        # 상태 (대부분 승인됨)
         status = random.choices(["approved", "pending", "rejected"], weights=[0.85, 0.10, 0.05])[0]
 
-        # Generate additional metadata
+        # 추가 metadata 생성
         approved_by = random.choice(managers) if status == "approved" else None
         store_name = random.choice(merchants.get(category, ["Unknown Merchant"]))
         store_location = random.choice(cities)
@@ -419,7 +419,7 @@ def get_expenses(employee_id: str, quarter: str) -> str:
         project_code = random.choice(project_codes)
         notes = random.choice(justifications.get(category, ["Business expense"]))
 
-        # Reimbursement date is 15-30 days after expense date for approved expenses
+        # 승인된 지출의 reimbursement 날짜는 지출일 15–30일 후
         reimbursement_date = None
         if status == "approved" and payment_method == "personal_reimbursement":
             reimb_days = random.randint(15, 30)
@@ -445,33 +445,33 @@ def get_expenses(employee_id: str, quarter: str) -> str:
             }
         )
 
-    # Sort by date
+    # 날짜순 정렬
     expenses.sort(key=lambda x: x["date"])
 
     return json.dumps(expenses, indent=2)
 
 
 def get_custom_budget(user_id: str) -> str:
-    """Get the custom quarterly travel budget for a specific employee.
+    """특정 직원의 custom 분기별 출장 budget을 가져옵니다.
 
-    Most employees have a standard $5,000 quarterly travel budget. However, some
-    employees have custom budget exceptions based on their role requirements.
-    This function checks if a specific employee has a custom budget assigned.
+    대부분의 직원에게는 표준 $5,000 분기별 출장 budget이 있습니다. 하지만 일부
+    직원은 role 요구에 따라 예외적인 custom budget을 가집니다.
+    이 함수는 특정 직원에게 custom budget이 지정되었는지 확인합니다.
 
     Args:
-        user_id: The unique employee identifier (e.g., 'ENG001', 'SAL002')
+        user_id: 직원의 고유 식별자 (예: 'ENG001', 'SAL002')
 
     Returns:
-        JSON string containing:
-        - user_id: Employee identifier
-        - has_custom_budget: Boolean indicating if custom budget exists
-        - travel_budget: Quarterly travel budget amount (custom or standard $5,000)
-        - reason: Explanation for custom budget (if applicable)
-        - currency: Currency code (default 'USD')
+        다음 내용을 포함하는 JSON string:
+        - user_id: 직원 식별자
+        - has_custom_budget: Custom budget 존재 여부를 나타내는 boolean
+        - travel_budget: 분기별 출장 budget 금액 (custom 또는 표준 $5,000)
+        - reason: Custom budget에 대한 설명 (해당하는 경우)
+        - currency: 통화 code (기본값 'USD')
     """
     time.sleep(DELAY_MULTIPLIER * 0.05)
 
-    # Employees with custom budget exceptions
+    # 예외적 custom budget이 있는 직원
     custom_budgets = {
         "ENG002": {
             "user_id": "ENG002",
@@ -510,11 +510,11 @@ def get_custom_budget(user_id: str) -> str:
         },
     }
 
-    # Check if user has custom budget
+    # 사용자의 custom budget 확인
     if user_id in custom_budgets:
         return json.dumps(custom_budgets[user_id], indent=2)
 
-    # Return standard budget
+    # 표준 budget 반환
     return json.dumps(
         {
             "user_id": user_id,
@@ -527,27 +527,27 @@ def get_custom_budget(user_id: str) -> str:
     )
 
 
-# Helper function to get all available tools
+# 이용 가능한 모든 tool을 가져오는 helper 함수
 def get_expense_tools():
-    """Returns a list of all expense management tools for use with Claude API."""
+    """Claude API에 사용할 모든 지출 관리 tool 목록을 반환합니다."""
     return [get_team_members, get_expenses, get_custom_budget]
 
 
 if __name__ == "__main__":
-    # Example usage demonstrating custom budget checking
+    # Custom budget 확인을 보여주는 사용 예제
     print("=== Team Expense Analysis Example ===\n")
 
-    # Get team members
+    # 팀 구성원 가져오기
     team = json.loads(get_team_members("engineering"))
 
     exceeded_standard = []
-    for member in team[:5]:  # Just check first 5 for demo
+    for member in team[:5]:  # Demo에서는 처음 5명만 확인
         print(f"Checking expenses for {member['name']}...")
 
-        # Fetch this person's expenses (could be 100+ line items)
+        # 이 사람의 지출 가져오기 (항목이 100개 이상일 수 있음)
         expenses = json.loads(get_expenses(member["id"], "Q3"))
 
-        # Calculate total travel expenses
+        # 총 출장 지출 계산
         travel_total = sum(
             exp["amount"]
             for exp in expenses
@@ -557,10 +557,10 @@ if __name__ == "__main__":
         print(f"  - Found {len(expenses)} expense line items")
         print(f"  - Total approved travel expenses: ${travel_total:,.2f}")
 
-        # Check against standard $5,000 budget
+        # 표준 $5,000 budget과 비교
         if travel_total > 5000:
             print("  ⚠️  Exceeded standard $5,000 budget")
-            # Now check if they have a custom budget exception
+            # 이제 예외적 custom budget이 있는지 확인
             custom = json.loads(get_custom_budget(member["id"]))
             print(f"  - Custom budget: ${custom['travel_budget']:,}")
 

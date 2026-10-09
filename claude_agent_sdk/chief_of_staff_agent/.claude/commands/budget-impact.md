@@ -1,16 +1,16 @@
 ---
 name: budget-impact
-description: Analyze the financial impact of a decision on budget, burn rate, and runway
+description: 결정이 예산, burn rate, runway에 미치는 재무 영향 분석
 ---
 
-Use the financial-analyst subagent to analyze the budget impact of: $ARGUMENTS
+financial-analyst subagent로 다음의 예산 영향을 분석하세요: $ARGUMENTS
 
-Provide a comprehensive analysis including:
-1. Total cost (one-time and recurring)
-2. Impact on monthly burn rate
-3. Change in runway (months)
-4. ROI analysis if applicable
-5. Alternative options to consider
-6. Risk factors
+다음을 포함한 종합적인 분석을 제공하세요:
+1. 총비용(일회성 및 반복 비용)
+2. 월 burn rate에 미치는 영향
+3. Runway 변화(개월)
+4. 해당하는 경우 ROI 분석
+5. 검토할 대안
+6. 위험 요인
 
-Format the response with clear sections and specific numbers. Include a final recommendation.
+명확한 section과 구체적인 수치로 응답을 구성하세요. 최종 권고를 포함하세요.

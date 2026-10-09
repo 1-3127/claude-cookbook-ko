@@ -1,13 +1,11 @@
-"""
-Compiler and extractor used by guide.ipynb.
+"""guide.ipynb가 사용하는 compiler와 extractor.
 
 Compiler:  policies.md + schema.json + context.json --Claude--> {derived_fields, rules, uncompilable}
-           with a validate_document() retry loop (static errors are fed back to the model).
-Extractor: content (text + optional image) --Claude--> typed fields dict, where the output
-           schema is schema.json ∪ derived_fields, enforced via structured outputs.
+           validate_document() retry loop 사용(static error를 model에 다시 전달).
+Extractor: content(텍스트 + 선택적 이미지) --Claude--> typed fields dict, output schema는
+           schema.json ∪ derived_fields이며 structured output으로 강제.
 
-The engine (engine.py) then evaluates deterministically. Claude never decides verdicts.
-"""
+이후 engine(engine.py)이 deterministic하게 평가. Claude는 판정을 결정하지 않음."""
 
 from __future__ import annotations
 
@@ -20,17 +18,17 @@ from typing import Any
 import anthropic
 from engine import validate_document
 
-# Compilation runs once per policy change, so it gets the strongest model.
-# Extraction runs once per piece of content, so it gets a cheaper, faster one.
+# Compilation은 정책 변경마다 한 번 실행하므로 가장 강력한 model 사용.
+# Extraction은 콘텐츠마다 한 번 실행하므로 더 저렴하고 빠른 model 사용.
 COMPILER_MODEL = "claude-opus-5"
 EXTRACTOR_MODEL = "claude-sonnet-5"
-MODEL = COMPILER_MODEL  # backward-compatible alias
+MODEL = COMPILER_MODEL  # 하위 호환 alias
 
 client: anthropic.Anthropic | None = None
 
 
 def _client() -> anthropic.Anthropic:
-    """Create the API client on first use, after the caller has loaded credentials."""
+    """호출자가 credential을 로드한 뒤 최초 사용 시 API client 생성."""
     global client
     if client is None:
         client = anthropic.Anthropic()
@@ -38,7 +36,7 @@ def _client() -> anthropic.Anthropic:
 
 
 # ---------------------------------------------------------------------------
-# Compiler: natural-language policy -> rules document
+# Compiler: 자연어 정책 -> rule document
 # ---------------------------------------------------------------------------
 
 RULE_FORMAT_SPEC = """\
@@ -126,7 +124,7 @@ Compile every clause. Respond with the JSON object only — no prose, no markdow
 
 
 def _parse_json_reply(text: str) -> dict:
-    """Tolerate accidental markdown fences around the JSON."""
+    """JSON 주위에 실수로 붙은 markdown fence 허용."""
     t = text.strip()
     if t.startswith("```"):
         t = t.split("\n", 1)[1]
@@ -137,11 +135,10 @@ def _parse_json_reply(text: str) -> dict:
 def compile_policies(
     policies: str, schema: dict, context_schema: dict, max_repair_rounds: int = 3
 ) -> tuple[dict, list[dict]]:
-    """Compile policy prose into a rules document, repairing static errors via re-prompting.
-
-    Returns (document, transcript_of_attempts); the transcript shows the notebook reader
-    what the validator caught and how the model fixed it.
-    """
+    """정책 산문을 rule document로 compile하고 re-prompting으로 static error 수정.
+    
+    (document, transcript_of_attempts) 반환; transcript는 Notebook 독자에게
+    validator가 무엇을 잡았고 model이 어떻게 수정했는지 보여줌."""
     messages: list[dict] = [
         {"role": "user", "content": compiler_prompt(policies, schema, context_schema)}
     ]
@@ -186,11 +183,10 @@ def compile_policies(
 def compile_single_rule(
     description: str, doc: dict, schema: dict, context_schema: dict, max_repair_rounds: int = 2
 ) -> dict:
-    """Compile ONE plain-English rule description against an existing ruleset.
-
-    Returns {"rules": [...], "derived_fields": {...}} with only the additions;
-    reuses existing derived fields where they fit and validates before returning.
-    """
+    """일상적인 영어로 된 rule description 하나를 기존 ruleset에 맞춰 compile.
+    
+    추가 사항만 담긴 {"rules": [...], "derived_fields": {...}} 반환;
+    적합한 기존 derived field를 재사용하고 반환 전 validate."""
     prompt = f"""You are a policy compiler for a content-review system. A reviewer wants to add ONE new
 rule to an existing ruleset, described in natural language.
 
@@ -255,13 +251,13 @@ JSON object only, no prose, no fences:
 
 
 # ---------------------------------------------------------------------------
-# Extractor: content -> typed fields (schema ∪ derived_fields, structured output)
+# Extractor: 콘텐츠 -> typed field(schema ∪ derived_fields, structured output)
 # ---------------------------------------------------------------------------
 
 
 def build_extraction_schema(schema: dict, derived_fields: dict) -> dict:
-    """Merged, structured-outputs-compliant schema: every property required,
-    additionalProperties false, derived judge text carried as the description."""
+    """병합된 structured-outputs 호환 schema: 모든 property가 required이고,
+    additionalProperties는 false이며 derived judge 텍스트는 description으로 전달."""
     out = copy.deepcopy(schema)
     out.pop("$comment", None)
     for name, spec in derived_fields.items():
@@ -296,7 +292,7 @@ def extract_fields(
     derived_fields: dict,
     image_path: str | pathlib.Path | None = None,
 ) -> dict:
-    """Extract typed fields from one submission. Returns the fields dict."""
+    """제출물 하나에서 typed field 추출. fields dict 반환."""
     content: list[dict[str, Any]] = []
     if image_path is not None:
         p = pathlib.Path(image_path)

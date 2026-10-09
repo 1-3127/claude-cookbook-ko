@@ -1,11 +1,11 @@
-# Knowledge Graph Construction with Claude
+# Claude로 Knowledge Graph 구축하기
 
-Learn how to build knowledge graphs from unstructured text using Claude for the classical KG construction tasks: named entity recognition, relation extraction, entity resolution, and entity summarization.
+Named entity recognition, relation extraction, entity resolution, entity summarization 같은 전통적인 KG 구축 작업에 Claude를 사용하여 비정형 텍스트에서 knowledge graph를 구축하는 방법을 알아보세요.
 
-## Contents
+## 내용
 
-- `guide.ipynb`: Main tutorial notebook
-- `data/`: Gold-standard triples for evaluation
-- `evaluation/`: Precision/recall scoring scripts
+- `guide.ipynb`: 주 tutorial notebook
+- `data/`: 평가를 위한 gold-standard triple
+- `evaluation/`: Precision/recall scoring script
 
-For evaluation instructions, see `evaluation/README.md`.
+평가 지침은 `evaluation/README.md`를 참조하세요.

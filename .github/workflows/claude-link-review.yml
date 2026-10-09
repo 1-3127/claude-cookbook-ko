@@ -17,7 +17,7 @@ on:
 
 jobs:
   link-review:
-    # Only run for internal contributors (not forks) unless manually triggered
+    # 수동 trigger가 아니면 내부 기여자에 대해서만 실행(fork 제외)
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
@@ -44,7 +44,7 @@ jobs:
         id: changed-files
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            # For manual dispatch, get base ref from PR
+            # Manual dispatch의 경우 PR에서 base ref 가져오기
             BASE_REF=$(gh pr view ${{ steps.pr-number.outputs.number }} --json baseRefName -q .baseRefName)
             git fetch origin $BASE_REF
             CHANGED_FILES=$(git diff --name-only origin/$BASE_REF...HEAD | grep -E '\.(md|mdx|ipynb)$' || echo "")
@@ -67,11 +67,11 @@ jobs:
 
       - name: Run Claude Link Review
         if: steps.changed-files.outputs.has_files == 'true'
-        uses: anthropics/claude-code-action@bbfaf8e1ffe3e688f7ab65ceee78de241e24a238 # v1.0.132 (>=v1.0.130 for WIF inputs)
+        uses: anthropics/claude-code-action@bbfaf8e1ffe3e688f7ab65ceee78de241e24a238 # v1.0.132 (WIF 입력에는 >=v1.0.130)
         with:
-          # Anthropic auth via Workload Identity Federation — the action
-          # exchanges this job's GitHub OIDC token (id-token: write above)
-          # for a short-lived access token instead of a static API key.
+          # Workload Identity Federation을 통한 Anthropic auth — action이
+          # 이 job의 GitHub OIDC token(위 id-token: write)을
+          # 정적 API key 대신 단기 access token으로 교환합니다.
           anthropic_federation_rule_id: fdrl_01SqmTwzmEE547mtaYN1mqHL
           anthropic_organization_id: 1ec12c5c-6542-4da8-bf2f-c15919aef01c
           anthropic_service_account_id: svac_01BHcCBa1UWFvNrHMqJjuaUZ

@@ -9,12 +9,12 @@ def get_schema_info():
 
     schema_info = []
 
-    # Get all tables
+    # 모든 table 가져오기
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = cursor.fetchall()
 
     for (table_name,) in tables:
-        # Get columns for this table
+        # 이 table의 column 가져오기
         cursor.execute(f"PRAGMA table_info({table_name})")
         columns = cursor.fetchall()
 
@@ -137,7 +137,7 @@ def generate_prompt_with_cot(context):
 def generate_prompt_with_rag(context):
     from vectordb import VectorDB
 
-    # Load the vector database
+    # Vector database 로드
     vectordb = VectorDB()
     vectordb.load_db()
 

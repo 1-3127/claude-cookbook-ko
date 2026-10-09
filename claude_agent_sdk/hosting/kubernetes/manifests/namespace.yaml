@@ -1,6 +1,6 @@
-# Namespace: A Kubernetes namespace isolates resources — everything for this
-# application lives in the 'claude-agent' namespace, keeping it separate from
-# other workloads in the cluster.
+# Namespace: Kubernetes namespace는 resource를 격리합니다. 이 application의
+# 모든 것은 'claude-agent' namespace에 있어 cluster의
+# 다른 workload와 분리됩니다.
 ---
 apiVersion: v1
 kind: Namespace

@@ -1,5 +1,6 @@
-# Iterate, get the tests green
+# Iterate, 테스트 통과시키기
 
-A `calc.py` with three planted bugs and a `test_calc.py` with three assertions that catch them. Used by `CMA_iterate_fix_failing_tests.py`.
+의도적으로 버그 세 개를 넣은 `calc.py`와 이를 잡는 assertion 세 개가 있는 `test_calc.py`입니다. `CMA_iterate_fix_failing_tests.py`에서 사용합니다.
 
-The interesting bug is `test_mean`: `mean()` calls `add` and `divide` internally, so it goes green on its own once the other two are fixed. An agent that edits `mean()` directly is over-fixing.
+흥미로운 버그는 `test_mean`입니다. `mean()`이 내부에서 `add`와 `divide`를 호출하므로 다른 두 개를 수정하면 저절로 통과합니다. `mean()`을 직접 편집하는 agent는 과도하게 수정하는 것입니다.
+

@@ -111,7 +111,7 @@ class SummaryIndexedVectorDB:
 
         texts = [
             f"{item['chunk_heading']}\n\n{item['text']}\n\n{item['summary']}" for item in data
-        ]  # Embed Chunk Heading + Text + Summary Together
+        ]  # Chunk 제목 + 텍스트 + 요약을 함께 embedding
         self._embed_and_store(texts, data)
         self.save_db()
         print("Vector database loaded and saved.")

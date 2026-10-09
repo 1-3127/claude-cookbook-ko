@@ -1,15 +1,15 @@
 """
-Brand application module for corporate document styling.
-Applies consistent branding to Excel, PowerPoint, and PDF documents.
+기업 문서 styling용 brand 적용 module입니다.
+Excel, PowerPoint, PDF 문서에 일관된 branding을 적용합니다.
 """
 
 from typing import Any
 
 
 class BrandFormatter:
-    """Apply corporate brand guidelines to documents."""
+    """문서에 기업 brand 지침을 적용합니다."""
 
-    # Brand color definitions
+    # Brand 색상 정의
     COLORS = {
         "primary": {
             "acme_blue": {"hex": "#0066CC", "rgb": (0, 102, 204)},
@@ -25,7 +25,7 @@ class BrandFormatter:
         },
     }
 
-    # Font definitions
+    # Font 정의
     FONTS = {
         "primary": "Segoe UI",
         "fallback": ["system-ui", "-apple-system", "sans-serif"],
@@ -33,7 +33,7 @@ class BrandFormatter:
         "weights": {"regular": 400, "semibold": 600, "bold": 700},
     }
 
-    # Company information
+    # 회사 정보
     COMPANY = {
         "name": "Acme Corporation",
         "tagline": "Innovation Through Excellence",
@@ -43,24 +43,24 @@ class BrandFormatter:
     }
 
     def __init__(self):
-        """Initialize brand formatter with standard settings."""
+        """표준 설정으로 brand formatter를 초기화합니다."""
         self.colors = self.COLORS
         self.fonts = self.FONTS
         self.company = self.COMPANY
 
     def format_excel(self, workbook_config: dict[str, Any]) -> dict[str, Any]:
         """
-        Apply brand formatting to Excel workbook configuration.
+        Excel workbook 설정에 brand 서식을 적용합니다.
 
         Args:
-            workbook_config: Excel workbook configuration dictionary
+            workbook_config: Excel workbook 설정 dictionary
 
         Returns:
-            Branded workbook configuration
+            brand가 적용된 workbook 설정
         """
         branded_config = workbook_config.copy()
 
-        # Apply header formatting
+        # header 서식 적용
         branded_config["header_style"] = {
             "font": {
                 "name": self.fonts["primary"],
@@ -73,7 +73,7 @@ class BrandFormatter:
             "border": {"style": "thin", "color": self.colors["secondary"]["neutral_gray"]["hex"]},
         }
 
-        # Apply data cell formatting
+        # data cell 서식 적용
         branded_config["cell_style"] = {
             "font": {
                 "name": self.fonts["primary"],
@@ -83,13 +83,13 @@ class BrandFormatter:
             "alignment": {"horizontal": "left", "vertical": "center"},
         }
 
-        # Apply alternating row colors
+        # 교대 행 색상 적용
         branded_config["alternating_rows"] = {
             "enabled": True,
             "color": self.colors["secondary"]["light_gray"]["hex"],
         }
 
-        # Chart color scheme
+        # Chart 색상 구성
         branded_config["chart_colors"] = [
             self.colors["primary"]["acme_blue"]["hex"],
             self.colors["secondary"]["success_green"]["hex"],
@@ -101,17 +101,17 @@ class BrandFormatter:
 
     def format_powerpoint(self, presentation_config: dict[str, Any]) -> dict[str, Any]:
         """
-        Apply brand formatting to PowerPoint presentation configuration.
+        PowerPoint presentation 설정에 brand 서식을 적용합니다.
 
         Args:
-            presentation_config: PowerPoint configuration dictionary
+            presentation_config: PowerPoint 설정 dictionary
 
         Returns:
-            Branded presentation configuration
+            brand가 적용된 presentation 설정
         """
         branded_config = presentation_config.copy()
 
-        # Slide master settings
+        # Slide master 설정
         branded_config["master"] = {
             "background_color": self.colors["primary"]["white"]["hex"],
             "title_area": {
@@ -153,7 +153,7 @@ class BrandFormatter:
             "bullet_style": {"level1": "•", "level2": "○", "level3": "▪", "indent": 0.25},
         }
 
-        # Chart defaults
+        # Chart 기본값
         branded_config["charts"] = {
             "color_scheme": [
                 self.colors["primary"]["acme_blue"]["hex"],
@@ -169,13 +169,13 @@ class BrandFormatter:
 
     def format_pdf(self, document_config: dict[str, Any]) -> dict[str, Any]:
         """
-        Apply brand formatting to PDF document configuration.
+        PDF 문서 설정에 brand 서식을 적용합니다.
 
         Args:
-            document_config: PDF document configuration dictionary
+            document_config: PDF 문서 설정 dictionary
 
         Returns:
-            Branded document configuration
+            brand가 적용된 문서 설정
         """
         branded_config = document_config.copy()
 
@@ -186,7 +186,7 @@ class BrandFormatter:
             "orientation": "portrait",
         }
 
-        # Header configuration
+        # Header 설정
         branded_config["header"] = {
             "height": 0.75,
             "content": {
@@ -202,7 +202,7 @@ class BrandFormatter:
             },
         }
 
-        # Footer configuration
+        # Footer 설정
         branded_config["footer"] = {
             "height": 0.5,
             "content": {
@@ -218,7 +218,7 @@ class BrandFormatter:
             },
         }
 
-        # Text styles
+        # 텍스트 스타일
         branded_config["styles"] = {
             "heading1": {
                 "font": self.fonts["primary"],
@@ -256,7 +256,7 @@ class BrandFormatter:
             },
         }
 
-        # Table formatting
+        # Table 서식
         branded_config["table_style"] = {
             "header": {
                 "background": self.colors["primary"]["acme_blue"]["hex"],
@@ -273,13 +273,13 @@ class BrandFormatter:
 
     def validate_colors(self, colors_used: list[str]) -> dict[str, Any]:
         """
-        Validate that colors match brand guidelines.
+        색상이 brand 지침과 일치하는지 검증합니다.
 
         Args:
-            colors_used: List of color codes used in document
+            colors_used: 문서에서 사용한 색상 코드 목록
 
         Returns:
-            Validation results with corrections if needed
+            필요한 수정이 포함된 검증 결과
         """
         results = {"valid": True, "corrections": [], "warnings": []}
 
@@ -292,7 +292,7 @@ class BrandFormatter:
             color_upper = color.upper()
             if color_upper not in approved_colors:
                 results["valid"] = False
-                # Find closest brand color
+                # 가장 가까운 brand 색상 찾기
                 closest = self._find_closest_brand_color(color)
                 results["corrections"].append(
                     {
@@ -305,19 +305,19 @@ class BrandFormatter:
         return results
 
     def _find_closest_brand_color(self, color: str) -> str:
-        """Find the closest brand color to a given color."""
-        # Simplified - in reality would calculate color distance
+        """주어진 색상에 가장 가까운 brand 색상을 찾습니다."""
+        # 간소화 - 실제로는 색상 거리를 계산
         return self.colors["primary"]["acme_blue"]["hex"]
 
     def apply_watermark(self, document_type: str) -> dict[str, Any]:
         """
-        Generate watermark configuration for documents.
+        문서의 watermark 설정을 생성합니다.
 
         Args:
-            document_type: Type of document (draft, confidential, etc.)
+            document_type: 문서 유형(draft, confidential 등)
 
         Returns:
-            Watermark configuration
+            Watermark 설정
         """
         watermarks = {
             "draft": {
@@ -347,13 +347,13 @@ class BrandFormatter:
 
     def get_chart_palette(self, num_series: int = 4) -> list[str]:
         """
-        Get color palette for charts.
+        chart의 color palette를 얻습니다.
 
         Args:
-            num_series: Number of data series
+            num_series: data series 수
 
         Returns:
-            List of hex color codes
+            hex 색상 코드 목록
         """
         palette = [
             self.colors["primary"]["acme_blue"]["hex"],
@@ -368,14 +368,14 @@ class BrandFormatter:
 
     def format_number(self, value: float, format_type: str = "general") -> str:
         """
-        Format numbers according to brand standards.
+        brand 기준에 따라 숫자 형식을 지정합니다.
 
         Args:
-            value: Numeric value to format
-            format_type: Type of formatting (currency, percentage, general)
+            value: 형식을 지정할 숫자 값
+            format_type: 서식 유형(currency, percentage, general)
 
         Returns:
-            Formatted string
+            서식 지정 문자열
         """
         if format_type == "currency":
             return f"${value:,.2f}"
@@ -394,14 +394,14 @@ class BrandFormatter:
 
 def apply_brand_to_document(document_type: str, config: dict[str, Any]) -> dict[str, Any]:
     """
-    Main function to apply branding to any document type.
+    어떤 문서 유형에든 branding을 적용하는 주요 함수입니다.
 
     Args:
-        document_type: Type of document ('excel', 'powerpoint', 'pdf')
-        config: Document configuration
+        document_type: 문서 유형('excel', 'powerpoint', 'pdf')
+        config: 문서 설정
 
     Returns:
-        Branded configuration
+        brand가 적용된 설정
     """
     formatter = BrandFormatter()
 
@@ -415,16 +415,16 @@ def apply_brand_to_document(document_type: str, config: dict[str, Any]) -> dict[
         raise ValueError(f"Unsupported document type: {document_type}")
 
 
-# Example usage
+# 사용 예제
 if __name__ == "__main__":
-    # Example Excel configuration
+    # Excel 설정 예제
     excel_config = {"title": "Quarterly Report", "sheets": ["Summary", "Details"]}
 
     branded_excel = apply_brand_to_document("excel", excel_config)
     print("Branded Excel Configuration:")
     print(branded_excel)
 
-    # Example PowerPoint configuration
+    # PowerPoint 설정 예제
     ppt_config = {"title": "Business Review", "num_slides": 10}
 
     branded_ppt = apply_brand_to_document("powerpoint", ppt_config)

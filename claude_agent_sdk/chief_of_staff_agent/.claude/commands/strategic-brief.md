@@ -1,36 +1,36 @@
 ---
 name: strategic-brief
-description: Generate a comprehensive strategic brief by coordinating analysis from both financial and talent perspectives
+description: 재무 및 인재 관점의 분석을 조정하여 종합적인 전략 브리핑 생성
 ---
 
-Create a strategic brief on: $ARGUMENTS
+다음에 대한 전략 브리핑을 작성하세요: $ARGUMENTS
 
-Coordinate with both the financial-analyst and recruiter subagents to provide:
+financial-analyst 및 recruiter subagent 모두와 조정하여 다음을 제공하세요:
 
-## Executive Summary
-- Key recommendation (1-2 sentences)
-- Critical metrics impact
+## 경영진용 요약
+- 핵심 권고(1-2문장)
+- 중요 metrics 영향
 
-## Financial Analysis (via financial-analyst)
-- Cost/investment required
-- ROI and payback period
-- Impact on runway and burn rate
-- Financial risks and mitigation
+## 재무 분석(financial-analyst 사용)
+- 필요한 비용/투자
+- ROI 및 회수 기간
+- Runway 및 burn rate 영향
+- 재무 위험 및 완화 방안
 
-## Talent Perspective (via recruiter)
-- Team capabilities required
-- Hiring implications
-- Retention considerations
-- Competitive talent landscape
+## 인재 관점(recruiter 사용)
+- 필요한 팀 역량
+- 채용에 대한 시사점
+- 인재 유지 고려사항
+- 경쟁적인 인재 시장 환경
 
-## Strategic Recommendation
-- Recommended action plan
-- Success metrics
-- Timeline and milestones
-- Risk mitigation strategies
+## 전략적 권고
+- 권장 행동 계획
+- 성공 metrics
+- 일정 및 milestone
+- 위험 완화 전략
 
-## Alternative Options
-- At least 2 alternative approaches
-- Pros/cons of each
+## 대안
+- 최소 두 가지 대체 접근 방식
+- 각각의 장단점
 
-Format for board-level presentation with clear sections and data-driven insights.
+명확한 section 및 data 기반 insight로 이사회 발표용 형식을 갖추세요.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate and optionally fix authors.yaml sorting (case-insensitive alphabetical)."""
+"""authors.yaml 정렬을 검증하고 선택적으로 수정합니다(대소문자를 구분하지 않는 알파벳순)."""
 
 import argparse
 import sys
@@ -8,7 +8,7 @@ from typing import Any
 
 import yaml
 
-# Ensure UTF-8 output on Windows
+# Windows에서 UTF-8 출력 보장
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
@@ -25,19 +25,19 @@ HEADER = """\
 
 
 def load_authors() -> dict[str, Any] | None:
-    """Load authors.yaml and return the data."""
+    """authors.yaml을 불러오고 데이터를 반환합니다."""
     with open(AUTHORS_FILE, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
 def is_sorted(data: dict) -> bool:
-    """Check if the keys are sorted alphabetically (case-insensitive)."""
+    """Key가 알파벳순으로 정렬되어 있는지 확인합니다(대소문자 구분 없음)."""
     keys = list(data.keys())
     return keys == sorted(keys, key=str.lower)
 
 
 def sort_authors(data: dict, check_only: bool = False) -> bool:
-    """Sort and write authors.yaml. Returns True if file was/would be changed."""
+    """authors.yaml을 정렬하여 저장합니다. 파일이 변경되었거나 변경될 예정이면 True를 반환합니다."""
     sorted_data = dict(sorted(data.items(), key=lambda x: x[0].lower()))
 
     if check_only:
@@ -51,7 +51,7 @@ def sort_authors(data: dict, check_only: bool = False) -> bool:
 
 
 def show_diff(keys: list, sorted_keys: list) -> None:
-    """Show the difference between current and expected order."""
+    """현재 순서와 예상 순서의 차이를 보여줍니다."""
     print("authors.yaml is not sorted alphabetically (case-insensitive).")
     print("\nCurrent order:")
     for k in keys:
@@ -90,7 +90,7 @@ def main():
             print("1 file reformatted")
         sys.exit(0)
 
-    # Validation mode
+    # 검증 mode
     if already_sorted:
         print("1 file left unchanged")
         sys.exit(0)

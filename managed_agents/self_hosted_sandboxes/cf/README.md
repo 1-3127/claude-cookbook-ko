@@ -1,17 +1,17 @@
-# Cloudflare demo — Self-Hosted Sandboxes (Container variant)
+# Cloudflare demo — Self-Hosted Sandbox(Container variant)
 
-The Worker (`src/index.ts`) verifies the `session.status_run_started` webhook with `client.beta.webhooks.unwrap()`, then **drains the environment work queue** (poll → ack until empty) so any single delivery recovers earlier missed ones. Per work item it starts a per-session **Cloudflare Container** (`src/container.ts`) whose entrypoint is `ant beta:worker run` — the CLI handles heartbeat, backlog reconcile, SSE, the default tool set (`bash`/`read`/`write`/`edit`/`glob`/`grep`), and the work-item force-stop on exit.
+Worker(`src/index.ts`)는 `client.beta.webhooks.unwrap()`으로 `session.status_run_started` webhook을 검증한 뒤 **environment work queue를 비웁니다**(비워질 때까지 poll → ack). 따라서 단 한 번의 delivery로 이전에 놓친 delivery를 복구합니다. Work item마다 entrypoint가 `ant beta:worker run`인 session별 **Cloudflare Container**(`src/container.ts`)를 시작합니다. CLI는 heartbeat, backlog reconcile, SSE, 기본 toolset(`bash`/`read`/`write`/`edit`/`glob`/`grep`), 종료 시 work item force-stop을 처리합니다.
 
-The CLI owns the idle policy (`--max-idle 60s` after `session.status_idle` with `stop_reason: end_turn`; any other event resets the clock). The DO owns the *Cloudflare* container lifetime: it streams session status to renew `sleepAfter` so CF doesn't reclaim the VM out from under a live `ant beta:worker run`.
+CLI는 idle policy를 담당합니다(`stop_reason: end_turn`인 `session.status_idle` 후 `--max-idle 60s`; 다른 모든 event는 clock을 초기화). DO는 *Cloudflare* container lifetime을 담당합니다. Session status를 streaming하여 `sleepAfter`를 갱신함으로써 실행 중인 `ant beta:worker run` 아래의 VM을 CF가 회수하지 못하게 합니다.
 
-No org API key reaches the runner: the container authenticates with the environment key — the single credential `ant beta:worker run` uses for the event stream, the lease heartbeat, and the work-item force-stop.
+Org API key는 runner에 전달되지 않습니다. Container는 event stream, lease heartbeat, work item force-stop에 `ant beta:worker run`이 사용하는 단일 credential인 environment key로 인증합니다.
 
-See `../cf-worker/` for the pure-Worker variant that runs the TS `SessionToolRunner` with an in-isolate fake filesystem instead of a real container.
+실제 container 대신 isolate 내 fake filesystem이 있는 TS `SessionToolRunner`를 실행하는 pure-Worker variant는 `../cf-worker/`를 참고하세요.
 
 ```sh
 npm i
 wrangler secret put ANTHROPIC_WEBHOOK_SECRET
 wrangler secret put ANTHROPIC_ENVIRONMENT_KEY
-# edit ANTHROPIC_ENVIRONMENT_ID in wrangler.toml, then:
+# wrangler.toml의 ANTHROPIC_ENVIRONMENT_ID를 편집한 뒤:
 wrangler deploy
 ```

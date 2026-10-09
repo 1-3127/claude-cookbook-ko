@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 """
-CLI runner for notebook tests.
+Notebook 테스트용 CLI runner입니다.
 
-Usage:
-    # Run all structural tests (fast, no API calls)
+사용법:
+    # 모든 구조 테스트 실행(빠름, API 호출 없음)
     python scripts/test_notebooks.py
 
-    # Run tests on a specific notebook
+    # 특정 Notebook 테스트 실행
     python scripts/test_notebooks.py --notebook tool_use/calculator_tool.ipynb
 
-    # Run tests on a directory
+    # 디렉터리 테스트 실행
     python scripts/test_notebooks.py --dir capabilities
 
-    # Run with notebook execution (slow, requires API key)
+    # Notebook 실행을 포함하여 실행(느림, API key 필요)
     python scripts/test_notebooks.py --execute
 
-    # Run with tox for isolated environment
+    # 격리된 환경을 위해 tox로 실행
     python scripts/test_notebooks.py --tox
 
-    # List all available notebooks
+    # 사용 가능한 모든 Notebook 나열
     python scripts/test_notebooks.py --list
 """
 
@@ -29,7 +29,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Add project root to path
+# Path에 프로젝트 루트 추가
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -42,7 +42,7 @@ console = Console()
 
 
 def list_notebooks(directory: str | None = None) -> None:
-    """List all notebooks in the project."""
+    """프로젝트의 모든 Notebook을 나열합니다."""
     root = PROJECT_ROOT
     if directory:
         root = PROJECT_ROOT / directory
@@ -72,7 +72,7 @@ def list_notebooks(directory: str | None = None) -> None:
 
 
 def run_quick_validation(notebook_path: Path) -> bool:
-    """Run quick validation on a single notebook."""
+    """단일 Notebook에 빠른 검증을 실행합니다."""
     console.print(f"\n[bold]Validating:[/bold] {notebook_path.relative_to(PROJECT_ROOT)}")
 
     result = validate_notebook_structure(notebook_path)
@@ -96,14 +96,14 @@ def run_quick_validation(notebook_path: Path) -> bool:
 
 
 def run_pytest(args: list[str]) -> int:
-    """Run pytest with the given arguments."""
+    """주어진 인수로 pytest를 실행합니다."""
     cmd = [sys.executable, "-m", "pytest", "tests/notebook_tests/test_notebooks.py"] + args
     console.print(f"[dim]Running: {' '.join(cmd)}[/dim]\n")
     return subprocess.call(cmd, cwd=PROJECT_ROOT)  # noqa: S603
 
 
 def run_tox(env: str, extra_args: list[str]) -> int:
-    """Run tox with the specified environment."""
+    """지정된 환경으로 tox를 실행합니다."""
     cmd = ["tox", "-e", env] + extra_args
     console.print(f"[dim]Running: {' '.join(cmd)}[/dim]\n")
     return subprocess.call(cmd, cwd=PROJECT_ROOT)  # noqa: S603
@@ -179,12 +179,12 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    # Handle --list
+    # --list 처리
     if args.list:
         list_notebooks(args.dir)
         return 0
 
-    # Handle --quick for single notebook validation
+    # 단일 Notebook 검증을 위한 --quick 처리
     if args.quick:
         if args.notebook:
             nb_path = PROJECT_ROOT / args.notebook
@@ -203,7 +203,7 @@ def main() -> int:
             console.print("[red]Error: --quick requires --notebook or --dir[/red]")
             return 1
 
-    # Build pytest arguments
+    # Pytest 인수 구성
     pytest_args = list(args.extra_args)
 
     if args.notebook:
@@ -222,7 +222,7 @@ def main() -> int:
     if args.skip_third_party:
         pytest_args.append("--skip-third-party")
 
-    # Run with tox or directly
+    # Tox로 또는 직접 실행
     if args.tox:
         tox_env = args.tox_env
         if args.execute:
@@ -230,7 +230,7 @@ def main() -> int:
         if args.notebook:
             tox_env = f"{tox_env}-single"
 
-        # Pass extra args to tox
+        # Tox에 추가 인수 전달
         tox_extra = []
         if pytest_args:
             tox_extra = ["--"] + pytest_args

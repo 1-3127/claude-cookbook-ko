@@ -1,7 +1,7 @@
 services:
   research-agent:
     build:
-      # Build context is claude_agent_sdk/ so research_agent/ and utils/ are in scope.
+      # Research_agent/ 및 utils/가 범위에 있도록 build context는 claude_agent_sdk/.
       context: ../..
       dockerfile: hosting/Dockerfile
     image: research-agent
@@ -9,10 +9,10 @@ services:
     env_file:
       - ../.env
     ports:
-      # Loopback only. The server has no auth, so don't expose it to the LAN
-      # by default — `curl localhost:8000` still works. Production deployments
-      # must front this with an authenticating reverse proxy (see README).
+      # Loopback만 허용. Server에 인증이 없으므로 기본적으로 LAN에 노출하지
+      # 않습니다. `curl localhost:8000`은 여전히 작동합니다. Production 배포에서는
+      # 인증 reverse proxy를 앞에 두어야 합니다(README 참고).
       - "127.0.0.1:8000:8000"
     volumes:
-      # Persist session transcripts across container restarts.
+      # Container를 재시작해도 session transcript 유지.
       - ./sessions:/data

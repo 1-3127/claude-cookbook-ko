@@ -16,7 +16,7 @@ load_dotenv()
 
 
 def get_activity_text(msg: Any) -> str | None:
-    """Extract activity text from a message"""
+    """Message에서 activity text를 추출합니다"""
     try:
         if "Assistant" in msg.__class__.__name__:
             if hasattr(msg, "content") and msg.content:
@@ -32,7 +32,7 @@ def get_activity_text(msg: Any) -> str | None:
 
 
 def print_activity(msg: Any) -> None:
-    """Print activity to console"""
+    """Console에 activity를 출력합니다"""
     activity = get_activity_text(msg)
     if activity:
         print(activity)
@@ -46,25 +46,25 @@ async def send_query(
     activity_handler: Callable[[Any], None | Any] = print_activity,
 ) -> tuple[str | None, list]:
     """
-    Send a query to the Chief of Staff agent with all features integrated.
+    모든 기능을 통합한 Chief of Staff agent에 query를 전송합니다.
 
     Args:
-        prompt: The query to send (can include slash commands like /budget-impact)
-        activity_handler: Callback for activity updates (default: print_activity)
-        continue_conversation: Continue the previous conversation if True
-        permission_mode: "default" (execute), "plan" (think only), or "acceptEdits"
-        output_style: Override output style (e.g., "executive", "technical", "board-report")
+        prompt: 전송할 query(/budget-impact 같은 slash command 포함 가능)
+        activity_handler: Activity 갱신 callback(기본값: print_activity)
+        continue_conversation: True이면 이전 대화를 이어감
+        permission_mode: "default"(실행), "plan"(생각만), 또는 "acceptEdits"
+        output_style: Output style override(예: "executive", "technical", "board-report")
 
     Returns:
-        Tuple of (result, messages) - result is the final text, messages is the full conversation
+        (result, messages) tuple - result는 최종 text, messages는 전체 대화
 
-    Features automatically included/leveraged:
-        - Memory: CLAUDE.md context loaded from chief_of_staff/CLAUDE.md
-        - Subagents: financial-analyst and recruiter via Task tool (defined in .claude/agents)
-        - Custom scripts: Python scripts in tools/ via Bash
-        - Slash commands: Expanded from .claude/commands/
-        - Output styles: Custom output styles defined in .claude/output-styles
-        - Hooks: Triggered based on settings.local.json, defined in .claude/hooks
+    자동으로 포함/활용되는 기능:
+        - Memory: chief_of_staff/CLAUDE.md에서 CLAUDE.md context load
+        - Subagent: Task tool로 financial-analyst 및 recruiter 호출(.claude/agents에 정의)
+        - Custom script: Bash로 tools/의 Python script 실행
+        - Slash command: .claude/commands/에서 확장
+        - Output style: .claude/output-styles에 정의한 custom output style
+        - Hook: settings.local.json에 따라 발생하며 .claude/hooks에 정의
     """
 
     system_prompt = """You are the Chief of Staff for TechStart Inc, a 50-person startup.
@@ -77,7 +77,7 @@ async def send_query(
         You have access to company data in the financial_data/ directory.
         """
 
-    # build options with optional output style
+    # 선택적인 output style로 options 구성
     settings = None
     if output_style:
         settings = json.dumps({"outputStyle": output_style})
@@ -85,7 +85,7 @@ async def send_query(
     options = ClaudeAgentOptions(
         model="claude-opus-4-6",
         allowed_tools=[
-            "Task",  # enables subagent delegation
+            "Task",  # Subagent 위임 활성화
             "Read",
             "Write",
             "Edit",
@@ -97,17 +97,17 @@ async def send_query(
         permission_mode=permission_mode,
         cwd=os.path.dirname(os.path.abspath(__file__)),
         settings=settings,
-        # IMPORTANT: setting_sources must include "project" to load filesystem settings:
-        # - Slash commands from .claude/commands/
-        # - CLAUDE.md project instructions
-        # - Subagent definitions from .claude/agents/
-        # - Hooks from .claude/settings.local.json
-        # Without this, the SDK operates in isolation mode with no filesystem settings loaded.
+        # 중요: Filesystem 설정을 load하려면 setting_sources에 "project"가 있어야 합니다:
+        # - .claude/commands/의 slash command
+        # - CLAUDE.md 프로젝트 지침
+        # - .claude/agents/의 subagent 정의
+        # - .claude/settings.local.json의 hook
+        # 이것이 없으면 SDK는 filesystem 설정을 load하지 않는 isolation mode로 작동합니다.
         setting_sources=["project", "local"],
     )
 
     result = None
-    messages = []  # this is to append the messages ONLY for this agent turn
+    messages = []  # 이 agent turn의 message만 append하기 위한 설정
 
     try:
         async with ClaudeSDKClient(options=options) as agent:

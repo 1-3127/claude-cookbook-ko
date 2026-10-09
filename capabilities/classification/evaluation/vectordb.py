@@ -17,11 +17,11 @@ class VectorDB:
         self.db_path = "../data/vector_db.pkl"
 
     def load_data(self, data):
-        # Check if the vector database is already loaded
+        # vector database가 이미 불러와졌는지 확인
         if self.embeddings and self.metadata:
             print("Vector database is already loaded. Skipping data loading.")
             return
-        # Check if vector_db.pkl exists
+        # vector_db.pkl이 있는지 확인
         if os.path.exists(self.db_path):
             print("Loading vector database from disk.")
             self.load_db()
@@ -29,17 +29,17 @@ class VectorDB:
 
         texts = [item["text"] for item in data]
 
-        # Embed more than 128 documents with a for loop
+        # for loop로 128개보다 많은 문서의 embedding 생성
         batch_size = 128
         result = [
             self.client.embed(texts[i : i + batch_size], model="voyage-2").embeddings
             for i in range(0, len(texts), batch_size)
         ]
 
-        # Flatten the embeddings
+        # embeddings 평탄화
         self.embeddings = [embedding for batch in result for embedding in batch]
         self.metadata = [item for item in data]
-        # Save the vector database to disk
+        # vector database를 disk에 저장
         print("Vector database loaded and saved.")
 
     def search(self, query, k=5, similarity_threshold=0.85):

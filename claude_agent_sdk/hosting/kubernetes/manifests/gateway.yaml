@@ -1,20 +1,20 @@
-# Gateway: The central API server that manages agent pod lifecycles.
+# Gateway: Agent pod lifecycle을 관리하는 중앙 API server.
 #
-# RBAC (Role-Based Access Control) explained:
-#   The gateway needs Kubernetes API permissions to create and delete agent pods
-#   on demand. This is set up with three resources:
+# RBAC(Role-Based Access Control) 설명:
+#     Gateway는 agent pod를 on-demand로 생성하고 삭제하기 위해 Kubernetes API
+#     permission이 필요합니다. 세 resource로 구성합니다:
 #
-#   1. ServiceAccount (gateway-sa) — an identity the gateway pod runs as.
-#   2. Role (gateway-pod-manager) — defines what actions are allowed: create,
-#      get, list, patch, and delete on pods — exactly the calls k8s.py makes,
-#      nothing more. The Role is scoped to the 'claude-agent' namespace only.
-#   3. RoleBinding — attaches the Role to gateway-sa, so the gateway deployment
-#      (which uses serviceAccountName: gateway-sa) inherits those permissions.
+#     1. ServiceAccount(gateway-sa) — Gateway pod가 실행되는 identity.
+#     2. Role(gateway-pod-manager) — 허용할 action 정의: pod에 create,
+#           get, list, patch, delete. 정확히 k8s.py의 호출만 허용하며
+#           그 이상은 없습니다. Role은 'claude-agent' namespace로만 제한됩니다.
+#     3. RoleBinding — Role을 gateway-sa에 연결하여 serviceAccountName:
+#           gateway-sa를 사용하는 gateway deployment가 permission을 상속하게 함.
 #
-#   A separate ServiceAccount (agent-sa) is provided for agent pods. It has no
-#   extra Role — agent pods don't need Kubernetes API access. The Workload
-#   Identity annotation allows it to authenticate to cloud provider APIs if
-#   needed.
+#     별도 ServiceAccount(agent-sa)를 agent pod에 제공합니다. 추가 Role이
+#     없으며 agent pod에는 Kubernetes API 접근이 필요하지 않습니다. Workload
+#     Identity annotation은 필요할 때 cloud provider API에
+#     인증하도록 허용합니다.
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -68,7 +68,7 @@ spec:
                 app: gateway
         spec:
             serviceAccountName: gateway-sa
-            # uvicorn doesn't fast-exit on SIGTERM; 5s is enough to drain.
+            # Uvicorn은 SIGTERM에서 빠르게 종료하지 않으며 drain에는 5초면 충분합니다.
             terminationGracePeriodSeconds: 5
             containers:
                 - name: gateway
@@ -93,10 +93,10 @@ spec:
                                 key: STANDBY_POOL_SIZE
                       - name: IDLE_TIMEOUT_S
                         value: "900"
-                      # token→tenant map ("tokenA:alice,tokenB:bob"). Sessions are
-                      # scoped to the tenant that created them. Optional so the
-                      # manifest applies before the secret exists, but don't run
-                      # without it anywhere other callers can reach.
+                      # Token→tenant map("tokenA:alice,tokenB:bob"). Session은
+                      # 생성한 tenant 범위로 제한됩니다. Secret 생성 전에도 manifest를
+                      # 적용할 수 있도록 선택적이지만, 다른 호출자가 접근할 수 있는 곳에서는
+                      # 이 설정 없이 실행하지 마세요.
                       - name: GATEWAY_TENANTS
                         valueFrom:
                             secretKeyRef:

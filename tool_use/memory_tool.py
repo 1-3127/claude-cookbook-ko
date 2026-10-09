@@ -1,8 +1,8 @@
 """
-Production-ready memory tool handler for Claude's memory_20250818 tool.
+Claude의 memory_20250818 tool을 위한 production용 memory tool handler.
 
-This implementation provides secure, client-side execution of memory operations
-with path validation, error handling, and comprehensive security measures.
+이 구현은 경로 검증, 오류 처리, 포괄적인 보안 조치로
+memory 작업의 안전한 client-side 실행을 제공합니다.
 """
 
 import shutil
@@ -12,23 +12,23 @@ from typing import Any
 
 class MemoryToolHandler:
     """
-    Handles execution of Claude's memory tool commands.
+    Claude memory tool 명령 실행을 처리합니다.
 
-    The memory tool enables Claude to read, write, and manage files in a memory
-    system through a standardized tool interface. This handler provides client-side
-    implementation with security controls.
+    Memory tool은 표준화된 tool interface를 통해 Claude가 memory
+    시스템의 파일을 읽고 쓰고 관리하게 합니다. 이 handler는 보안 제어가
+    포함된 client-side 구현을 제공합니다.
 
     Attributes:
-        base_path: Root directory for memory storage
-        memory_root: The /memories directory within base_path
+        base_path: Memory 저장소의 root 디렉터리
+        memory_root: base_path 내 /memories 디렉터리
     """
 
     def __init__(self, base_path: str = "./memory_storage"):
         """
-        Initialize the memory tool handler.
+        Memory tool handler를 초기화합니다.
 
         Args:
-            base_path: Root directory for all memory operations
+            base_path: 모든 memory 작업의 root 디렉터리
         """
         self.base_path = Path(base_path).resolve()
         self.memory_root = self.base_path / "memories"
@@ -36,16 +36,16 @@ class MemoryToolHandler:
 
     def _validate_path(self, path: str) -> Path:
         """
-        Validate and resolve memory paths to prevent directory traversal attacks.
+        Directory traversal 공격을 방지하기 위해 memory 경로를 검증하고 해석합니다.
 
         Args:
-            path: The path to validate (must start with /memories)
+            path: 검증할 경로(/memories로 시작해야 함)
 
         Returns:
-            Resolved absolute Path object within memory_root
+            memory_root 내에서 해석된 절대 Path 객체
 
         Raises:
-            ValueError: If path is invalid or attempts to escape memory directory
+            ValueError: 경로가 잘못되었거나 memory 디렉터리를 벗어나려는 경우
         """
         if not path.startswith("/memories"):
             raise ValueError(
@@ -53,16 +53,16 @@ class MemoryToolHandler:
                 "All memory operations must be confined to the /memories directory."
             )
 
-        # Remove /memories prefix and any leading slashes
+        # /memories prefix와 앞쪽 slash 제거
         relative_path = path[len("/memories") :].lstrip("/")
 
-        # Resolve to absolute path within memory_root
+        # memory_root 내 절대 경로로 해석
         if relative_path:
             full_path = (self.memory_root / relative_path).resolve()
         else:
             full_path = self.memory_root.resolve()
 
-        # Verify the resolved path is still within memory_root
+        # 해석된 경로가 여전히 memory_root 내인지 확인
         try:
             full_path.relative_to(self.memory_root.resolve())
         except ValueError as e:
@@ -75,21 +75,21 @@ class MemoryToolHandler:
 
     def execute(self, **params: Any) -> dict[str, str]:
         """
-        Execute a memory tool command.
+        Memory tool 명령을 실행합니다.
 
         Args:
-            **params: Command parameters from Claude's tool use
+            **params: Claude의 tool use에서 받은 명령 parameter
 
         Returns:
-            Dict with either 'success' or 'error' key
+            'success' 또는 'error' key가 있는 Dict
 
-        Supported commands:
-            - view: Show directory contents or file contents
-            - create: Create or overwrite a file
-            - str_replace: Replace text in a file
-            - insert: Insert text at a specific line
-            - delete: Delete a file or directory
-            - rename: Rename or move a file/directory
+        지원 명령:
+            - view: 디렉터리 내용 또는 파일 내용 표시
+            - create: 파일 생성 또는 덮어쓰기
+            - str_replace: 파일의 텍스트 교체
+            - insert: 특정 줄에 텍스트 삽입
+            - delete: 파일 또는 디렉터리 삭제
+            - rename: 파일/디렉터리 이름 변경 또는 이동
         """
         command = params.get("command")
 
@@ -117,7 +117,7 @@ class MemoryToolHandler:
             return {"error": f"Unexpected error executing {command}: {e}"}
 
     def _view(self, params: dict[str, Any]) -> dict[str, str]:
-        """View directory contents or file contents."""
+        """디렉터리 내용 또는 파일 내용을 봅니다."""
         path = params.get("path")
         view_range = params.get("view_range")
 
@@ -126,7 +126,7 @@ class MemoryToolHandler:
 
         full_path = self._validate_path(path)
 
-        # Handle directory listing
+        # 디렉터리 목록 처리
         if full_path.is_dir():
             try:
                 items = []
@@ -144,22 +144,22 @@ class MemoryToolHandler:
             except Exception as e:
                 return {"error": f"Cannot read directory {path}: {e}"}
 
-        # Handle file reading
+        # 파일 읽기 처리
         elif full_path.is_file():
             try:
                 content = full_path.read_text(encoding="utf-8")
                 lines = content.splitlines()
 
-                # Apply view range if specified
+                # 지정된 경우 view 범위 적용
                 if view_range:
-                    start_line = max(1, view_range[0]) - 1  # Convert to 0-indexed
+                    start_line = max(1, view_range[0]) - 1  # 0부터 시작하는 index로 변환
                     end_line = len(lines) if view_range[1] == -1 else view_range[1]
                     lines = lines[start_line:end_line]
                     start_num = start_line + 1
                 else:
                     start_num = 1
 
-                # Format with line numbers
+                # 줄 번호를 포함하여 형식 지정
                 numbered_lines = [f"{i + start_num:4d}: {line}" for i, line in enumerate(lines)]
                 return {"success": "\n".join(numbered_lines)}
 
@@ -172,7 +172,7 @@ class MemoryToolHandler:
             return {"error": f"Path not found: {path}"}
 
     def _create(self, params: dict[str, Any]) -> dict[str, str]:
-        """Create or overwrite a file."""
+        """파일을 생성하거나 덮어씁니다."""
         path = params.get("path")
         file_text = params.get("file_text", "")
 
@@ -181,7 +181,7 @@ class MemoryToolHandler:
 
         full_path = self._validate_path(path)
 
-        # Don't allow creating directories directly
+        # 디렉터리를 직접 생성하지 못하게 함
         if not path.endswith((".txt", ".md", ".json", ".py", ".yaml", ".yml")):
             return {
                 "error": f"Cannot create {path}: Only text files are supported. "
@@ -189,10 +189,10 @@ class MemoryToolHandler:
             }
 
         try:
-            # Create parent directories if needed
+            # 필요하면 상위 디렉터리 생성
             full_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # Write the file
+            # 파일 쓰기
             full_path.write_text(file_text, encoding="utf-8")
             return {"success": f"File created successfully at {path}"}
 
@@ -200,7 +200,7 @@ class MemoryToolHandler:
             return {"error": f"Cannot create file {path}: {e}"}
 
     def _str_replace(self, params: dict[str, Any]) -> dict[str, str]:
-        """Replace text in a file."""
+        """파일의 텍스트를 교체합니다."""
         path = params.get("path")
         old_str = params.get("old_str")
         new_str = params.get("new_str", "")
@@ -216,7 +216,7 @@ class MemoryToolHandler:
         try:
             content = full_path.read_text(encoding="utf-8")
 
-            # Check if old_str exists
+            # old_str 존재 여부 확인
             count = content.count(old_str)
             if count == 0:
                 return {
@@ -228,7 +228,7 @@ class MemoryToolHandler:
                     "The string must be unique. Use more specific context."
                 }
 
-            # Perform replacement
+            # 교체 수행
             new_content = content.replace(old_str, new_str, 1)
             full_path.write_text(new_content, encoding="utf-8")
 
@@ -238,7 +238,7 @@ class MemoryToolHandler:
             return {"error": f"Cannot edit file {path}: {e}"}
 
     def _insert(self, params: dict[str, Any]) -> dict[str, str]:
-        """Insert text at a specific line."""
+        """특정 줄에 텍스트를 삽입합니다."""
         path = params.get("path")
         insert_line = params.get("insert_line")
         insert_text = params.get("insert_text", "")
@@ -254,17 +254,17 @@ class MemoryToolHandler:
         try:
             lines = full_path.read_text(encoding="utf-8").splitlines()
 
-            # Validate insert_line
+            # insert_line 검증
             if insert_line < 0 or insert_line > len(lines):
                 return {
                     "error": f"Invalid insert_line {insert_line}. "
                     f"Must be between 0 and {len(lines)}"
                 }
 
-            # Insert the text
+            # 텍스트 삽입
             lines.insert(insert_line, insert_text.rstrip("\n"))
 
-            # Write back
+            # 다시 쓰기
             full_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
             return {"success": f"Text inserted at line {insert_line} in {path}"}
@@ -273,20 +273,20 @@ class MemoryToolHandler:
             return {"error": f"Cannot insert into {path}: {e}"}
 
     def _delete(self, params: dict[str, Any]) -> dict[str, str]:
-        """Delete a file or directory."""
+        """파일 또는 디렉터리를 삭제합니다."""
         path = params.get("path")
 
         if not path:
             return {"error": "Missing required parameter: path"}
 
-        # Prevent deletion of root memories directory
+        # Root memories 디렉터리 삭제 방지
         if path == "/memories":
             return {"error": "Cannot delete the /memories directory itself"}
 
         full_path = self._validate_path(path)
 
-        # Verify the path is within /memories to prevent accidental deletion outside the memory directory
-        # This provides an additional safety check beyond _validate_path
+        # Memory 디렉터리 밖의 우발적 삭제를 방지하기 위해 경로가 /memories 내인지 확인
+        # _validate_path 외에 추가 안전 확인을 제공합니다
         try:
             full_path.relative_to(self.memory_root.resolve())
         except ValueError:
@@ -310,7 +310,7 @@ class MemoryToolHandler:
             return {"error": f"Cannot delete {path}: {e}"}
 
     def _rename(self, params: dict[str, Any]) -> dict[str, str]:
-        """Rename or move a file/directory."""
+        """파일/디렉터리 이름을 변경하거나 이동합니다."""
         old_path = params.get("old_path")
         new_path = params.get("new_path")
 
@@ -330,10 +330,10 @@ class MemoryToolHandler:
             }
 
         try:
-            # Create parent directories if needed
+            # 필요하면 상위 디렉터리 생성
             new_full_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # Perform rename/move
+            # 이름 변경/이동 수행
             old_full_path.rename(new_full_path)
 
             return {"success": f"Renamed {old_path} to {new_path}"}
@@ -343,15 +343,15 @@ class MemoryToolHandler:
 
     def clear_all_memory(self) -> dict[str, str]:
         """
-        Clear all memory files (useful for testing or starting fresh).
+        모든 memory 파일을 지웁니다(테스트나 새로 시작할 때 유용).
 
-        ⚠️ WARNING: This method is for demonstration and testing purposes only.
-        In production, you should carefully consider whether you need to delete
-        all memory files, as this will permanently remove all learned patterns
-        and stored knowledge. Consider using selective deletion instead.
+        ⚠️ 경고: 이 method는 시연과 테스트 목적으로만 사용합니다.
+        Production에서는 모든 memory 파일을 삭제해야 하는지 신중히
+        고려해야 합니다. 학습한 모든 패턴과 저장된 지식을 영구적으로
+        제거하기 때문입니다. 대신 선택적 삭제를 고려하세요.
 
         Returns:
-            Dict with success message
+            성공 message가 있는 Dict
         """
         try:
             if self.memory_root.exists():

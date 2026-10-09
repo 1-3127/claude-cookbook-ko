@@ -1,4 +1,4 @@
-"""Core utilities for notebook testing and validation."""
+"""Notebook 테스트와 검증을 위한 핵심 유틸리티입니다."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from typing import Any
 
 @dataclass
 class CellInfo:
-    """Information about a notebook cell."""
+    """Notebook 셀에 관한 정보입니다."""
 
     index: int
     cell_type: str
@@ -27,7 +27,7 @@ class CellInfo:
 
 @dataclass
 class NotebookValidationResult:
-    """Result of validating a notebook."""
+    """Notebook 검증 결과입니다."""
 
     path: Path
     is_valid: bool = True
@@ -48,13 +48,13 @@ class NotebookValidationResult:
 
 
 def load_notebook(path: Path) -> dict[str, Any]:
-    """Load a notebook from disk."""
+    """디스크에서 Notebook을 불러옵니다."""
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
 def parse_notebook_cells(notebook: dict[str, Any]) -> list[CellInfo]:
-    """Parse cells from a notebook structure."""
+    """Notebook 구조에서 셀을 파싱합니다."""
     cells = []
     for i, cell in enumerate(notebook.get("cells", [])):
         source = "".join(cell.get("source", []))
@@ -78,20 +78,20 @@ def parse_notebook_cells(notebook: dict[str, Any]) -> list[CellInfo]:
 
 def validate_cell_execution_order(cells: list[CellInfo]) -> list[str]:
     """
-    Validate that code cells were executed in order.
+    코드 셀이 순서대로 실행되었는지 검증합니다.
 
-    Returns a list of issues found.
+    발견된 문제 목록을 반환합니다.
     """
     issues = []
     code_cells = [c for c in cells if c.cell_type == "code"]
 
-    # Get execution counts (excluding None)
+    # Execution count 가져오기(None 제외)
     exec_counts = [c.execution_count for c in code_cells if c.execution_count is not None]
 
     if not exec_counts:
         return issues
 
-    # Check for out-of-order execution
+    # 순서가 어긋난 실행 확인
     for i in range(1, len(exec_counts)):
         if exec_counts[i] < exec_counts[i - 1]:
             issues.append(
@@ -99,7 +99,7 @@ def validate_cell_execution_order(cells: list[CellInfo]) -> list[str]:
                 f"appears after cell with exec_count {exec_counts[i - 1]}"
             )
 
-    # Check for gaps in execution counts (cells re-run)
+    # Execution count의 공백 확인(셀 재실행)
     expected = exec_counts[0]
     for _i, count in enumerate(exec_counts):
         if count != expected:
@@ -114,9 +114,9 @@ def validate_cell_execution_order(cells: list[CellInfo]) -> list[str]:
 
 def validate_all_cells_executed(cells: list[CellInfo]) -> list[str]:
     """
-    Validate that all code cells have been executed.
+    모든 코드 셀이 실행되었는지 검증합니다.
 
-    Returns a list of issues found.
+    발견된 문제 목록을 반환합니다.
     """
     issues = []
     for cell in cells:
@@ -129,14 +129,14 @@ def validate_all_cells_executed(cells: list[CellInfo]) -> list[str]:
 
 def validate_no_error_outputs(cells: list[CellInfo]) -> list[str]:
     """
-    Validate that no cells have error outputs.
+    오류 출력이 있는 셀이 없는지 검증합니다.
 
-    Returns a list of issues found.
+    발견된 문제 목록을 반환합니다.
     """
     issues = []
     for cell in cells:
         if cell.has_error_output:
-            # Extract error info
+            # 오류 정보 추출
             for output in cell.outputs:
                 if output.get("output_type") == "error":
                     ename = output.get("ename", "Unknown")
@@ -149,9 +149,9 @@ def validate_no_error_outputs(cells: list[CellInfo]) -> list[str]:
 
 def validate_no_empty_cells(cells: list[CellInfo]) -> list[str]:
     """
-    Validate that there are no empty cells.
+    빈 셀이 없는지 검증합니다.
 
-    Returns a list of warnings (empty cells are often intentional).
+    경고 목록을 반환합니다(빈 셀은 의도적인 경우가 많습니다).
     """
     warnings = []
     for cell in cells:
@@ -161,18 +161,18 @@ def validate_no_empty_cells(cells: list[CellInfo]) -> list[str]:
     return warnings
 
 
-# Patterns for detecting hardcoded API keys
+# Hardcoded API key 감지용 pattern
 API_KEY_PATTERNS = [
-    r"sk-ant-[a-zA-Z0-9\-_]+",  # Anthropic API keys
-    r"['\"]ANTHROPIC_API_KEY['\"]\s*[=:]\s*['\"][^'\"]+['\"]",  # Hardcoded assignment
+    r"sk-ant-[a-zA-Z0-9\-_]+",  # Anthropic API key
+    r"['\"]ANTHROPIC_API_KEY['\"]\s*[=:]\s*['\"][^'\"]+['\"]",  # Hardcoded 할당
 ]
 
 
 def validate_no_hardcoded_secrets(cells: list[CellInfo]) -> list[str]:
     """
-    Validate that no cells contain hardcoded API keys or secrets.
+    Hardcoded API key 또는 secret이 포함된 셀이 없는지 검증합니다.
 
-    Returns a list of issues found.
+    발견된 문제 목록을 반환합니다.
     """
     issues = []
     for cell in cells:
@@ -192,9 +192,9 @@ def validate_no_hardcoded_secrets(cells: list[CellInfo]) -> list[str]:
 
 def validate_uses_env_for_api_key(cells: list[CellInfo]) -> list[str]:
     """
-    Validate that API keys are loaded from environment variables.
+    API key를 환경 변수에서 불러오는지 검증합니다.
 
-    Returns a list of warnings if API key usage doesn't follow best practices.
+    API key 사용이 모범 사례를 따르지 않으면 경고 목록을 반환합니다.
     """
     warnings = []
     has_anthropic_import = False
@@ -215,18 +215,18 @@ def validate_uses_env_for_api_key(cells: list[CellInfo]) -> list[str]:
             uses_env_get = True
 
     if has_anthropic_import and not uses_env_get:
-        # Check if it's using default client (which reads from env automatically)
-        # Anthropic() without api_key arg is fine
-        pass  # This is acceptable, Anthropic client reads from env by default
+        # 기본 client를 사용하는지 확인(환경 변수에서 자동으로 읽음)
+        # api_key 인수 없는 Anthropic()은 괜찮음
+        pass  # 허용됨, Anthropic client는 기본적으로 환경 변수에서 읽음
 
     return warnings
 
 
 def extract_pip_dependencies(cells: list[CellInfo]) -> list[str]:
     """
-    Extract pip dependencies from notebook cells.
+    Notebook 셀에서 pip dependency를 추출합니다.
 
-    Looks for %pip install and !pip install commands.
+    %pip install과 !pip install 명령을 찾습니다.
     """
     dependencies = []
     pip_pattern = r"[%!]pip\s+install\s+([^\n]+)"
@@ -237,12 +237,12 @@ def extract_pip_dependencies(cells: list[CellInfo]) -> list[str]:
 
         matches = re.findall(pip_pattern, cell.source)
         for match in matches:
-            # Parse package names from the install command
-            # Remove flags like -q, --quiet, etc.
+            # 설치 명령에서 package 이름 파싱
+            # -q, --quiet 등의 flag 제거
             parts = match.split()
             for part in parts:
                 if not part.startswith("-") and part not in ["install"]:
-                    # Handle package[extra] and package==version formats
+                    # package[extra]와 package==version 형식 처리
                     pkg_name = re.split(r"[=<>!\[]", part)[0]
                     if pkg_name and not pkg_name.startswith("-"):
                         dependencies.append(pkg_name)
@@ -252,9 +252,9 @@ def extract_pip_dependencies(cells: list[CellInfo]) -> list[str]:
 
 def validate_notebook_structure(path: Path) -> NotebookValidationResult:
     """
-    Run all structural validations on a notebook.
+    Notebook에 모든 구조 검증을 실행합니다.
 
-    This validates the notebook without executing it.
+    Notebook을 실행하지 않고 검증합니다.
     """
     result = NotebookValidationResult(path=path)
 
@@ -267,10 +267,10 @@ def validate_notebook_structure(path: Path) -> NotebookValidationResult:
         result.add_error(f"File not found: {path}")
         return result
 
-    # Parse cells
+    # 셀 파싱
     result.cells = parse_notebook_cells(notebook)
 
-    # Run validations
+    # 검증 실행
     for issue in validate_cell_execution_order(result.cells):
         result.add_error(issue)
 
@@ -299,18 +299,18 @@ def execute_notebook(
     allow_errors: bool = False,
 ) -> tuple[bool, str, Path | None]:
     """
-    Execute a notebook in an isolated environment.
+    격리된 환경에서 Notebook을 실행합니다.
 
     Args:
-        path: Path to the notebook
-        timeout: Maximum execution time in seconds
-        kernel_name: Jupyter kernel to use (default: python3)
-        allow_errors: If True, continue execution even if cells error
+        path: Notebook 경로
+        timeout: 최대 실행 시간(초)
+        kernel_name: 사용할 Jupyter kernel(기본값: python3)
+        allow_errors: True이면 셀에서 오류가 발생해도 실행 계속
 
     Returns:
-        Tuple of (success, output_message, output_path)
+        (success, output_message, output_path) tuple
     """
-    # Create temp file for output
+    # 출력용 임시 파일 생성
     with tempfile.NamedTemporaryFile(suffix=".ipynb", delete=False) as tmp:
         output_path = Path(tmp.name)
 
@@ -340,7 +340,7 @@ def execute_notebook(
             cmd,
             capture_output=True,
             text=True,
-            timeout=timeout + 30,  # Extra buffer for startup
+            timeout=timeout + 30,  # 시작을 위한 추가 여유
         )
 
         if result.returncode == 0:
@@ -355,7 +355,7 @@ def execute_notebook(
 
 
 def get_notebook_kernel_info(notebook: dict[str, Any]) -> dict[str, Any]:
-    """Extract kernel information from notebook metadata."""
+    """Notebook metadata에서 kernel 정보를 추출합니다."""
     metadata = notebook.get("metadata", {})
     kernelspec = metadata.get("kernelspec", {})
     language_info = metadata.get("language_info", {})
@@ -370,24 +370,24 @@ def get_notebook_kernel_info(notebook: dict[str, Any]) -> dict[str, Any]:
 
 def find_all_notebooks(root_dir: Path, exclude_patterns: list[str] | None = None) -> list[Path]:
     """
-    Find all notebooks in a directory.
+    디렉터리의 모든 Notebook을 찾습니다.
 
     Args:
-        root_dir: Root directory to search
-        exclude_patterns: List of glob patterns to exclude
+        root_dir: 검색할 루트 디렉터리
+        exclude_patterns: 제외할 glob pattern 목록
 
     Returns:
-        List of notebook paths
+        Notebook 경로 목록
     """
     exclude_patterns = exclude_patterns or []
     notebooks = []
 
     for nb_path in root_dir.rglob("*.ipynb"):
-        # Skip checkpoint files
+        # Checkpoint 파일 건너뛰기
         if ".ipynb_checkpoints" in str(nb_path):
             continue
 
-        # Check exclude patterns
+        # 제외 pattern 확인
         excluded = False
         for pattern in exclude_patterns:
             if nb_path.match(pattern):

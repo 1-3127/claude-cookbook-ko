@@ -1,6 +1,6 @@
 """
-Customer Service Tools for Claude
-Implements tool functions for processing support tickets
+Claude용 고객 서비스 Tool
+지원 ticket 처리용 tool 함수 구현
 """
 
 import json
@@ -18,14 +18,14 @@ from .customer_service_api import (
     TicketStatus,
 )
 
-# Global state for demo purposes - in production this would be a database
+# Demo용 전역 상태 — production에서는 database 사용
 _ticket_queue: list[Ticket] = []
 _current_tickets: dict[str, Ticket] = {}
 _queue_index = 0
 
 
 def initialize_ticket_queue(count: int = 25):
-    """Initialize the ticket queue with generated tickets"""
+    """생성한 ticket으로 ticket queue를 초기화합니다."""
     global _ticket_queue, _queue_index, _current_tickets
     _ticket_queue = TicketGenerator.generate_batch(count)
     _queue_index = 0
@@ -33,12 +33,12 @@ def initialize_ticket_queue(count: int = 25):
 
 
 def _get_ticket(ticket_id: str) -> Ticket | None:
-    """Helper to retrieve a ticket by ID"""
+    """ID로 ticket을 가져오는 helper"""
     return _current_tickets.get(ticket_id)
 
 
 def _serialize_ticket(ticket: Ticket) -> str:
-    """Convert ticket to JSON string"""
+    """Ticket을 JSON string으로 변환합니다."""
     return json.dumps(
         {
             "id": ticket.id,
@@ -60,8 +60,8 @@ def _serialize_ticket(ticket: Ticket) -> str:
 @beta_tool
 def get_next_ticket() -> str:
     """
-    Get the next unprocessed ticket from the queue.
-    Returns ticket details as JSON string.
+    Queue에서 다음 미처리 ticket을 가져옵니다.
+    Ticket 세부 사항을 JSON string으로 반환합니다.
     """
     global _queue_index
 
@@ -86,14 +86,14 @@ def classify_ticket(
     ticket_id: str, category: Literal["billing", "technical", "account", "product", "shipping"]
 ) -> str:
     """
-    Classify a ticket into a category.
+    Ticket을 category로 분류합니다.
 
     Args:
-        ticket_id: The ticket ID
-        category: The category to assign
+        ticket_id: Ticket ID
+        category: 지정할 category
 
     Returns:
-        Confirmation message
+        확인 message
     """
     ticket = _get_ticket(ticket_id)
     if not ticket:
@@ -113,14 +113,14 @@ def classify_ticket(
 @beta_tool
 def search_knowledge_base(category: str, query: str) -> str:
     """
-    Search the knowledge base for relevant information.
+    Knowledge base에서 관련 정보를 검색합니다.
 
     Args:
-        category: The category to search (billing, technical, account)
-        query: Keywords to search for
+        category: 검색할 category (billing, technical, account)
+        query: 검색할 keyword
 
     Returns:
-        Relevant knowledge base articles as JSON
+        관련 knowledge base 문서의 JSON
     """
     category_lower = category.lower()
 
@@ -134,20 +134,20 @@ def search_knowledge_base(category: str, query: str) -> str:
 
     category_kb = KNOWLEDGE_BASE[category_lower]
 
-    # Simple keyword search
+    # 간단한 keyword 검색
     query_lower = query.lower()
     results = {}
 
     for key, value in category_kb.items():
         if isinstance(value, dict):
-            # Search nested dictionaries
+            # 중첩 dictionary 검색
             for sub_key, sub_value in value.items():
                 if query_lower in sub_key.lower() or query_lower in str(sub_value).lower():
                     if key not in results:
                         results[key] = {}
                     results[key][sub_key] = sub_value
         else:
-            # Search flat key-value pairs
+            # 평면 key-value 쌍 검색
             if query_lower in key.lower() or query_lower in value.lower():
                 results[key] = value
 
@@ -165,14 +165,14 @@ def search_knowledge_base(category: str, query: str) -> str:
 @beta_tool
 def set_priority(ticket_id: str, priority: Literal["low", "medium", "high", "urgent"]) -> str:
     """
-    Set the priority level for a ticket.
+    Ticket의 priority level을 설정합니다.
 
     Args:
-        ticket_id: The ticket ID
+        ticket_id: Ticket ID
         priority: Priority level
 
     Returns:
-        Confirmation message
+        확인 message
     """
     ticket = _get_ticket(ticket_id)
     if not ticket:
@@ -195,14 +195,14 @@ def set_priority(ticket_id: str, priority: Literal["low", "medium", "high", "urg
 @beta_tool
 def route_to_team(ticket_id: str, team: str) -> str:
     """
-    Route a ticket to the appropriate support team.
+    Ticket을 적절한 지원 팀으로 routing합니다.
 
     Args:
-        ticket_id: The ticket ID
-        team: Team name (billing-team, tech-support, account-services, product-success, logistics-team)
+        ticket_id: Ticket ID
+        team: 팀 이름 (billing-team, tech-support, account-services, product-success, logistics-team)
 
     Returns:
-        Confirmation message
+        확인 message
     """
     ticket = _get_ticket(ticket_id)
     if not ticket:
@@ -235,20 +235,20 @@ def route_to_team(ticket_id: str, team: str) -> str:
 @beta_tool
 def draft_response(ticket_id: str, response: str) -> str:
     """
-    Draft a response to the customer.
+    고객에게 보낼 응답 초안을 작성합니다.
 
     Args:
-        ticket_id: The ticket ID
-        response: The draft response text
+        ticket_id: Ticket ID
+        response: 응답 초안 텍스트
 
     Returns:
-        Confirmation that draft was saved
+        초안 저장 확인
     """
     ticket = _get_ticket(ticket_id)
     if not ticket:
         return json.dumps({"error": f"Ticket {ticket_id} not found"})
 
-    # Store draft in notes with special prefix
+    # 특수 prefix를 사용해 notes에 초안 저장
     draft_note = f"[DRAFT RESPONSE] {response}"
     ticket.notes.append(draft_note)
 
@@ -265,14 +265,14 @@ def draft_response(ticket_id: str, response: str) -> str:
 @beta_tool
 def add_note(ticket_id: str, note: str) -> str:
     """
-    Add an internal note to the ticket.
+    Ticket에 내부 메모를 추가합니다.
 
     Args:
-        ticket_id: The ticket ID
-        note: Internal note for team reference
+        ticket_id: Ticket ID
+        note: 팀 참고용 내부 메모
 
     Returns:
-        Confirmation message
+        확인 message
     """
     ticket = _get_ticket(ticket_id)
     if not ticket:
@@ -293,19 +293,19 @@ def add_note(ticket_id: str, note: str) -> str:
 @beta_tool
 def mark_complete(ticket_id: str) -> str:
     """
-    Mark ticket as processed and ready for team review.
+    Ticket을 처리 완료 및 팀 검토 준비 상태로 표시합니다.
 
     Args:
-        ticket_id: The ticket ID
+        ticket_id: Ticket ID
 
     Returns:
-        Confirmation and summary of ticket processing
+        Ticket 처리 확인 및 요약
     """
     ticket = _get_ticket(ticket_id)
     if not ticket:
         return json.dumps({"error": f"Ticket {ticket_id} not found"})
 
-    # Validate ticket is ready for completion
+    # Ticket을 완료할 준비가 되었는지 검증
     if not ticket.category:
         return json.dumps({"error": "Cannot complete ticket without category classification"})
 
@@ -335,9 +335,9 @@ def mark_complete(ticket_id: str) -> str:
     return json.dumps(summary, indent=2)
 
 
-# Helper function for demo/testing
+# Demo/테스트용 helper 함수
 def get_all_tools():
-    """Return all tool functions for registration with Anthropic API"""
+    """Anthropic API 등록용 tool 함수 전체를 반환합니다."""
     return [
         get_next_ticket,
         classify_ticket,

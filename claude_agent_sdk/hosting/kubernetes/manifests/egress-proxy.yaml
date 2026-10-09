@@ -1,12 +1,12 @@
-# Egress Proxy: A TLS-terminating nginx reverse proxy. Agent pods send their
-# Anthropic API requests here instead of directly to the internet. Combined with
-# the NetworkPolicy, this ensures agent pods can ONLY reach api.anthropic.com —
-# no other external endpoints. The proxy terminates TLS from the agent, then
-# re-encrypts the request to api.anthropic.com.
+# Egress Proxy: TLS를 종료하는 nginx reverse proxy. Agent pod는 internet으로
+# 직접 보내는 대신 여기에 Anthropic API 요청을 보냅니다. NetworkPolicy와
+# 함께 agent pod가 api.anthropic.com에만 접근하며 다른 외부 endpoint에는
+# 접근하지 못하게 보장합니다. Proxy는 agent의 TLS를 종료한 뒤 요청을
+# 다시 암호화하여 api.anthropic.com으로 보냅니다.
 #
-# The nginx configuration lives in egress-proxy/nginx.conf and is baked into
-# the egress-proxy image at build time (see egress-proxy/Dockerfile) — that
-# file is the single source of truth. Only the TLS cert/key are mounted here.
+# Nginx 구성은 egress-proxy/nginx.conf에 있으며 build 시 egress-proxy image에
+# 포함됩니다(egress-proxy/Dockerfile 참고). 그 파일이 단일 기준 출처입니다.
+# 여기서는 TLS certificate/key만 mount합니다.
 ---
 apiVersion: apps/v1
 kind: Deployment

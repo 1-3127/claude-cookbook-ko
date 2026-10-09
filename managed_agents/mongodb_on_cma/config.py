@@ -1,7 +1,7 @@
-"""Shared configuration for the MongoDB-on-CMA cookbook.
+"""MongoDB-on-CMA cookbook의 공유 설정.
 
-Tunables, index names, thresholds, and the server-version check used across the retrieval,
-tool, and AP2 modules. Kept import-light so every other module can depend on it freely.
+retrieval, tool, AP2 module에서 사용하는 조절값, index 이름, 한도, server version 확인입니다.
+다른 모든 module이 자유롭게 의존할 수 있도록 import를 가볍게 유지합니다.
 """
 
 from __future__ import annotations
@@ -15,10 +15,10 @@ VECTOR_INDEX_NAME = "transactions_vector_index"
 SEARCH_INDEX_NAME = "transactions_search_index"
 LEXICAL_PATHS = ["text", "sender.name", "recipient.name"]
 PROJECT_FIELDS = ["transaction_id", "text", "amount", "sender", "recipient", "decision"]
-# MONGO_URI is required: it is the host-side data path this cookbook owns.
-# Anthropic auth is intentionally NOT hard-required — the SDK resolves an API key, an auth
-# token, or a profile (e.g. `ant` CLI workload-identity federation), so we soft-check for any
-# of these signals rather than demanding ANTHROPIC_API_KEY specifically.
+# MONGO_URI는 필수입니다. 이 cookbook이 소유하는 host 측 data path입니다.
+# Anthropic 인증은 의도적으로 필수가 아닙니다. SDK가 API key, auth token 또는
+# profile(예: `ant` CLI workload-identity federation)을 결정하므로
+# ANTHROPIC_API_KEY만 요구하는 대신 해당 신호가 있는지 유연하게 확인합니다.
 REQUIRED_ENV = ("MONGO_URI",)
 ANTHROPIC_AUTH_ENV = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_PROFILE")
 

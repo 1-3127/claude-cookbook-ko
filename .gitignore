@@ -1,13 +1,13 @@
-# Byte-compiled / optimized / DLL files
+# Byte-compiled / 최적화 / DLL 파일
 tmp/
 __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
+# C extension
 *.so
 
-# Distribution / packaging
+# 배포 / packaging
 .Python
 build/
 develop-eggs/
@@ -29,16 +29,16 @@ share/python-wheels/
 MANIFEST
 
 # PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+#  일반적으로 이 파일은 Python 스크립트가 template에서 작성하며,
+#  날짜/기타 정보를 주입할 수 있도록 PyInstaller가 exe를 build하기 전에 작성됩니다.
 *.manifest
 *.spec
 
-# Installer logs
+# Installer log
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# Unit test / coverage 보고서
 htmlcov/
 .tox/
 .nox/
@@ -52,24 +52,24 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-# Translations
+# 번역
 *.mo
 *.pot
 
-# Django stuff:
+# Django 관련:
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
-# Flask stuff:
+# Flask 관련:
 instance/
 .webassets-cache
 
-# Scrapy stuff:
+# Scrapy 관련:
 .scrapy
 
-# Sphinx documentation
+# Sphinx 문서
 docs/_build/
 
 # PyBuilder
@@ -86,23 +86,23 @@ ipython_config.py
 .python-version
 
 # pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
+#   pypa/pipenv#598에 따르면 Pipfile.lock을 version control에 포함하는 것을 권장합니다.
+#   그러나 협업 시 platform별 dependency 또는 cross-platform 지원이 없는 dependency가 있으면
+#   pipenv가 작동하지 않는 dependency를 설치하거나 필요한 dependency를 모두
+#   설치하지 않을 수 있습니다.
 #Pipfile.lock
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+# PEP 582; 예: github.com/David-OConnor/pyflow에서 사용
 __pypackages__/
 
-# Celery stuff
+# Celery 관련
 celerybeat-schedule
 celerybeat.pid
 
-# SageMath parsed files
+# SageMath 파싱된 파일
 *.sage.py
 
-# Environments
+# 환경
 .env
 .venv
 env/
@@ -115,14 +115,14 @@ pyvenv.cfg
 share/
 bin/
 
-# Spyder project settings
+# Spyder 프로젝트 설정
 .spyderproject
 .spyproject
 
-# Rope project settings
+# Rope 프로젝트 설정
 .ropeproject
 
-# mkdocs documentation
+# mkdocs 문서
 /site
 
 # mypy
@@ -133,43 +133,43 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Data
+# 데이터
 *transactions*.jsonl
-# Cookbook example-data fixture is intentionally checked in (see example_data/OVERVIEW.md)
+# Cookbook example-data fixture는 의도적으로 버전 관리에 포함됨(example_data/OVERVIEW.md 참고)
 !managed_agents/example_data/mongodb_on_cma/seed_transactions.jsonl
 /examples/data/transactions*
 *.DS_Store
 tmp_*
 examples/fine-tuned_qa/local_cache/*
 
-# CI/CD and testing
+# CI/CD와 테스트
 .model_cache.json
 test_outputs/
 .ruff_cache/
 lychee-report.md
 .lycheecache
 
-# Skill validation temp directories
+# Skill 검증 임시 디렉터리
 .claude/skills/*/tmp/
 
-# Notebook validation
+# Notebook 검증
 .notebook_validation_state.json
 .notebook_validation_checkpoint.json  
 validation_report_*.md
-# Memory tool demo artifacts
+# Memory tool demo 산출물
 tool_use/demo_memory/
 tool_use/memory_storage/
 tool_use/.env
 
-# Cybersecurity notebook artifacts (regenerated each run)
+# Cybersecurity Notebook 산출물(매 실행 시 재생성)
 claude_agent_sdk/vulnerability_detection_agent/canary/THREAT_MODEL.md
 
-# content_moderation: generated eval artifacts
+# content_moderation: 생성된 eval 산출물
 capabilities/content_moderation/evaluation/compiled/
 capabilities/content_moderation/evaluation/results.json
 
-# scheduled_repository_reviewer: runtime sample repo. Anchored to the two
-# places it can appear: the recipe directory (the documented location) and
-# the repo root (a kernel started there).
+# scheduled_repository_reviewer: Runtime sample 리포지토리. 나타날 수 있는 두
+# 위치에 고정: recipe 디렉터리(문서화된 위치)와
+# 리포지토리 루트(그곳에서 시작된 kernel).
 /demo_repo/
 /claude_agent_sdk/scheduled_repository_reviewer/demo_repo/

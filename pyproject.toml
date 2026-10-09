@@ -38,12 +38,12 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["anthropic_cookbook"]  # Dummy package for build system
+packages = ["anthropic_cookbook"]  # Build system용 dummy package
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-extend-include = ["*.ipynb"]  # Ruff v0.6.0+ includes notebooks by default, but explicit is better
+extend-include = ["*.ipynb"]  # Ruff v0.6.0+는 기본적으로 Notebook을 포함하지만 명시하는 것이 더 나음
 
 [tool.ruff.format]
 quote-style = "double"
@@ -53,21 +53,21 @@ line-ending = "auto"
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP", "S", "B"]
 ignore = [
-    "E501",   # line too long
-    "S101",   # assert used (ok in tests)
-    "S301",   # pickle usage ok for local data in cookbooks
-    "S311",   # pseudo-random generators ok for non-crypto
-    "S608",   # SQL string construction ok for demo/educational code
-    "N806",   # variable in function should be lowercase (allow for API responses)
+    "E501",   # 줄이 너무 김
+    "S101",   # Assert 사용(테스트에서는 허용)
+    "S301",   # Cookbook의 로컬 데이터에 pickle 사용 허용
+    "S311",   # 암호화 외 용도로 pseudo-random generator 허용
+    "S608",   # 시연/교육용 코드에서 SQL 문자열 구성 허용
+    "N806",   # 함수 내 변수는 소문자여야 함(API 응답에는 허용)
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# Notebooks have different conventions than regular Python files
+# Notebook은 일반 Python 파일과 다른 관례를 따름
 "*.ipynb" = [
-    "E402",   # imports mid-file
-    "F811",   # redefinitions (common in notebooks)
-    "N803",   # argument name should be lowercase
-    "N806",   # variable in function should be lowercase
+    "E402",   # 파일 중간 import
+    "F811",   # 재정의(Notebook에서 흔함)
+    "N803",   # Argument 이름은 소문자여야 함
+    "N806",   # 함수 내 변수는 소문자여야 함
 ]
 
 [tool.pytest.ini_options]

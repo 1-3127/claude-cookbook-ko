@@ -1,176 +1,176 @@
 ---
 allowed-tools: Bash(gh issue view:*), Bash(gh issue list:*), Bash(gh issue comment:*), Bash(gh issue edit:*), Bash(gh issue close:*), Read, Glob, Grep, AskUserQuestion
-description: Review and respond to a GitHub issue
+description: GitHub issue 검토 및 응답
 ---
 
-## Arguments
+## 인수
 
-- `$ARGUMENTS`: The issue number to review
+- `$ARGUMENTS`: 검토할 issue 번호
 
-## Your task
+## 수행할 작업
 
-Review the specified GitHub issue and help draft an appropriate response based on our community guidelines.
+지정된 GitHub issue를 검토하고 커뮤니티 가이드라인에 따라 적절한 응답 초안 작성을 도우세요.
 
-### Step 1: Gather issue context
+### 1단계: Issue 맥락 수집
 
-Get the issue details including comments:
+Comment를 포함한 issue 세부 정보를 가져오세요.
 ```bash
 gh issue view $ARGUMENTS --repo anthropics/claude-cookbooks --json number,title,body,author,labels,state,comments,createdAt
 ```
 
-### Step 2: Classify the issue
+### 2단계: Issue 분류
 
-Determine the issue type based on content:
+내용을 바탕으로 issue 유형을 판단하세요.
 
-1. **Spam/Noise**: Gibberish, test posts, off-topic content, or malicious intent
-2. **Bug Report**: Reports broken code, links, or incorrect information in cookbooks
-3. **Cookbook Proposal**: Proposes new content or significant additions
-4. **Question**: Asks about usage, API behavior, or seeks clarification
-5. **Community Resource**: Shares external project or resource (redirect to Discord)
-6. **Duplicate**: Issue already exists or has been addressed
+1. **Spam/Noise**: 의미 없는 말, 테스트 게시물, 주제와 무관한 내용 또는 악의적인 의도
+2. **버그 보고**: Cookbook에서 작동하지 않는 코드, 깨진 링크 또는 잘못된 정보 보고
+3. **Cookbook 제안**: 새로운 콘텐츠 또는 상당한 추가 내용 제안
+4. **질문**: 사용법이나 API 동작에 관한 질문 또는 명확한 설명 요청
+5. **커뮤니티 자료**: 외부 프로젝트 또는 자료 공유(Discord로 안내)
+6. **중복**: 이미 존재하거나 처리된 issue
 
-### Step 3: Check for related context
+### 3단계: 관련 맥락 확인
 
-If the issue references specific files or notebooks:
-- Read the referenced files to understand context
-- Check if the issue is valid (e.g., broken link actually exists)
-- Look for related issues or PRs that may address it
+Issue에서 특정 파일이나 Notebook을 참조한다면:
+- 참조된 파일을 읽어 맥락 이해
+- Issue가 유효한지 확인(예: 깨진 링크가 실제로 존재하는지)
+- 이를 해결할 수 있는 관련 issue 또는 PR 검색
 
-### Step 4: Draft a response
+### 4단계: 응답 초안 작성
 
-Based on the issue type, draft an appropriate response following these guidelines:
+Issue 유형에 따라 다음 가이드라인을 준수하여 적절한 응답 초안을 작성하세요.
 
-#### For Spam/Noise:
-- Recommend closing without comment
-- Flag any security concerns
+#### Spam/Noise의 경우:
+- Comment 없이 닫기 권장
+- 보안 우려 사항 표시
 
-#### For Bug Reports:
-- Acknowledge the report and thank the reporter
-- Verify the issue if possible (check the referenced file/code)
-- If valid and simple: invite them to submit a PR with signed commits
-- If valid and complex: acknowledge and indicate it's on our radar
-- If already fixed: reference the fix (PR/commit)
-- Example: "Thanks for the report! Would you be open to submitting a PR to fix this? If so, please ensure you use [signed commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits)"
+#### 버그 보고의 경우:
+- 보고를 확인하고 보고자에게 감사 전달
+- 가능한 경우 문제 확인(참조된 파일/코드 검사)
+- 유효하고 간단하다면: Signed commit을 사용한 PR 제출 요청
+- 유효하고 복잡하다면: 문제를 확인하고 주시하고 있음을 안내
+- 이미 수정되었다면: 수정 내용(PR/commit) 참조
+- 예: "보고해 주셔서 감사합니다! 이를 수정하는 PR을 제출해 주실 수 있을까요? 제출하신다면 반드시 [signed commit](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits)을 사용해 주세요."
 
-#### For Cookbook Proposals:
-- Thank them for the proposal
-- Evaluate against our criteria:
-  - Does it focus on Claude API/SDK capabilities directly?
-  - Is it practical with clear educational value?
-  - Is it differentiated from existing content?
-- If promising: express interest, ask clarifying questions if needed
-- If not a fit: politely explain why, redirect to appropriate resources
-- Example redirect: "While [topic] is interesting, we focus on showcasing Claude's native API capabilities. We'd encourage you to think about what specific Claude features you want to demonstrate rather than translating patterns from external frameworks."
+#### Cookbook 제안의 경우:
+- 제안에 감사 전달
+- 다음 기준으로 평가:
+  - Claude API/SDK 기능에 직접 초점을 맞추고 있나요?
+  - 실용적이며 명확한 교육적 가치가 있나요?
+  - 기존 콘텐츠와 차별화되어 있나요?
+- 유망하다면: 관심을 표현하고 필요하면 명확히 하기 위한 질문
+- 적합하지 않다면: 이유를 정중히 설명하고 적절한 자료로 안내
+- 안내 예: "[topic]은 흥미롭지만, 저희는 Claude의 native API 기능을 보여주는 데 초점을 맞추고 있습니다. 외부 framework의 패턴을 옮기기보다는 어떤 구체적인 Claude 기능을 보여주고 싶은지 생각해 보시기를 권합니다."
 
-#### For Questions:
-- Provide helpful, direct answers when possible
-- Link to relevant documentation: https://docs.claude.com
-- Reference specific cookbook examples if applicable
-- Suggest Discord for ongoing discussion: https://anthropic.com/discord
-- If it's an API bug: direct them to report at the appropriate channel
+#### 질문의 경우:
+- 가능한 경우 유용하고 직접적인 답변 제공
+- 관련 문서 링크 제공: https://docs.claude.com
+- 해당하는 경우 구체적인 cookbook 예제 참조
+- 이어지는 논의를 위해 Discord 제안: https://anthropic.com/discord
+- API 버그라면: 적절한 채널에 보고하도록 안내
 
-#### For Community Resources:
-- Thank them for sharing but redirect to better venues
-- This repo is for cookbook issues, not community showcases
-- Close the issue after redirecting
-- Example: "Thanks for sharing your project! We don't track community resources as GitHub issues, but there are great places to share your work: the **#share-your-project** channel on our [Discord](https://anthropic.com/discord) or the [r/ClaudeAI](https://reddit.com/r/ClaudeAI) community on Reddit."
+#### 커뮤니티 자료의 경우:
+- 공유에 감사하고 더 적절한 장소로 안내
+- 이 리포지토리는 cookbook issue를 위한 곳이며 커뮤니티 작업 소개를 위한 곳이 아님
+- 안내 후 issue 닫기
+- 예: "프로젝트를 공유해 주셔서 감사합니다! 커뮤니티 자료를 GitHub issue로 추적하지는 않지만, 작업을 공유하기 좋은 곳이 있습니다. [Discord](https://anthropic.com/discord)의 **#share-your-project** 채널이나 Reddit의 [r/ClaudeAI](https://reddit.com/r/ClaudeAI) 커뮤니티를 이용해 주세요."
 
-#### For Duplicates:
-- Reference the original issue/PR
-- Close as duplicate if appropriate
+#### 중복의 경우:
+- 원래 issue/PR 참조
+- 적절하다면 중복으로 닫기
 
-### Step 5: Suggest labels
+### 5단계: Label 제안
 
-Recommend appropriate labels based on issue type:
-- `bug` - Bug reports
-- `enhancement` - Feature requests or proposals
-- `question` - Questions
-- `documentation` - Docs improvements
-- `duplicate` - Already exists
-- `wontfix` - Won't be addressed
-- `good first issue` - Simple fixes for new contributors
+Issue 유형에 따라 적절한 label을 권장하세요.
+- `bug` - 버그 보고
+- `enhancement` - 기능 요청 또는 제안
+- `question` - 질문
+- `documentation` - 문서 개선
+- `duplicate` - 이미 존재함
+- `wontfix` - 처리하지 않을 예정
+- `good first issue` - 새로운 기여자를 위한 간단한 수정
 
-### Step 6: Present the review
+### 6단계: 검토 결과 제시
 
-Present your findings to the user:
+사용자에게 발견 사항을 제시하세요.
 
-1. **Issue Summary**: Brief description of what the issue is about
-2. **Classification**: What type of issue this is
-3. **Validity Check**: Whether the issue is valid/actionable (if you checked)
-4. **Suggested Response**: Draft comment to post
-5. **Suggested Labels**: Labels to add
-6. **Suggested Action**: Whether to comment, close, or take other action
+1. **Issue 요약**: Issue 내용에 대한 간단한 설명
+2. **분류**: Issue 유형
+3. **유효성 확인**: Issue가 유효하며 실행 가능한지 여부(확인한 경우)
+4. **제안 응답**: 게시할 comment 초안
+5. **제안 label**: 추가할 label
+6. **제안 조치**: Comment, 닫기 또는 다른 조치 여부
 
-### Step 7: Get user approval
+### 7단계: 사용자 승인받기
 
-Use AskUserQuestion to ask:
-- Whether to post the drafted response
-- Whether to add the suggested labels
-- Whether to close the issue (if appropriate)
+AskUserQuestion을 사용하여 다음을 물어보세요.
+- 작성한 응답 초안 게시 여부
+- 제안한 label 추가 여부
+- Issue 닫기 여부(적절한 경우)
 
-### Step 8: Take action (if approved)
+### 8단계: 조치 수행(승인된 경우)
 
-Based on user approval:
+사용자 승인에 따라:
 
-**To post a comment:**
+**Comment 게시:**
 ```bash
 gh issue comment $ARGUMENTS --repo anthropics/claude-cookbooks --body "YOUR_RESPONSE"
 ```
 
-**To add labels:**
+**Label 추가:**
 ```bash
 gh issue edit $ARGUMENTS --repo anthropics/claude-cookbooks --add-label "label1,label2"
 ```
 
-**To close an issue:**
+**Issue 닫기:**
 ```bash
 gh issue close $ARGUMENTS --repo anthropics/claude-cookbooks --reason "not planned"
 ```
-Or with a comment:
+또는 comment와 함께:
 ```bash
 gh issue close $ARGUMENTS --repo anthropics/claude-cookbooks --comment "Closing because..."
 ```
 
-## Response Tone Guidelines
+## 응답 어조 가이드라인
 
-- Be professional, friendly, and concise
-- Thank contributors for their engagement
-- Be direct but not dismissive when declining proposals
-- Provide actionable next steps when possible
-- Link to resources rather than explaining everything inline
-- Don't over-explain or be overly apologetic
+- 전문적이고 친절하며 간결하게 작성
+- 기여자의 참여에 감사 전달
+- 제안을 거절할 때 직접적으로 말하되 무시하는 태도는 피하기
+- 가능한 경우 실행 가능한 다음 단계 제공
+- 모든 내용을 본문에서 설명하기보다 자료 링크 제공
+- 지나치게 설명하거나 과도하게 사과하지 않기
 
-## Example Responses
+## 응답 예시
 
-**Bug Report Response:**
+**버그 보고 응답:**
 ```
-Hi @username, thanks for the detailed report!
+안녕하세요 @username, 자세히 보고해 주셔서 감사합니다!
 
-I can confirm the link is broken. Would you be open to submitting a PR to fix this? If so, please ensure you use [signed commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
+링크가 깨진 것을 확인했습니다. 이를 수정하는 PR을 제출해 주실 수 있을까요? 제출하신다면 반드시 [signed commit](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits)을 사용해 주세요.
 
-If you'd prefer not to submit a PR, no worries - we'll get this fixed.
-```
-
-**Question Response:**
-```
-Hi @username!
-
-The `cache_control` parameter is needed because... [explanation]
-
-For more details, check out the [prompt caching documentation](https://docs.claude.com/en/docs/build-with-claude/prompt-caching).
-
-If you have follow-up questions, our [Discord](https://anthropic.com/discord) is a great place for discussion!
+PR을 제출하지 않으셔도 괜찮습니다. 저희가 수정하겠습니다.
 ```
 
-**Proposal Decline Response:**
+**질문 응답:**
 ```
-Hi @username, thanks for the detailed proposal!
+안녕하세요 @username!
 
-While the concept is interesting, we focus our cookbooks on demonstrating Claude's native API capabilities directly. We'd encourage you to consider:
+`cache_control` parameter가 필요한 이유는... [설명]
 
-- What specific Claude API features are you showcasing?
-- How is this differentiated from existing documentation?
-- Can users run this self-contained without external dependencies?
+자세한 내용은 [prompt caching 문서](https://docs.claude.com/en/docs/build-with-claude/prompt-caching)를 확인하세요.
 
-If you can reframe the proposal around these questions, we'd be happy to reconsider. Thanks for your engagement with the SDK!
+추가 질문이 있으시면 [Discord](https://anthropic.com/discord)에서 논의하기 좋습니다!
+```
+
+**제안 거절 응답:**
+```
+안녕하세요 @username, 자세히 제안해 주셔서 감사합니다!
+
+개념은 흥미롭지만, 저희 cookbook은 Claude의 native API 기능을 직접 보여주는 데 초점을 맞추고 있습니다. 다음을 고려해 보시기를 권합니다.
+
+- 어떤 구체적인 Claude API 기능을 보여주고 있나요?
+- 기존 문서와 어떻게 차별화되나요?
+- 사용자가 외부 dependency 없이 독립적으로 실행할 수 있나요?
+
+이 질문들을 중심으로 제안을 재구성해 주신다면 기꺼이 다시 검토하겠습니다. SDK에 관심을 갖고 참여해 주셔서 감사합니다!
 ```

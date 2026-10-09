@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Decision Matrix Tool - Strategic decision framework for complex choices
-Custom Python script for the Chief of Staff agent
+Decision Matrix Tool - 복잡한 선택을 위한 전략적 의사결정 framework
+Chief of Staff agent용 custom Python script
 """
 
 import argparse
@@ -36,9 +36,9 @@ class DecisionMatrix(TypedDict):
 def create_decision_matrix(
     options: list[dict[str, Any]], criteria: list[dict[str, Any]]
 ) -> DecisionMatrix:
-    """Create a weighted decision matrix for strategic choices"""
+    """전략적 선택을 위한 가중 decision matrix를 생성합니다"""
 
-    # Initialize analysis separately with explicit type for proper type checking
+    # 올바른 type checking을 위해 명시적인 type으로 analysis를 별도 초기화
     initial_analysis: Analysis = {
         "clear_winner": False,
         "margin": 0.0,
@@ -64,12 +64,12 @@ def create_decision_matrix(
             "verdict": "",
         }
 
-        # Calculate scores for each criterion
+        # 각 기준의 점수 계산
         for criterion in criteria:
             crit_name = criterion["name"]
             weight = criterion["weight"]
 
-            # Get score for this option on this criterion (1-10)
+            # 이 기준에 대한 해당 선택지의 점수 가져오기(1-10)
             score = option.get(crit_name, 5)
             weighted = score * weight
 
@@ -77,7 +77,7 @@ def create_decision_matrix(
             option_scores["weighted_scores"][crit_name] = round(weighted, 2)
             option_scores["total"] += weighted
 
-            # Track pros and cons
+            # 장단점 추적
             if score >= 8:
                 option_scores["pros"].append(f"Excellent {crit_name}")
             elif score >= 6:
@@ -89,7 +89,7 @@ def create_decision_matrix(
 
         option_scores["total"] = round(option_scores["total"], 2)
 
-        # Generate verdict
+        # 판단 생성
         if option_scores["total"] >= 8:
             option_scores["verdict"] = "STRONGLY RECOMMENDED"
         elif option_scores["total"] >= 6.5:
@@ -101,18 +101,18 @@ def create_decision_matrix(
 
         results["options"].append(option_scores)
 
-    # Find winner
+    # 최선의 선택지 찾기
     results["options"].sort(key=lambda x: x["total"], reverse=True)
     results["winner"] = results["options"][0]["name"]
 
-    # Generate analysis
+    # 분석 생성
     results["analysis"] = generate_analysis(results["options"])
 
     return results
 
 
 def generate_analysis(options: list[OptionScore]) -> Analysis:
-    """Generate strategic analysis of the decision"""
+    """결정에 대한 전략적 분석을 생성합니다"""
 
     analysis: Analysis = {
         "clear_winner": False,
@@ -140,13 +140,13 @@ def generate_analysis(options: list[OptionScore]) -> Analysis:
                 f"Close decision between {options[0]['name']} and {options[1]['name']} - consider additional factors"
             )
 
-        # Find key differentiators
+        # 핵심 차별점 찾기
         top = options[0]
         for criterion in top["scores"]:
             if top["scores"][criterion] >= 8:
                 analysis["key_differentiators"].append(criterion)
 
-        # Identify risks
+        # 위험 식별
         if top["total"] < 6:
             analysis["risks"].append("Overall score below recommended threshold")
         if len(top["cons"]) > len(top["pros"]):
@@ -163,17 +163,17 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    # Default scenario: Build vs Buy vs Partner
+    # 기본 시나리오: 직접 구축, 구매, 제휴
     if args.scenario == "build-buy-partner":
         options = [
             {
                 "name": "Build In-House",
-                "cost": 3,  # 1-10, higher is better (so 3 = high cost)
-                "time_to_market": 2,  # 2 = slow
-                "control": 10,  # 10 = full control
-                "quality": 8,  # 8 = high quality potential
-                "scalability": 9,  # 9 = very scalable
-                "risk": 3,  # 3 = high risk
+                "cost": 3,  # 1-10, 높을수록 좋음(따라서 3 = 높은 비용)
+                "time_to_market": 2,  # 2 = 느림
+                "control": 10,  # 10 = 완전한 제어
+                "quality": 8,  # 8 = 높은 품질 잠재력
+                "scalability": 9,  # 9 = 매우 높은 확장성
+                "risk": 3,  # 3 = 높은 위험
             },
             {
                 "name": "Buy Solution",
@@ -209,7 +209,7 @@ def main() -> None:
             options = data["options"]
             criteria = data["criteria"]
     else:
-        # Default hiring scenario
+        # 기본 채용 시나리오
         options = [
             {
                 "name": "Hire 3 Senior Engineers",
@@ -241,7 +241,7 @@ def main() -> None:
     if args.format == "json":
         print(json.dumps(matrix, indent=2))
     else:
-        # Text output
+        # Text 출력
         print("🎯 STRATEGIC DECISION MATRIX")
         print("=" * 60)
 

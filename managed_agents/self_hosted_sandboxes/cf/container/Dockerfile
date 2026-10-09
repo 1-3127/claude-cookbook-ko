@@ -8,5 +8,5 @@ ADD https://github.com/anthropics/anthropic-cli/releases/download/v${ANT_VERSION
 RUN tar -xzf /tmp/ant.tgz -C /usr/local/bin ant \
  && chmod +x /usr/local/bin/ant && rm /tmp/ant.tgz
 WORKDIR /workspace
-# --max-idle: exit 60s after session.status_idle/end_turn, reset on any event.
+# --max-idle: session.status_idle/end_turn 이후 60초에 종료, 모든 event에서 초기화.
 ENTRYPOINT ["ant", "beta:worker", "run", "--workdir", "/workspace", "--unrestricted-paths", "--max-idle", "60s", "--log-format", "json"]

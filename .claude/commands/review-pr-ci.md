@@ -1,92 +1,92 @@
 ---
 allowed-tools: Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh pr review:*), Bash(git diff:*), Bash(git log:*), Task, Read, Glob, Grep
-description: Review a pull request and post the review to GitHub (CI/automated use)
+description: Pull request를 검토하고 GitHub에 검토 결과 게시(CI/자동화용)
 ---
 
-## Arguments
+## 인수
 
-- `$ARGUMENTS`: The PR number to review
+- `$ARGUMENTS`: 검토할 PR 번호
 
-## Your task
+## 수행할 작업
 
-Review the specified pull request and post a review to GitHub. This command is designed for CI/automated environments.
+지정된 pull request를 검토하고 GitHub에 검토 결과를 게시하세요. 이 명령은 CI/자동화 환경을 위해 설계되었습니다.
 
-### Step 1: Gather PR context
+### 1단계: PR 맥락 수집
 
-Get the PR details and diff:
+PR 세부 정보와 diff를 가져오세요.
 ```
 gh pr view $ARGUMENTS
 gh pr diff $ARGUMENTS
 ```
 
-### Step 2: Review the code changes
+### 2단계: 코드 변경 검토
 
-Use the Task tool with `subagent_type: "code-reviewer"` to perform a thorough code review of the changes. Pass the diff and changed files to the agent for analysis.
+`subagent_type: "code-reviewer"`로 Task 도구를 사용하여 변경 사항에 대한 철저한 코드 검토를 수행하세요. 분석을 위해 diff와 변경 파일을 agent에 전달하세요.
 
-The code-reviewer agent will analyze:
-- Code quality and best practices
-- Potential bugs or issues
-- Security concerns
-- Performance considerations
-- Documentation and comments
+Code-reviewer agent는 다음을 분석합니다.
+- 코드 품질과 모범 사례
+- 잠재적인 버그 또는 문제
+- 보안 우려 사항
+- 성능 고려사항
+- 문서와 주석
 
-### Step 3: Determine review outcome
+### 3단계: 검토 결과 결정
 
-Based on the code review findings, determine the appropriate review action:
-- **APPROVE** (`--approve`): Code looks good, no significant issues found
-- **REQUEST_CHANGES** (`--request-changes`): Critical issues that must be fixed before merging
-- **COMMENT** (`--comment`): Suggestions or minor issues that don't block merging
+코드 검토 발견 사항을 바탕으로 적절한 검토 조치를 결정하세요.
+- **APPROVE** (`--approve`): 코드가 좋아 보이며 중요한 문제가 발견되지 않음
+- **REQUEST_CHANGES** (`--request-changes`): Merge 전에 반드시 수정해야 하는 중대한 문제
+- **COMMENT** (`--comment`): Merge를 차단하지 않는 제안 또는 사소한 문제
 
-### Step 4: Post the review
+### 4단계: 검토 결과 게시
 
-Post the review to GitHub using:
+다음을 사용하여 GitHub에 검토 결과를 게시하세요.
 ```
 gh pr review $ARGUMENTS --body "YOUR_REVIEW_BODY" --approve|--request-changes|--comment
 ```
 
-Format your review body using this template with collapsible sections:
+접을 수 있는 섹션이 포함된 다음 template을 사용하여 검토 본문을 작성하세요.
 
 ```markdown
-## PR Review
+## PR 검토
 
-**Recommendation**: APPROVE | REQUEST_CHANGES | COMMENT
+**권고**: APPROVE | REQUEST_CHANGES | COMMENT
 
-### Summary
-[1-2 sentence overview of what this PR does]
+### 요약
+[이 PR이 하는 일에 대한 1~2문장 개요]
 
 <details>
-<summary>Actionable Feedback (N items)</summary>
+<summary>실행 가능한 피드백(N개 항목)</summary>
 
-List specific items that need attention. Use checkboxes for trackable items:
+주의가 필요한 구체적인 항목을 나열하세요. 추적 가능한 항목에는 체크박스를 사용하세요.
 
-- [ ] `file.py:42` - Description of issue or required change
-- [ ] `notebook.ipynb` (in cell with `some_code = ...`) - Description
-- [ ] General: Description of non-file-specific feedback
+- [ ] `file.py:42` - 문제 또는 필요한 변경 설명
+- [ ] `notebook.ipynb` (`some_code = ...`가 있는 셀) - 설명
+- [ ] 일반: 특정 파일에 국한되지 않는 피드백 설명
 
 </details>
 
 <details>
-<summary>Detailed Review</summary>
+<summary>상세 검토</summary>
 
-### Code Quality
-[Analysis of code patterns, readability, maintainability]
+### 코드 품질
+[코드 패턴, 가독성, 유지보수성 분석]
 
-### Security
-[Any security considerations or concerns]
+### 보안
+[보안 고려사항 또는 우려 사항]
 
-### Suggestions
-[Optional improvements that aren't blocking]
+### 제안
+[차단하지 않는 선택적 개선 사항]
 
-### Positive Notes
-[What was done well - be specific]
+### 긍정적인 점
+[잘한 점을 구체적으로 작성]
 
 </details>
 ```
 
-**Guidelines:**
-- Keep the summary and actionable feedback visible (outside collapsed sections)
-- Put detailed analysis in the collapsed "Detailed Review" section to reduce noise
-- Use checkboxes in actionable feedback so authors can track what they've addressed
-- For Jupyter notebooks, reference code snippets instead of cell numbers (e.g., "in cell with `data = pd.read_csv(...)`")
+**가이드라인:**
+- 요약과 실행 가능한 피드백은 보이도록 유지하세요(접힌 섹션 밖).
+- 불필요한 내용을 줄이기 위해 상세 분석은 접힌 "상세 검토" 섹션에 넣으세요.
+- 작성자가 처리한 내용을 추적할 수 있도록 실행 가능한 피드백에는 체크박스를 사용하세요.
+- Jupyter Notebook에서는 셀 번호 대신 코드 스니펫을 참조하세요(예: "`data = pd.read_csv(...)`가 있는 셀").
 
-**Important:** The `gh pr review` command produces no output on success. Only run this command once - do not retry if there is no output, as that indicates success.
+**중요:** `gh pr review` 명령은 성공 시 아무것도 출력하지 않습니다. 이 명령은 한 번만 실행하세요. 출력이 없다면 성공을 의미하므로 재시도하지 마세요.

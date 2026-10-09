@@ -3,7 +3,7 @@ import textwrap
 from vectordb import VectorDB
 
 vectordb = VectorDB()
-# Load the vector database
+# vector database 불러오기
 vectordb.load_db()
 
 categories = """<category>

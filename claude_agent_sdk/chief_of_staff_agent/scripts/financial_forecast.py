@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Financial Forecast Tool - Advanced financial modeling for strategic decisions
-Custom Python tool executed via Bash by the Chief of Staff agent
+Financial Forecast Tool - 전략적 결정을 위한 고급 재무 model링
+Chief of Staff agent가 Bash로 실행하는 custom Python tool
 """
 
 import argparse
@@ -12,7 +12,7 @@ from typing import Any
 def forecast_financials(
     current_arr: float, growth_rate: float, months: int, burn_rate: float
 ) -> dict[str, Any]:
-    """Generate financial forecast with multiple scenarios"""
+    """여러 시나리오로 재무 예측을 생성합니다"""
 
     forecasts: dict[str, Any] = {
         "base_case": [],
@@ -21,13 +21,13 @@ def forecast_financials(
         "metrics": {},
     }
 
-    # Base case
+    # 기본 시나리오
     arr = current_arr
     for month in range(1, months + 1):
         arr = arr * (1 + growth_rate)
         monthly_revenue = arr / 12
         net_burn = burn_rate - monthly_revenue
-        runway = -1 if net_burn <= 0 else (10_000_000 / net_burn)  # Assuming $10M in bank
+        runway = -1 if net_burn <= 0 else (10_000_000 / net_burn)  # 은행 현금 $10M 가정
 
         forecasts["base_case"].append(
             {
@@ -39,19 +39,19 @@ def forecast_financials(
             }
         )
 
-    # Optimistic (1.5x growth)
+    # 낙관적(성장 1.5배)
     arr = current_arr
     for month in range(1, months + 1):
         arr = arr * (1 + growth_rate * 1.5)
         forecasts["optimistic"].append({"month": month, "arr": round(arr)})
 
-    # Pessimistic (0.5x growth)
+    # 비관적(성장 0.5배)
     arr = current_arr
     for month in range(1, months + 1):
         arr = arr * (1 + growth_rate * 0.5)
         forecasts["pessimistic"].append({"month": month, "arr": round(arr)})
 
-    # Key metrics
+    # 핵심 metrics
     forecasts["metrics"] = {
         "months_to_profitability": calculate_profitability_date(forecasts["base_case"]),
         "cash_required": calculate_cash_needed(forecasts["base_case"]),
@@ -63,15 +63,15 @@ def forecast_financials(
 
 
 def calculate_profitability_date(forecast: list[dict[str, Any]]) -> int:
-    """Find when company becomes profitable"""
+    """회사가 수익성을 달성하는 시점을 찾습니다"""
     for entry in forecast:
         if entry["net_burn"] <= 0:
             return int(entry["month"])
-    return -1  # Not profitable in forecast period
+    return -1  # 예측 기간 내 수익성 달성하지 못함
 
 
 def calculate_cash_needed(forecast: list[dict[str, Any]]) -> int:
-    """Calculate total cash needed until profitability"""
+    """수익성 달성까지 필요한 총현금을 계산합니다"""
     total_burn = 0
     for entry in forecast:
         if entry["net_burn"] > 0:
@@ -96,7 +96,7 @@ def main() -> None:
     if args.format == "json":
         print(json.dumps(forecast, indent=2))
     else:
-        # Text output for human reading
+        # 사람이 읽기 위한 text 출력
         print("📊 FINANCIAL FORECAST")
         print("=" * 50)
         print(f"Current ARR: ${args.arr:,.0f}")
@@ -106,7 +106,7 @@ def main() -> None:
 
         print("BASE CASE PROJECTION:")
         print("-" * 30)
-        for i in [2, 5, 11]:  # Show months 3, 6, 12
+        for i in [2, 5, 11]:  # 3, 6, 12개월 차 표시
             if i < len(forecast["base_case"]):
                 m = forecast["base_case"][i]
                 print(f"Month {m['month']:2}: ARR ${m['arr']:,} | Runway {m['runway_months']}")

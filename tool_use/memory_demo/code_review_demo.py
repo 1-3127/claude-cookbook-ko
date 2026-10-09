@@ -1,14 +1,14 @@
 """
-Code Review Assistant Demo - Three-session demonstration.
+Code Review Assistant Demo — 세 session 시연.
 
-This demo showcases:
-1. Session 1: Claude learns debugging patterns
-2. Session 2: Claude applies learned patterns (faster!)
-3. Session 3: Long session with context editing
+이 demo는 다음을 보여줍니다.
+1. Session 1: Claude가 debugging pattern을 학습
+2. Session 2: Claude가 학습한 pattern을 적용 (더 빠르게!)
+3. Session 3: Context editing을 사용한 긴 session
 
-Requires:
-- .env file with ANTHROPIC_API_KEY and ANTHROPIC_MODEL
-- memory_tool.py in the same directory
+필요 항목:
+- ANTHROPIC_API_KEY와 ANTHROPIC_MODEL이 있는 .env 파일
+- 같은 directory의 memory_tool.py
 """
 
 import os
@@ -19,12 +19,12 @@ from typing import Any
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
-# Add parent directory to path to import memory_tool
+# memory_tool을 import하도록 parent directory를 path에 추가
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from memory_tool import MemoryToolHandler
 
-# Load environment variables
+# 환경 변수 불러오기
 load_dotenv()
 
 API_KEY = os.getenv("ANTHROPIC_API_KEY")
@@ -37,7 +37,7 @@ if not MODEL:
     raise ValueError("ANTHROPIC_MODEL not found. Copy .env.example to .env and set the model.")
 
 
-# Context management configuration
+# Context 관리 configuration
 CONTEXT_MANAGEMENT = {
     "edits": [
         {
@@ -52,27 +52,27 @@ CONTEXT_MANAGEMENT = {
 
 class CodeReviewAssistant:
     """
-    Code review assistant with memory and context editing capabilities.
+    Memory와 context editing 기능을 가진 code review assistant.
 
-    This assistant:
-    - Checks memory for debugging patterns before reviewing code
-    - Stores learned patterns for future sessions
-    - Automatically clears old tool results when context grows large
+    이 assistant는 다음을 수행합니다.
+    - Code를 검토하기 전에 memory의 debugging pattern 확인
+    - 향후 session을 위해 학습한 pattern 저장
+    - Context가 커지면 오래된 tool 결과 자동 제거
     """
 
     def __init__(self, memory_storage_path: str = "./memory_storage"):
         """
-        Initialize the code review assistant.
+        Code review assistant를 초기화합니다.
 
         Args:
-            memory_storage_path: Path for memory storage
+            memory_storage_path: Memory 저장 경로
         """
         self.client = Anthropic()
         self.memory_handler = MemoryToolHandler(base_path=memory_storage_path)
         self.messages: list[dict[str, Any]] = []
 
     def _create_system_prompt(self) -> str:
-        """Create system prompt with memory instructions."""
+        """Memory 지침이 포함된 system prompt를 생성합니다."""
         return """You are an expert code reviewer focused on finding bugs and suggesting improvements.
 
 MEMORY PROTOCOL:
@@ -89,7 +89,7 @@ When reviewing code:
 Remember: Your memory persists across conversations. Use it wisely."""
 
     def _execute_tool_use(self, tool_use: Any) -> str:
-        """Execute a tool use and return the result."""
+        """Tool 사용을 실행하고 결과를 반환합니다."""
         if tool_use.name == "memory":
             result = self.memory_handler.execute(**tool_use.input)
             return result.get("success") or result.get("error", "Unknown error")
@@ -97,17 +97,17 @@ Remember: Your memory persists across conversations. Use it wisely."""
 
     def review_code(self, code: str, filename: str, description: str = "") -> dict[str, Any]:
         """
-        Review code with memory-enhanced analysis.
+        Memory로 개선한 분석으로 code를 검토합니다.
 
         Args:
-            code: The code to review
-            filename: Name of the file being reviewed
-            description: Optional description of what to look for
+            code: 검토할 code
+            filename: 검토 중인 파일 이름
+            description: 확인할 내용에 대한 선택적 설명
 
         Returns:
-            Dict with review results and metadata
+            검토 결과와 metadata를 포함한 dictionary
         """
-        # Construct user message
+        # 사용자 message 구성
         user_message = f"Please review this code from {filename}"
         if description:
             user_message += f"\n\nContext: {description}"
@@ -115,11 +115,11 @@ Remember: Your memory persists across conversations. Use it wisely."""
 
         self.messages.append({"role": "user", "content": user_message})
 
-        # Track token usage and context management
+        # Token 사용량과 context 관리 추적
         total_input_tokens = 0
         context_edits_applied = []
 
-        # Conversation loop
+        # 대화 loop
         turn = 1
         while True:
             print(f"  🔄 Turn {turn}: Calling Claude API...", end="", flush=True)
@@ -135,16 +135,16 @@ Remember: Your memory persists across conversations. Use it wisely."""
 
             print(" ✓")
 
-            # Track usage
+            # Usage 추적
             total_input_tokens = response.usage.input_tokens
 
-            # Check for context management
+            # Context 관리 확인
             if hasattr(response, "context_management") and response.context_management:
                 applied = getattr(response.context_management, "applied_edits", [])
                 if applied:
                     context_edits_applied.extend(applied)
 
-            # Process response content
+            # Response content 처리
             assistant_content = []
             tool_results = []
             final_text = []
@@ -158,7 +158,7 @@ Remember: Your memory persists across conversations. Use it wisely."""
                     path = content.input.get("path", "")
                     print(f"    🔧 Memory: {cmd} {path}")
 
-                    # Execute tool
+                    # Tool 실행
                     result = self._execute_tool_use(content)
 
                     assistant_content.append(
@@ -178,15 +178,15 @@ Remember: Your memory persists across conversations. Use it wisely."""
                         }
                     )
 
-            # Add assistant message
+            # Assistant message 추가
             self.messages.append({"role": "assistant", "content": assistant_content})
 
-            # If there are tool results, add them and continue
+            # Tool 결과가 있으면 추가하고 계속 진행
             if tool_results:
                 self.messages.append({"role": "user", "content": tool_results})
                 turn += 1
             else:
-                # No more tool uses, we're done
+                # 더 이상 tool 사용이 없으면 완료
                 print()
                 break
 
@@ -197,19 +197,19 @@ Remember: Your memory persists across conversations. Use it wisely."""
         }
 
     def start_new_session(self) -> None:
-        """Start a new conversation session (memory persists)."""
+        """새 대화 session을 시작합니다 (memory는 유지)."""
         self.messages = []
 
 
 def run_session_1() -> None:
-    """Session 1: Learn debugging patterns."""
+    """Session 1: Debugging pattern 학습."""
     print("=" * 80)
     print("SESSION 1: Learning from First Code Review")
     print("=" * 80)
 
     assistant = CodeReviewAssistant()
 
-    # Read sample code
+    # 예제 code 읽기
     with open("memory_demo/sample_code/web_scraper_v1.py") as f:
         code = f.read()
 
@@ -234,15 +234,15 @@ def run_session_1() -> None:
 
 
 def run_session_2() -> None:
-    """Session 2: Apply learned patterns."""
+    """Session 2: 학습한 pattern 적용."""
     print("=" * 80)
     print("SESSION 2: Applying Learned Patterns (New Conversation)")
     print("=" * 80)
 
-    # New assistant instance (new conversation, but memory persists)
+    # 새 assistant instance (새 대화이지만 memory는 유지)
     assistant = CodeReviewAssistant()
 
-    # Read different sample code with similar bug
+    # 비슷한 bug가 있는 다른 예제 code 읽기
     with open("memory_demo/sample_code/api_client_v1.py") as f:
         code = f.read()
 
@@ -264,14 +264,14 @@ def run_session_2() -> None:
 
 
 def run_session_3() -> None:
-    """Session 3: Long session with context editing."""
+    """Session 3: Context editing을 사용한 긴 session."""
     print("=" * 80)
     print("SESSION 3: Long Session with Context Editing")
     print("=" * 80)
 
     assistant = CodeReviewAssistant()
 
-    # Read data processor code (has multiple issues)
+    # Data processor code 읽기 (여러 문제가 있음)
     with open("memory_demo/sample_code/data_processor_v1.py") as f:
         code = f.read()
 
@@ -300,7 +300,7 @@ def run_session_3() -> None:
 
 
 def main() -> None:
-    """Run all three demo sessions."""
+    """Demo session 세 개를 모두 실행합니다."""
     print("\n🚀 Code Review Assistant Demo\n")
     print("This demo shows:")
     print("1. Session 1: Claude learns debugging patterns")

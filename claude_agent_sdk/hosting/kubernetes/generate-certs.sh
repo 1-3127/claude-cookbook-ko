@@ -1,33 +1,33 @@
 #!/bin/bash
 # =============================================================================
-# generate-certs.sh — Create a self-signed CA and proxy certificate
+# generate-certs.sh — Self-signed CA 및 proxy certificate 생성
 # =============================================================================
 #
-# WHAT IS A SELF-SIGNED CA?
-#   A Certificate Authority (CA) is an entity that signs TLS certificates.
-#   Normally, browsers and apps trust well-known CAs (like Let's Encrypt).
-#   A "self-signed" CA is one you create yourself — it's not trusted by
-#   default, but you can configure your applications to trust it explicitly.
+# SELF-SIGNED CA란?
+#     Certificate Authority(CA)는 TLS certificate에 서명하는 주체입니다.
+#     보통 browser와 app은 잘 알려진 CA(Let's Encrypt 등)를 신뢰합니다.
+#     "Self-signed" CA는 직접 만드는 것으로 기본적으로 신뢰되지 않지만
+#     application이 명시적으로 신뢰하도록 구성할 수 있습니다.
 #
-# WHY WE NEED THIS:
-#   The egress proxy sits between agent pods and api.anthropic.com. Agent
-#   pods connect to the proxy over HTTPS, so the proxy needs a TLS
-#   certificate. Since the proxy is an internal service (not a public
-#   website), we can't get a certificate from a public CA — we create our
-#   own CA and sign the proxy's certificate with it.
+# 필요한 이유:
+#     Egress proxy는 agent pod와 api.anthropic.com 사이에 있습니다. Agent pod는
+#     HTTPS로 proxy에 연결하므로 proxy에 TLS certificate가 필요합니다.
+#     Proxy는 public website가 아닌 내부 service이므로 public CA에서
+#     certificate를 받을 수 없습니다. 자체 CA를 만들어 그것으로
+#     proxy certificate에 서명합니다.
 #
-#   Agent pods are then configured to trust our CA certificate via the
-#   NODE_EXTRA_CA_CERTS environment variable. This tells Node.js (and
-#   tools like Claude Code that run on Node.js) to accept TLS certificates
-#   signed by our CA.
+#     그런 다음 NODE_EXTRA_CA_CERTS 환경 변수로 agent pod가
+#     CA certificate를 신뢰하게 구성합니다. 이는 Node.js(및 Node.js에서
+#     실행하는 Claude Code 같은 tool)에 자체 CA가 서명한 TLS certificate를
+#     수락하도록 알려 줍니다.
 #
-# WHAT THIS SCRIPT CREATES:
-#   certs/ca.key     — CA private key (keep secret)
-#   certs/ca.crt     — CA certificate (shared with agent pods so they
-#                       trust the proxy)
-#   certs/proxy.key  — Proxy private key (mounted into the proxy pod)
-#   certs/proxy.crt  — Proxy certificate signed by our CA (mounted into
-#                       the proxy pod)
+# 이 SCRIPT가 생성하는 것:
+#     certs/ca.key     — CA private key(비밀로 유지)
+#     certs/ca.crt     — CA certificate(agent pod와 공유하여
+#                                             proxy를 신뢰하도록 함)
+#     certs/proxy.key  — Proxy private key(proxy pod에 mount)
+#     certs/proxy.crt  — 자체 CA가 서명한 proxy certificate
+#                                             (proxy pod에 mount)
 # =============================================================================
 
 set -euo pipefail
@@ -44,7 +44,7 @@ openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 -out ca.crt \
 echo "Generating proxy certificate..."
 openssl genrsa -out proxy.key 2048
 
-# Create CSR with SAN for egress-proxy hostname
+# Egress-proxy hostname용 SAN을 포함한 CSR 생성
 cat > proxy.cnf << EOF
 [req]
 default_bits = 2048
@@ -67,11 +67,11 @@ EOF
 
 openssl req -new -key proxy.key -out proxy.csr -config proxy.cnf
 
-# Sign with CA
+# CA로 서명
 openssl x509 -req -in proxy.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
     -out proxy.crt -days 365 -sha256 -extensions req_ext -extfile proxy.cnf
 
-# Cleanup CSR and config
+# CSR 및 config 정리
 rm -f proxy.csr proxy.cnf ca.srl
 
 echo ""

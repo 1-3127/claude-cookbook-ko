@@ -1,6 +1,6 @@
 """
-Customer Support Ticket System - Mock API
-Generate realistic support tickets for compaction demonstration
+고객 지원 Ticket System - Mock API
+Compaction 시연용 현실적인 지원 ticket 생성
 """
 
 import random
@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 
-# Ticket Categories
+# Ticket category
 class TicketCategory(str, Enum):
     BILLING = "billing"
     TECHNICAL = "technical"
@@ -35,7 +35,7 @@ class TicketStatus(str, Enum):
 
 @dataclass
 class Ticket:
-    """Represents a customer support ticket"""
+    """고객 지원 ticket을 나타냅니다."""
 
     id: str
     customer_name: str
@@ -54,12 +54,12 @@ class Ticket:
             self.created_at = datetime.now()
 
 
-# Mock data generation
+# Mock 데이터 생성
 class TicketGenerator:
-    """Generate realistic support tickets for testing"""
+    """테스트용 현실적인 지원 ticket을 생성합니다."""
 
     TICKET_TEMPLATES = [
-        # Billing issues
+        # 청구 문제
         {
             "category": TicketCategory.BILLING,
             "subjects": [
@@ -77,7 +77,7 @@ class TicketGenerator:
                 "I'm confused about when my billing cycle starts. I signed up on {date1} but was charged on {date2}, which seems early. Can you clarify?",
             ],
         },
-        # Technical issues
+        # 기술 문제
         {
             "category": TicketCategory.TECHNICAL,
             "subjects": [
@@ -95,7 +95,7 @@ class TicketGenerator:
                 "I'm trying to upload a {file_type} file ({file_size}MB) but keep getting the error: '{error_msg}'. Files under 10MB upload fine, but anything larger fails.",
             ],
         },
-        # Account issues
+        # Account 문제
         {
             "category": TicketCategory.ACCOUNT,
             "subjects": [
@@ -113,7 +113,7 @@ class TicketGenerator:
                 "I enabled two-factor authentication but lost my phone. I have my backup codes but the system won't accept them. I can't access my account at all now.",
             ],
         },
-        # Product questions
+        # 제품 질문
         {
             "category": TicketCategory.PRODUCT,
             "subjects": [
@@ -131,7 +131,7 @@ class TicketGenerator:
                 "Does your product integrate with {tool_name}? I use it for {workflow} and would love to connect the two. If not, are there plans to add this integration?",
             ],
         },
-        # Shipping/delivery
+        # 배송/배달
         {
             "category": TicketCategory.SHIPPING,
             "subjects": [
@@ -153,11 +153,11 @@ class TicketGenerator:
 
     @staticmethod
     def generate_ticket(ticket_id: int = None) -> Ticket:
-        """Generate a single realistic ticket"""
+        """현실적인 ticket 하나를 생성합니다."""
         template = random.choice(TicketGenerator.TICKET_TEMPLATES)
         category = template["category"]
 
-        # Random values for placeholder substitution
+        # Placeholder 치환용 무작위 값
         date1 = (datetime.now() - timedelta(days=random.randint(1, 30))).strftime("%Y-%m-%d")
         date2 = (datetime.now() - timedelta(days=random.randint(1, 15))).strftime("%Y-%m-%d")
         amount = random.choice([9.99, 19.99, 29.99, 49.99, 99.99])
@@ -165,7 +165,7 @@ class TicketGenerator:
         subject = random.choice(template["subjects"])
         description_template = random.choice(template["descriptions"])
 
-        # Replace placeholders
+        # Placeholder 치환
         description = description_template.format(
             date1=date1,
             date2=date2,
@@ -207,18 +207,18 @@ class TicketGenerator:
             subject=subject,
             description=description,
             category=category,
-            priority=None,  # To be determined by agent
+            priority=None,  # Agent가 결정
             status=TicketStatus.NEW,
             created_at=datetime.now() - timedelta(hours=random.randint(0, 48)),
         )
 
     @staticmethod
     def generate_batch(count: int = 25) -> list[Ticket]:
-        """Generate a batch of tickets"""
+        """Ticket batch를 생성합니다."""
         return [TicketGenerator.generate_ticket(i + 1) for i in range(count)]
 
 
-# Knowledge base mock data
+# Knowledge base mock 데이터
 KNOWLEDGE_BASE = {
     "billing": {
         "refund_policy": "Refunds are processed within 5-7 business days for valid cancellations. Pro-rated refunds available for annual plans.",
@@ -242,7 +242,7 @@ KNOWLEDGE_BASE = {
 }
 
 
-# Team routing rules
+# 팀 routing rule
 TEAM_ROUTING = {
     TicketCategory.BILLING: "billing-team",
     TicketCategory.TECHNICAL: "tech-support",
@@ -252,9 +252,9 @@ TEAM_ROUTING = {
 }
 
 
-# Priority rules
+# Priority rule
 def determine_priority(ticket: Ticket) -> TicketPriority:
-    """Simple priority determination rules"""
+    """간단한 priority 결정 rule"""
     urgent_keywords = ["can't access", "locked out", "lost access", "urgent", "immediately"]
     high_keywords = ["not working", "broken", "error", "crashes", "failed"]
 
@@ -271,7 +271,7 @@ def determine_priority(ticket: Ticket) -> TicketPriority:
 
 
 def process_ticket(ticket: Ticket) -> Ticket:
-    """Process a ticket: assign priority and team"""
+    """Ticket 처리: priority와 팀 지정"""
     ticket.priority = determine_priority(ticket)
     if ticket.category:
         ticket.assigned_team = TEAM_ROUTING.get(ticket.category, "general-support")
@@ -281,24 +281,24 @@ def process_ticket(ticket: Ticket) -> Ticket:
 
 
 def main():
-    """Demonstrate the customer service ticket system"""
+    """고객 서비스 ticket system을 시연합니다."""
     print("=" * 80)
     print("Customer Support Ticket System - Demo")
     print("=" * 80)
     print()
 
-    # Generate batch of tickets
+    # Ticket batch 생성
     num_tickets = 50
     print(f"Generating {num_tickets} support tickets...")
     tickets = TicketGenerator.generate_batch(num_tickets)
     print(f"✓ Generated {len(tickets)} tickets\n")
 
-    # Process tickets
+    # Ticket 처리
     print("Processing tickets (categorization, prioritization, routing)...")
     processed_tickets = [process_ticket(ticket) for ticket in tickets]
     print(f"✓ Processed {len(processed_tickets)} tickets\n")
 
-    # Summary statistics
+    # 요약 통계
     print("=" * 80)
     print("Summary Statistics")
     print("=" * 80)
@@ -333,7 +333,7 @@ def main():
     for team, count in sorted(team_counts.items()):
         print(f"  {team}: {count}")
 
-    # Display sample tickets
+    # 예제 ticket 표시
     print("\n" + "=" * 80)
     print("Sample Tickets")
     print("=" * 80)

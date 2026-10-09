@@ -7,18 +7,18 @@ import anthropic
 
 def llm_eval(summary, input):
     """
-    Evaluate summary using an LLM (Claude).
+    LLM (Claude)으로 요약을 평가합니다.
 
     Args:
-    summary (str): The summary to evaluate.
-    input (str): The original text that was summarized.
+    summary (str): 평가할 요약.
+    input (str): 요약된 원본 텍스트.
 
     Returns:
-    bool: True if the average score is above the threshold, False otherwise.
+    bool: 평균 score가 threshold보다 높으면 True, 그렇지 않으면 False.
     """
     client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-    # You could include an example here too and likely improve performance further!
+    # 여기에도 예제를 포함하면 성능을 더 개선할 수 있습니다!
     prompt = f"""Evaluate the following summary based on these criteria:
     1. Conciseness (1-5)
     2. Accuracy (1-5)
@@ -63,7 +63,7 @@ def llm_eval(summary, input):
     )
 
     evaluation = json.loads(response.content[0].text)
-    # Filter out non-numeric values and calculate the average
+    # 숫자가 아닌 값을 걸러내고 평균 계산
     numeric_values = [value for key, value in evaluation.items() if isinstance(value, (int, float))]
     avg_score = sum(numeric_values) / len(numeric_values)
     return avg_score, evaluation["explanation"]
@@ -73,7 +73,7 @@ def get_assert(output: str, context, threshold=0.5) -> bool | float | dict[str, 
     input = context["vars"]["input"]
     score, evaluation = llm_eval(output, input)
 
-    # 4 different dimensions we measure performance on
+    # 성능을 측정하는 서로 다른 4개 차원
     normalized_score = score / 4
 
     if normalized_score >= threshold:

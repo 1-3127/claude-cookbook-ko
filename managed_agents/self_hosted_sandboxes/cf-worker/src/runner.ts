@@ -1,18 +1,17 @@
 /**
- * SandboxRunner Durable Object — TS analogue of sandbox_runner.py.
+ * SandboxRunner Durable Object — sandbox_runner.py의 TS 대응 구현.
  *
- * Runs `client.beta.sessions.events.toolRunner()` (the session-side dispatch
- * loop: reconcile + event stream + tool execution + result posting) against an
- * in-isolate fake tool registry. `SessionToolRunner` is dispatch-only — the
- * work-item lifecycle (heartbeat + force-stop) is owned here, since the DO is
- * the work-item lessee. `EnvironmentWorker` would compose all of this, but it
- * pulls in the Node-only `agent-toolset/node` module which a Workers isolate
- * can't run.
+ * Isolate 내 fake tool registry에서 `client.beta.sessions.events.toolRunner()`를
+ * 실행합니다(session-side dispatch loop: reconcile + event stream + 도구 실행 +
+ * 결과 게시). `SessionToolRunner`는 dispatch 전용이며 DO가 work item lessee이므로
+ * work item lifecycle(heartbeat + force-stop)은 여기서 담당합니다.
+ * `EnvironmentWorker`가 이를 모두 조합할 수 있지만 Workers isolate에서 실행할 수
+ * 없는 Node 전용 `agent-toolset/node` module을 가져옵니다.
  *
- * Idle policy is the SDK default: `toolRunner()` exits `maxIdleMs` after
- * `session.status_idle` with `stop_reason: end_turn`; any other event —
- * including `requires_action` idle, where the agent is blocked on the DO —
- * resets the clock.
+ * Idle policy는 SDK 기본값입니다. `toolRunner()`는 `stop_reason: end_turn`인
+ * `session.status_idle` 이후 `maxIdleMs`에 종료합니다. Agent가 DO를 기다리며
+ * block된 `requires_action` idle을 포함한 다른 모든 event는
+ * clock을 초기화합니다.
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { DurableObject } from "cloudflare:workers";
@@ -52,7 +51,7 @@ export class SandboxRunner extends DurableObject<Env> {
       logLevel: "info", // surface runner lifecycle in `wrangler tail`
     });
 
-    // Run detached so the webhook can return.
+    // Webhook이 반환할 수 있도록 detached로 실행합니다.
     this.ctx.waitUntil(
       this.runWorkItem(client, opts, ctrl).finally(() => {
         if (this.ctrl === ctrl) this.ctrl = undefined;
@@ -65,19 +64,19 @@ export class SandboxRunner extends DurableObject<Env> {
   }
 
   /**
-   * Heartbeat the lease + run the session tool runner; force-stop on exit.
-   * `SessionToolRunner` only owns the dispatch loop, so the work-item lifecycle
-   * lives here — same composition `EnvironmentWorker` does internally.
+   * Lease heartbeat 전송 + session tool runner 실행; 종료 시 force-stop.
+   * `SessionToolRunner`는 dispatch loop만 담당하므로 work item lifecycle은
+   * 여기에 있습니다. `EnvironmentWorker`가 내부적으로 수행하는 것과 같은 조합입니다.
    */
   private async runWorkItem(client: Anthropic, opts: StartOpts, ctrl: AbortController): Promise<void> {
-    // `client` is authed with the environment key — the single credential for
-    // every per-session call, the heartbeat, and the force-stop.
+    // `client`는 모든 session별 호출, heartbeat, force-stop의 단일 credential인
+    // environment key로 인증됩니다.
     const heartbeat = this.heartbeatLoop(client, opts, ctrl);
     try {
       for await (const call of client.beta.sessions.events.toolRunner(opts.sessionId, {
         tools: fakeTools(this.fs),
-        // default: exit 60s after session.status_idle/end_turn, reset on any
-        // other event. Pass 0 to run until the session ends.
+        // 기본값: session.status_idle/end_turn 이후 60초에 종료, 다른 모든 event에서
+        // 초기화. Session 종료까지 실행하려면 0을 전달하세요.
         signal: ctrl.signal,
       })) {
         console.log(

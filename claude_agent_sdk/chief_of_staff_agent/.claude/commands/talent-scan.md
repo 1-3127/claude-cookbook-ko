@@ -1,20 +1,20 @@
 ---
 name: talent-scan
-description: Scan the talent market for specific roles and provide hiring recommendations
+description: 특정 역할의 인재 시장 조사 및 채용 권고 제공
 ---
 
-Use the recruiter subagent to perform a talent market scan for: $ARGUMENTS
+recruiter subagent로 다음에 대한 인재 시장 조사를 수행하세요: $ARGUMENTS
 
-Analyze and report on:
-1. Talent availability in target markets
-2. Competitive salary ranges
-3. Required skills and experience levels
-4. Estimated time to hire
-5. Recommended sourcing channels
-6. Top candidate profiles (if using GitHub)
+다음을 분석하고 보고하세요:
+1. 목표 시장의 인재 가용성
+2. 경쟁력 있는 급여 범위
+3. 필요한 기술 역량 및 경험 수준
+4. 예상 채용 소요 시간
+5. 권장 후보자 발굴 경로
+6. 우수 후보자 profile(GitHub를 사용하는 경우)
 
-Provide specific recommendations on:
-- Senior vs. junior hiring mix
-- Remote vs. in-office strategy
-- Compensation packages
-- Interview process optimizations
+다음에 대해 구체적으로 권고하세요:
+- Senior 및 junior 채용 비율
+- 원격 및 사무실 근무 전략
+- 보상 package
+- 인터뷰 process 최적화

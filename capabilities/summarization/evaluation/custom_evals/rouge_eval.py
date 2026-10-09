@@ -6,20 +6,20 @@ from rouge_score import rouge_scorer
 
 def rouge_eval(summary, ground_truth, threshold=0.3) -> float:
     """
-    Evaluate summary using ROUGE scores.
+    ROUGE score로 요약을 평가합니다.
 
     Args:
-    summary (str): The summary to evaluate.
-    ground_truth (str): The ground_truth summary.
-    threshold (float): The threshold for the ROUGE score (default: 0.3).
+    summary (str): 평가할 요약.
+    ground_truth (str): ground_truth 요약.
+    threshold (float): ROUGE score의 threshold(기본값: 0.3).
 
     Returns:
-    bool: True if the average ROUGE score is above the threshold, False otherwise.
+    bool: 평균 ROUGE score가 threshold보다 높으면 True, 그렇지 않으면 False.
     """
     scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
     scores = scorer.score(summary, ground_truth)
 
-    # Calculate average ROUGE score
+    # 평균 ROUGE score 계산
     avg_rouge = np.mean(
         [scores["rouge1"].fmeasure, scores["rouge2"].fmeasure, scores["rougeL"].fmeasure]
     )

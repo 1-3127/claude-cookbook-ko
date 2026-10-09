@@ -1,6 +1,6 @@
 """
-Cache manager with mutable default argument bug.
-This is one of Python's most common gotchas.
+Mutable default argument bug가 있는 cache manager.
+Python에서 가장 흔한 함정 중 하나입니다.
 """
 
 from datetime import datetime
@@ -8,7 +8,7 @@ from typing import Any
 
 
 class CacheManager:
-    """Manage cached data with TTL support."""
+    """TTL을 지원하여 cache된 데이터를 관리합니다."""
 
     def __init__(self):
         self.cache = {}
@@ -19,22 +19,22 @@ class CacheManager:
         items: list[str] = None,  # BUG: Mutable default argument!
     ) -> None:
         """
-        Add items to cache.
+        Cache에 항목을 추가합니다.
 
-        BUG: Using [] as default creates a SHARED list across all calls!
-        This is one of Python's classic gotchas.
+        BUG: []를 기본값으로 사용하면 모든 호출이 공유하는 list를 만듭니다!
+        Python의 고전적인 함정 중 하나입니다.
         """
-        # The items list is shared across ALL calls that don't provide items
+        # Items를 제공하지 않는 모든 호출이 items list를 공유합니다
         if items is None:
             items = []
         items.append(f"Added at {datetime.now()}")
         self.cache[key] = items
 
     def add_items_fixed(self, key: str, items: list[str] | None = None) -> None:
-        """Add items with proper default handling."""
+        """기본값을 올바르게 처리하여 항목을 추가합니다."""
         if items is None:
             items = []
-        items = items.copy()  # Also make a copy to avoid mutation
+        items = items.copy()  # Mutation을 피하기 위해 복사본도 만듭니다
         items.append(f"Added at {datetime.now()}")
         self.cache[key] = items
 
@@ -44,34 +44,34 @@ class CacheManager:
         overrides: dict[str, Any] = None,  # BUG: Mutable default!
     ) -> dict[str, Any]:
         """
-        Merge configuration with overrides.
+        설정을 overrides와 병합합니다.
 
-        BUG: The default dict is shared across all calls!
+        BUG: 모든 호출이 기본 dict를 공유합니다!
         """
         if overrides is None:
             overrides = {}
         defaults = {"timeout": 30, "retries": 3, "cache_enabled": True}
 
-        # This modifies the SHARED overrides dict
+        # 공유 overrides dict를 수정합니다
         overrides.update(defaults)
         return overrides
 
     def merge_configs_fixed(
         self, name: str, overrides: dict[str, Any] | None = None
     ) -> dict[str, Any]:
-        """Merge configs properly."""
+        """설정을 올바르게 병합합니다."""
         if overrides is None:
             overrides = {}
 
         defaults = {"timeout": 30, "retries": 3, "cache_enabled": True}
 
-        # Create new dict to avoid mutation
+        # Mutation을 피하기 위해 새 dict 생성
         result = {**defaults, **overrides}
         return result
 
 
 class DataProcessor:
-    """Another example of the mutable default bug."""
+    """Mutable default bug의 또 다른 예제."""
 
     def process_batch(
         self,
@@ -79,13 +79,13 @@ class DataProcessor:
         filters: list[str] = None,  # BUG: Mutable default!
     ) -> list[int]:
         """
-        Process data with optional filters.
+        선택적 filter로 데이터를 처리합니다.
 
-        BUG: filters list is shared across calls!
+        BUG: 호출들이 filters list를 공유합니다!
         """
         if filters is None:
             filters = []
-        filters.append("default_filter")  # Modifies shared list!
+        filters.append("default_filter")  # 공유 list를 수정합니다!
 
         result = []
         for item in data:
@@ -98,20 +98,20 @@ class DataProcessor:
 if __name__ == "__main__":
     cache = CacheManager()
 
-    # Demonstrate the bug
+    # Bug 시연
     print("=== Demonstrating Mutable Default Argument Bug ===\n")
 
-    # First call with no items
+    # Items 없이 첫 번째 호출
     cache.add_items("key1")
     print(f"key1: {cache.cache['key1']}")
 
-    # Second call with no items - SURPRISE! Gets the same list
+    # Items 없이 두 번째 호출 - 놀랍게도 같은 list를 받습니다!
     cache.add_items("key2")
-    print(f"key2: {cache.cache['key2']}")  # Will have TWO timestamps!
+    print(f"key2: {cache.cache['key2']}")  # Timestamp가 두 개가 됩니다!
 
-    # Third call - even worse!
+    # 세 번째 호출 - 더 나빠집니다!
     cache.add_items("key3")
-    print(f"key3: {cache.cache['key3']}")  # Will have THREE timestamps!
+    print(f"key3: {cache.cache['key3']}")  # Timestamp가 세 개가 됩니다!
 
     print("\nAll keys share the same list object!")
     print(f"key1 is key2: {cache.cache['key1'] is cache.cache['key2']}")

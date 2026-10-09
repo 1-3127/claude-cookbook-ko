@@ -1,101 +1,61 @@
-# Content policy enforcement with Claude
+# Claude로 content policy 적용하기
 
-Turn a written content policy into rules a program can enforce.
+문서로 작성한 content policy를 program이 적용할 수 있는 rule로 바꿉니다.
 
-## The problem
+## 문제
 
-Content moderation is the process of checking content against a written policy before it
-goes out, then deciding what happens to it: publish it, reject it, or send it to a human
-reviewer. The content can come from anywhere. Users post comments, sellers create
-listings, advertisers submit creatives, and your own marketing team drafts campaigns that
-legal has to clear. The policy is a document written in plain English by a policy, legal,
-or brand team. The content arrives continuously, often at volumes no human team can keep
-up with.
+Content moderation은 콘텐츠를 내보내기 전에 문서로 작성된 정책에 맞춰 확인한 뒤 게시, 거부, 사람 reviewer에게 전달 중 어떤 처리를 할지 결정하는 과정입니다. 콘텐츠는 어디에서나 올 수 있습니다. 사용자는 comment를 게시하고, 판매자는 listing을 만들고, 광고주는 creative를 제출하며, 자체 marketing team은 법무팀이 승인해야 하는 campaign을 작성합니다. 정책은 정책, 법무, brand team이 일상적인 영어로 작성한 문서입니다. 콘텐츠는 지속적으로 들어오며, 어떤 사람 team도 따라갈 수 없는 규모인 경우가 많습니다.
 
-The review has real constraints. Decisions have to be consistent: two identical
-submissions can't get different answers. Rejections have to be explainable, because
-submitters appeal and regulators ask. And the policy keeps changing (a new state
-regulation, a new category of scam), so whatever enforces it has to change safely too.
+review에는 실제 제약이 있습니다. 결정은 일관되어야 합니다. 동일한 두 제출물에 다른 답이 나와서는 안 됩니다. 제출자가 이의를 제기하고 규제기관이 질문하므로 거부는 설명 가능해야 합니다. 정책은 계속 바뀌므로(새 주 규정, 새 사기 category), 이를 적용하는 것도 안전하게 바뀌어야 합니다.
 
-## The usual approach
+## 일반적인 접근 방식
 
-The natural first build with an LLM is to put the entire policy document in a prompt,
-append the content, and ask for a verdict. It's a fine prototype, and it works in a demo.
-At production volume it runs into all three constraints. The same content can get
-different verdicts on different runs. The explanation for a rejection is whatever prose
-the model happened to generate, which no reviewer can check line by line. And a policy
-change is just a prompt edit: there is nothing to review, diff, or roll back, and every
-past decision was made under a version of the prompt nobody recorded.
+LLM으로 자연스럽게 처음 만드는 것은 전체 정책 문서를 prompt에 넣고 콘텐츠를 붙인 뒤 판정을 요청하는 것입니다. 괜찮은 prototype이며 demo에서 작동합니다. production 규모에서는 세 제약에 모두 부딪힙니다. 같은 콘텐츠가 실행마다 다른 판정을 받을 수 있습니다. 거부 설명은 model이 우연히 생성한 산문이며, reviewer가 줄마다 확인할 수 없습니다. 정책 변경은 단순한 prompt 수정입니다. review, diff, rollback할 것이 없고 과거의 모든 결정은 아무도 기록하지 않은 prompt version 아래에서 이루어졌습니다.
 
-## What this cookbook does instead
+## 이 cookbook의 방식
 
-Claude runs in exactly two places, and neither one decides the verdict:
+Claude는 정확히 두 곳에서 실행되고 어느 쪽도 판정을 결정하지 않습니다.
 
-![Architecture: authoring compiles policy prose into a validated, versioned ruleset; runtime extracts typed fields from each submission and a pure-function rule engine produces the verdict](images/architecture.png)
+![Architecture: 작성 시 정책 산문을 검증되고 version이 관리되는 ruleset으로 compile; runtime에 각 제출물에서 typed field를 추출하고 pure-function rule engine이 판정 생성](images/architecture.png)
 
-- The **compiler** turns each policy clause into rules over a field schema you define.
-  A static validator checks every rule against the schema and sends problems back to
-  Claude to fix. Clauses that need judgment ("no one who looks under 25") become judged
-  fields that get answered during extraction. Clauses that can't be checked at all are
-  listed as uncompilable instead of quietly dropped.
-- The **extractor** reads each submission, text and image, into typed fields with one
-  API call. That call is the entire per-review cost.
-- The **engine** is about 200 lines of plain Python with no model calls. It applies the
-  rules to the fields and produces the verdict, with a trace showing which rules fired
-  and why. Same inputs, same verdict, every time. Rules can be scoped to placement
-  ("only in New Jersey"), and when the model couldn't determine something a rule needs,
-  the submission goes to human review instead of getting a guess. Re-checking content
-  under a different placement or a new ruleset version costs nothing.
+- **compiler**는 각 정책 조항을 직접 정의한 field schema에 대한 rule로 바꿉니다. static validator가 모든 rule을 schema에 맞춰 확인하고 문제를 Claude에 돌려보내 수정합니다. 판단이 필요한 조항("25세 미만으로 보이는 사람이 없어야 한다")은 extraction에서 답하는 judged field가 됩니다. 전혀 확인할 수 없는 조항은 조용히 버리는 대신 uncompilable로 나열합니다.
+- **extractor**는 각 제출물의 텍스트와 이미지를 한 번의 API 호출로 typed field로 읽습니다. 그 호출이 review마다 드는 비용의 전부입니다.
+- **engine**은 model call 없는 일반 Python 약 200줄입니다. field에 rule을 적용하여 판정을 생성하고, 어떤 rule이 왜 발동했는지 보여주는 trace를 제공합니다. 언제나 같은 입력은 같은 판정을 냅니다. rule을 placement로 범위를 제한할 수 있고("New Jersey에서만"), model이 rule에 필요한 것을 판단하지 못했다면 제출물은 추측된 답을 받는 대신 사람 review로 갑니다. 다른 placement나 새 ruleset version으로 콘텐츠를 다시 확인하는 데는 비용이 들지 않습니다.
 
-Start with **[guide.ipynb](guide.ipynb)**. It is fully executed, so you can read the
-outputs without running anything.
+**[guide.ipynb](guide.ipynb)**부터 시작하세요. 완전히 실행된 상태이므로 아무것도 실행하지 않고 output을 읽을 수 있습니다.
 
-## What's in here
+## 포함된 것
 
-The pattern isn't tied to any one kind of content. Anywhere content gets checked against
-a written policy fits: product listings, ad creatives, comments and reviews, job
-postings, seller profiles, video and podcast metadata, marketing copy going through
-legal or brand review. The cookbook works three of these end to end:
+이 패턴은 특정 콘텐츠 종류에 묶여 있지 않습니다. 콘텐츠를 문서로 작성된 정책에 맞춰 확인하는 모든 곳에 맞습니다. product listing, 광고 creative, comment와 review, 채용 게시물, 판매자 profile, video와 podcast metadata, 법무 또는 brand review를 받는 marketing 문구 등입니다. cookbook은 이 중 세 가지를 end-to-end로 다룹니다.
 
-| Path | What it is |
+| Path | 내용 |
 |---|---|
-| `guide.ipynb` | The cookbook: schema, rule language, engine, compiler, LLM assertions, extraction, adding rules from plain English, domain swap, evaluation |
-| `engine.py`, `pipeline.py` | The rule engine and the two Claude stages; the guide imports them and shows the interesting parts |
-| `data/ad_creatives/` | The worked example: schema, policy document, a hand-written reference ruleset, labeled samples, and synthetic creative images (`build_creatives.py` regenerates them) |
-| `data/product_listings/` | Second domain: marketplace listings (counterfeits, medical claims, off-platform payment, seller-tier rules) |
-| `data/ugc/` | Third domain: comments and reviews (harassment, PII, spam) |
-| `evaluation/run_eval.py` | Runs the whole pipeline against the labeled samples in all three domains |
+| `guide.ipynb` | Cookbook: schema, rule language, engine, compiler, LLM assertion, extraction, 일상적인 영어로 rule 추가, domain 변경, 평가 |
+| `engine.py`, `pipeline.py` | Rule engine과 두 Claude stage; guide에서 import하고 관심 부분을 보여줌 |
+| `data/ad_creatives/` | 실습 예제: schema, 정책 문서, 직접 작성한 참조 ruleset, label이 있는 sample, synthetic creative 이미지(`build_creatives.py`로 다시 생성) |
+| `data/product_listings/` | 두 번째 domain: marketplace listing(위조, 의학적 주장, platform 밖 결제, seller-tier rule) |
+| `data/ugc/` | 세 번째 domain: comment와 review(괴롭힘, PII, spam) |
+| `evaluation/run_eval.py` | 세 domain의 label이 있는 sample에 대해 전체 pipeline 실행 |
 
-All companies and brands in the data are made up, and the creative images are generated
-with Pillow, so the ground-truth labels are correct by construction and nothing here
-resembles a real advertiser.
+데이터의 모든 회사와 brand는 만들어낸 것이고 creative 이미지는 Pillow로 생성하므로 ground-truth label은 구성 자체로 정확하며 여기의 어떤 것도 실제 광고주를 닮지 않습니다.
 
-## How well it works
+## 얼마나 잘 작동하는가
 
-On the 22 labeled samples across the three domains, the pipeline gets 21 decisions right.
-The one miss is a genuinely borderline comment (a new account linking their own blog:
-promotional or not?), and the notebook walks through why it happens and how to fix it:
-you sharpen one field description in the schema, not the rules or the engine.
+세 domain의 label이 있는 22개 sample에서 pipeline은 21개 결정을 맞힙니다. 유일한 오답은 실제로 경계선상의 comment(새 계정이 자신의 blog를 link: 홍보인가 아닌가?)이며, Notebook은 발생 이유와 수정 방법을 설명합니다. rule이나 engine이 아니라 schema의 field description 하나를 명확하게 합니다.
 
-## Run it
+## 실행
 
 ```bash
-# from the repo root (or standalone: pip install anthropic python-dotenv)
+# repo root에서(또는 standalone: pip install anthropic python-dotenv)
 uv sync --all-extras
-# from capabilities/content_moderation/, runs the full 22-sample evaluation:
+# capabilities/content_moderation/에서 전체 22개 sample 평가 실행:
 python evaluation/run_eval.py
 ```
 
-The notebook's own evaluation cell runs 2 samples per domain by default to keep it cheap;
-set `RUN_FULL_EVAL=1` for the full table. A default notebook run takes about 10 to 15
-minutes and costs on the order of a dollar.
+Notebook 자체의 평가 cell은 비용을 낮추기 위해 기본적으로 domain별 sample 2개를 실행합니다. 전체 표를 보려면 `RUN_FULL_EVAL=1`을 설정하세요. 기본 Notebook 실행은 약 10–15분이 걸리고 약 1달러가 듭니다.
 
-## When to use this
+## 사용할 때
 
-It fits when the policy is yours and changes often, when verdicts have to be explained to
-submitters or auditors, when the same content gets re-checked across placements or policy
-versions, and when the people who own the policy aren't engineers.
+정책을 직접 소유하고 자주 변경하며, 제출자나 auditor에게 판정을 설명해야 하고, 같은 콘텐츠를 여러 placement나 정책 version에 걸쳐 다시 확인하며, 정책 책임자가 engineer가 아닐 때 적합합니다.
 
-It's the wrong tool for standard single-category detection like CSAM or violence, where
-dedicated classifiers are the right choice. And it's overkill for one-off classification
-with no policy-change story, where a single classification prompt does the job.
+CSAM이나 폭력과 같은 표준 단일 category 탐지에는 전용 classifier가 적합하므로 이 tool은 맞지 않습니다. 정책 변경 맥락이 없는 일회성 classification에는 단일 classification prompt가 일을 해결하므로 과도합니다.

@@ -1,4 +1,4 @@
-# All of these sublease agreements were created by Claude.
+# 이 sublease agreement는 모두 Claude가 작성했습니다.
 
 document1 = """
 COMMERCIAL SUBLEASE AGREEMENT

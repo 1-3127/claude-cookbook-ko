@@ -1,12 +1,12 @@
 """
-Utility functions for managing custom skills with Claude's Skills API.
+Claude Skills API로 custom skill을 관리하는 utility 함수입니다.
 
-This module provides helper functions for:
-- Creating and uploading custom skills
-- Listing and retrieving skill information
-- Managing skill versions
-- Testing skills with Claude
-- Deleting skills
+이 module은 다음 helper 함수를 제공합니다.
+- custom skill 생성 및 업로드
+- skill 정보 나열 및 조회
+- skill 버전 관리
+- Claude로 skill 테스트
+- skill 삭제
 """
 
 from pathlib import Path
@@ -18,27 +18,27 @@ from anthropic.lib import files_from_dir
 
 def create_skill(client: Anthropic, skill_path: str, display_title: str) -> dict[str, Any]:
     """
-    Create a new custom skill from a directory.
+    directory에서 새 custom skill을 생성합니다.
 
-    The directory must contain:
-    - SKILL.md file with YAML frontmatter (name, description)
-    - Optional: scripts, resources, REFERENCE.md
+    directory에 포함되어야 할 것:
+    - YAML frontmatter(name, description)가 있는 SKILL.md 파일
+    - 선택: script, resource, REFERENCE.md
 
     Args:
-        client: Anthropic client instance with Skills beta
-        skill_path: Path to skill directory containing SKILL.md
-        display_title: Human-readable name for the skill
+        client: Skills beta가 있는 Anthropic client instance
+        skill_path: SKILL.md가 있는 skill directory 경로
+        display_title: 사람이 읽을 수 있는 skill 이름
 
     Returns:
-        Dictionary with skill creation results:
+        skill 생성 결과 dictionary:
         {
             'success': bool,
-            'skill_id': str (if successful),
+            'skill_id': str (성공하면),
             'display_title': str,
             'latest_version': str,
             'created_at': str,
             'source': str ('custom'),
-            'error': str (if failed)
+            'error': str (실패하면)
         }
 
     Example:
@@ -48,7 +48,7 @@ def create_skill(client: Anthropic, skill_path: str, display_title: str) -> dict
         ...     print(f"Created skill: {result['skill_id']}")
     """
     try:
-        # Validate skill directory
+        # skill directory 검증
         skill_dir = Path(skill_path)
         if not skill_dir.exists():
             return {"success": False, "error": f"Skill directory does not exist: {skill_path}"}
@@ -57,7 +57,7 @@ def create_skill(client: Anthropic, skill_path: str, display_title: str) -> dict
         if not skill_md.exists():
             return {"success": False, "error": f"SKILL.md not found in {skill_path}"}
 
-        # Create skill using files_from_dir
+        # files_from_dir로 skill 생성
         skill = client.beta.skills.create(
             display_title=display_title, files=files_from_dir(skill_path)
         )
@@ -77,13 +77,13 @@ def create_skill(client: Anthropic, skill_path: str, display_title: str) -> dict
 
 def list_custom_skills(client: Anthropic) -> list[dict[str, Any]]:
     """
-    List all custom skills in the workspace.
+    workspace의 모든 custom skill을 나열합니다.
 
     Args:
-        client: Anthropic client instance with Skills beta
+        client: Skills beta가 있는 Anthropic client instance
 
     Returns:
-        List of skill dictionaries with metadata
+        metadata가 있는 skill dictionary 목록
 
     Example:
         >>> skills = list_custom_skills(client)
@@ -116,18 +116,18 @@ def get_skill_version(
     client: Anthropic, skill_id: str, version: str = "latest"
 ) -> dict[str, Any] | None:
     """
-    Get detailed information about a specific skill version.
+    특정 skill 버전의 상세 정보를 얻습니다.
 
     Args:
         client: Anthropic client instance
-        skill_id: ID of the skill
-        version: Version to retrieve (default: "latest")
+        skill_id: skill ID
+        version: 조회할 버전(기본값: "latest")
 
     Returns:
-        Dictionary with version details or None if not found
+        버전 상세 정보 dictionary, 찾지 못하면 None
     """
     try:
-        # Get latest version if not specified
+        # 지정하지 않으면 최신 버전 얻기
         if version == "latest":
             skill = client.beta.skills.retrieve(skill_id)
             version = skill.latest_version
@@ -150,15 +150,15 @@ def get_skill_version(
 
 def create_skill_version(client: Anthropic, skill_id: str, skill_path: str) -> dict[str, Any]:
     """
-    Create a new version of an existing skill.
+    기존 skill의 새 버전을 생성합니다.
 
     Args:
         client: Anthropic client instance
-        skill_id: ID of the existing skill
-        skill_path: Path to updated skill directory
+        skill_id: 기존 skill ID
+        skill_path: 갱신한 skill directory 경로
 
     Returns:
-        Dictionary with version creation results
+        버전 생성 결과 dictionary
     """
     try:
         version = client.beta.skills.versions.create(
@@ -178,28 +178,28 @@ def create_skill_version(client: Anthropic, skill_id: str, skill_path: str) -> d
 
 def delete_skill(client: Anthropic, skill_id: str, delete_versions: bool = True) -> bool:
     """
-    Delete a custom skill and optionally all its versions.
+    custom skill과 선택적으로 모든 버전을 삭제합니다.
 
-    Note: All versions must be deleted before the skill can be deleted.
+    참고: skill 삭제 전에 모든 버전을 삭제해야 합니다.
 
     Args:
         client: Anthropic client instance
-        skill_id: ID of skill to delete
-        delete_versions: Whether to delete all versions first
+        skill_id: 삭제할 skill ID
+        delete_versions: 먼저 모든 버전을 삭제할지 여부
 
     Returns:
-        True if successful, False otherwise
+        성공하면 True, 아니면 False
     """
     try:
         if delete_versions:
-            # First delete all versions
+            # 먼저 모든 버전 삭제
             versions = client.beta.skills.versions.list(skill_id=skill_id)
 
             for version in versions.data:
                 client.beta.skills.versions.delete(skill_id=skill_id, version=version.version)
                 print(f"  Deleted version: {version.version}")
 
-        # Then delete the skill itself
+        # 그다음 skill 자체 삭제
         client.beta.skills.delete(skill_id)
         print(f"✓ Deleted skill: {skill_id}")
         return True
@@ -217,17 +217,17 @@ def test_skill(
     include_anthropic_skills: list[str] | None = None,
 ) -> Any:
     """
-    Test a custom skill with a prompt.
+    프롬프트로 custom skill을 테스트합니다.
 
     Args:
         client: Anthropic client instance
-        skill_id: ID of skill to test
-        test_prompt: Prompt to test the skill
-        model: Model to use for testing
-        include_anthropic_skills: Optional list of Anthropic skill IDs to include
+        skill_id: 테스트할 skill ID
+        test_prompt: skill 테스트 프롬프트
+        model: 테스트에 사용할 model
+        include_anthropic_skills: 포함할 Anthropic skill ID의 선택적 목록
 
     Returns:
-        Response from Claude
+        Claude의 응답
 
     Example:
         >>> response = test_skill(
@@ -237,10 +237,10 @@ def test_skill(
         ...     include_anthropic_skills=["xlsx"]
         ... )
     """
-    # Build skills list
+    # skill 목록 구성
     skills = [{"type": "custom", "skill_id": skill_id, "version": "latest"}]
 
-    # Add Anthropic skills if requested
+    # 요청된 Anthropic skill 추가
     if include_anthropic_skills:
         for anthropic_skill in include_anthropic_skills:
             skills.append({"type": "anthropic", "skill_id": anthropic_skill, "version": "latest"})
@@ -259,14 +259,14 @@ def test_skill(
 
 def list_skill_versions(client: Anthropic, skill_id: str) -> list[dict[str, Any]]:
     """
-    List all versions of a skill.
+    skill의 모든 버전을 나열합니다.
 
     Args:
         client: Anthropic client instance
-        skill_id: ID of the skill
+        skill_id: skill ID
 
     Returns:
-        List of version dictionaries
+        버전 dictionary 목록
     """
     try:
         versions_response = client.beta.skills.versions.list(skill_id=skill_id)
@@ -290,50 +290,50 @@ def list_skill_versions(client: Anthropic, skill_id: str) -> list[dict[str, Any]
 
 def validate_skill_directory(skill_path: str) -> dict[str, Any]:
     """
-    Validate a skill directory structure before upload.
+    업로드 전에 skill directory 구조를 검증합니다.
 
-    Checks for:
-    - SKILL.md exists
-    - YAML frontmatter is valid
-    - Directory name matches skill name
-    - Total size is under 8MB
+    확인 항목:
+    - SKILL.md 존재
+    - YAML frontmatter가 유효함
+    - directory 이름과 skill 이름 일치
+    - 전체 크기 8MB 미만
 
     Args:
-        skill_path: Path to skill directory
+        skill_path: skill directory 경로
 
     Returns:
-        Dictionary with validation results
+        검증 결과 dictionary
     """
     result = {"valid": True, "errors": [], "warnings": [], "info": {}}
 
     skill_dir = Path(skill_path)
 
-    # Check directory exists
+    # directory 존재 확인
     if not skill_dir.exists():
         result["valid"] = False
         result["errors"].append(f"Directory does not exist: {skill_path}")
         return result
 
-    # Check for SKILL.md
+    # SKILL.md 확인
     skill_md = skill_dir / "SKILL.md"
     if not skill_md.exists():
         result["valid"] = False
         result["errors"].append("SKILL.md file is required")
     else:
-        # Read and validate SKILL.md
+        # SKILL.md 읽기 및 검증
         content = skill_md.read_text()
 
-        # Check for YAML frontmatter
+        # YAML frontmatter 확인
         if not content.startswith("---"):
             result["valid"] = False
             result["errors"].append("SKILL.md must start with YAML frontmatter (---)")
         else:
-            # Extract frontmatter
+            # frontmatter 추출
             try:
                 end_idx = content.index("---", 3)
                 frontmatter = content[3:end_idx].strip()
 
-                # Check for required fields
+                # 필수 field 확인
                 if "name:" not in frontmatter:
                     result["valid"] = False
                     result["errors"].append("YAML frontmatter must include 'name' field")
@@ -342,7 +342,7 @@ def validate_skill_directory(skill_path: str) -> dict[str, Any]:
                     result["valid"] = False
                     result["errors"].append("YAML frontmatter must include 'description' field")
 
-                # Check frontmatter size
+                # frontmatter 크기 확인
                 if len(frontmatter) > 1024:
                     result["valid"] = False
                     result["errors"].append(
@@ -353,7 +353,7 @@ def validate_skill_directory(skill_path: str) -> dict[str, Any]:
                 result["valid"] = False
                 result["errors"].append("Invalid YAML frontmatter format")
 
-    # Check total size
+    # 전체 크기 확인
     total_size = sum(f.stat().st_size for f in skill_dir.rglob("*") if f.is_file())
     result["info"]["total_size_mb"] = total_size / (1024 * 1024)
 
@@ -363,12 +363,12 @@ def validate_skill_directory(skill_path: str) -> dict[str, Any]:
             f"Total size exceeds 8MB (found: {total_size / (1024 * 1024):.2f} MB)"
         )
 
-    # Count files
+    # 파일 수 세기
     files = list(skill_dir.rglob("*"))
     result["info"]["file_count"] = len([f for f in files if f.is_file()])
     result["info"]["directory_count"] = len([f for f in files if f.is_dir()])
 
-    # Check for common files
+    # 일반적인 파일 확인
     if (skill_dir / "REFERENCE.md").exists():
         result["info"]["has_reference"] = True
 
@@ -383,10 +383,10 @@ def validate_skill_directory(skill_path: str) -> dict[str, Any]:
 
 def print_skill_summary(skill_info: dict[str, Any]) -> None:
     """
-    Print a formatted summary of a skill.
+    skill의 서식 지정 요약을 출력합니다.
 
     Args:
-        skill_info: Dictionary with skill information
+        skill_info: skill 정보 dictionary
     """
     print(f"📦 Skill: {skill_info.get('display_title', 'Unknown')}")
     print(f"   ID: {skill_info.get('skill_id', 'N/A')}")

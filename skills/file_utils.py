@@ -1,10 +1,10 @@
 """
-Utility functions for working with Claude Skills and Files API.
+Claude Skills와 Files API 작업용 utility 함수입니다.
 
-This module provides helper functions for:
-- Extracting file IDs from Claude API responses
-- Downloading files via the Files API
-- Saving files to disk
+이 module은 다음 helper 함수를 제공합니다.
+- Claude API 응답에서 file ID 추출
+- Files API로 파일 다운로드
+- disk에 파일 저장
 """
 
 import json
@@ -17,16 +17,16 @@ from anthropic import Anthropic
 
 def extract_file_ids(response) -> list[str]:
     """
-    Extract all file IDs from a Claude API response.
+    Claude API 응답에서 모든 file ID를 추출합니다.
 
-    Skills create files during code execution and return file_id attributes
-    in the tool results. This function parses the response to find all file IDs.
+    Skills는 code execution 중 파일을 생성하고 tool result에
+    file_id attribute를 반환합니다. 이 함수는 응답을 parse하여 모든 file ID를 찾습니다.
 
     Args:
-        response: The response object from client.beta.messages.create()
+        response: client.beta.messages.create()의 response 객체
 
     Returns:
-        List of file IDs found in the response
+        응답에서 찾은 file ID 목록
 
     Example:
         >>> response = client.beta.messages.create(...)
@@ -36,11 +36,11 @@ def extract_file_ids(response) -> list[str]:
     file_ids = []
 
     for block in response.content:
-        # Check for bash_code_execution_tool_result (beta API format)
+        # bash_code_execution_tool_result 확인(beta API 형식)
         if block.type == "bash_code_execution_tool_result":
             try:
                 if hasattr(block, "content") and hasattr(block.content, "content"):
-                    # Iterate through content array
+                    # content array 순회
                     for item in block.content.content:
                         if hasattr(item, "file_id"):
                             file_ids.append(item.file_id)
@@ -48,15 +48,15 @@ def extract_file_ids(response) -> list[str]:
                 print(f"Warning: Error parsing bash_code_execution_tool_result: {e}")
                 continue
 
-        # Check for legacy tool_result blocks (for backward compatibility)
+        # legacy tool_result block 확인(하위 호환용)
         elif block.type == "tool_result":
             try:
                 if hasattr(block, "output"):
                     output_str = str(block.output)
 
-                    # Look for file_id patterns in the output
+                    # 출력의 file_id 패턴 찾기
                     if "file_id" in output_str.lower():
-                        # Try to parse as JSON first
+                        # 먼저 JSON으로 parsing 시도
                         try:
                             output_json = json.loads(output_str)
                             if isinstance(output_json, dict) and "file_id" in output_json:
@@ -66,7 +66,7 @@ def extract_file_ids(response) -> list[str]:
                                     if isinstance(item, dict) and "file_id" in item:
                                         file_ids.append(item["file_id"])
                         except json.JSONDecodeError:
-                            # If not JSON, use regex to find file_id patterns
+                            # JSON이 아니면 regex로 file_id 패턴 찾기
                             import re
 
                             pattern = r"file_id['\"]?\s*[:=]\s*['\"]?([a-zA-Z0-9_-]+)"
@@ -76,7 +76,7 @@ def extract_file_ids(response) -> list[str]:
                 print(f"Warning: Error parsing tool_result block: {e}")
                 continue
 
-    # Remove duplicates while preserving order
+    # 순서를 유지하며 중복 제거
     seen = set()
     unique_file_ids = []
     for fid in file_ids:
@@ -91,16 +91,16 @@ def download_file(
     client: Anthropic, file_id: str, output_path: str, overwrite: bool = True
 ) -> dict[str, Any]:
     """
-    Download a file from Claude's Files API and save it locally.
+    Claude Files API에서 파일을 다운로드해 로컬에 저장합니다.
 
     Args:
         client: Anthropic client instance
-        file_id: The file ID returned by Skills
-        output_path: Local path where the file should be saved
-        overwrite: Whether to overwrite existing files (default: True)
+        file_id: Skills가 반환한 file ID
+        output_path: 파일을 저장할 로컬 경로
+        overwrite: 기존 파일을 덮어쓸지 여부(기본값: True)
 
     Returns:
-        Dictionary with download metadata:
+        다운로드 metadata dictionary:
         {
             'file_id': str,
             'output_path': str,
@@ -126,28 +126,28 @@ def download_file(
     }
 
     try:
-        # Check if file exists
+        # 파일 존재 여부 확인
         file_exists = os.path.exists(output_path)
         if file_exists and not overwrite:
             result["error"] = f"File already exists: {output_path} (set overwrite=True to replace)"
             return result
 
-        # Create output directory if it doesn't exist
+        # 없으면 output directory 생성
         output_dir = os.path.dirname(output_path)
         if output_dir:
             Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-        # Download file content from Files API (beta namespace)
+        # Files API에서 파일 content 다운로드(beta namespace)
         file_content = client.beta.files.download(file_id=file_id)
 
-        # Save to disk
+        # disk에 저장
         with open(output_path, "wb") as f:
             f.write(file_content.read())
 
-        # Get file size
+        # 파일 크기 얻기
         result["size"] = os.path.getsize(output_path)
         result["success"] = True
-        result["overwritten"] = file_exists  # Track if we overwrote an existing file
+        result["overwritten"] = file_exists  # 기존 파일 덮어쓰기 여부 추적
 
     except Exception as e:
         result["error"] = str(e)
@@ -163,20 +163,20 @@ def download_all_files(
     overwrite: bool = True,
 ) -> list[dict[str, Any]]:
     """
-    Extract and download all files from a Claude API response.
+    Claude API 응답에서 모든 파일을 추출하고 다운로드합니다.
 
-    This is a convenience function that combines extract_file_ids()
-    and download_file() to download all files in a single call.
+    extract_file_ids()와 download_file()을 결합해 한 호출로
+    모든 파일을 다운로드하는 편의 함수입니다.
 
     Args:
         client: Anthropic client instance
-        response: The response object from client.messages.create()
-        output_dir: Directory where files should be saved
-        prefix: Optional prefix for filenames (e.g., "financial_report_")
-        overwrite: Whether to overwrite existing files (default: True)
+        response: client.messages.create()의 response 객체
+        output_dir: 파일을 저장할 directory
+        prefix: 선택적 파일명 prefix(예: "financial_report_")
+        overwrite: 기존 파일을 덮어쓸지 여부(기본값: True)
 
     Returns:
-        List of download results (one per file)
+        다운로드 결과 목록(파일당 하나)
 
     Example:
         >>> response = client.messages.create(...)
@@ -191,22 +191,22 @@ def download_all_files(
     results = []
 
     for i, file_id in enumerate(file_ids, 1):
-        # Try to get file metadata for proper filename
+        # 올바른 파일명을 위해 파일 metadata 조회 시도
         try:
             file_info = client.beta.files.retrieve_metadata(file_id=file_id)
             filename = file_info.filename
         except Exception:
-            # If we can't get metadata, use a generic filename
+            # metadata를 얻지 못하면 일반 파일명 사용
             filename = f"file_{i}.bin"
 
-        # Add prefix if provided
+        # 제공된 prefix 추가
         if prefix:
             filename = f"{prefix}{filename}"
 
-        # Construct full output path
+        # 전체 output 경로 구성
         output_path = os.path.join(output_dir, filename)
 
-        # Download the file
+        # 파일 다운로드
         result = download_file(client, file_id, output_path, overwrite=overwrite)
         results.append(result)
 
@@ -215,14 +215,14 @@ def download_all_files(
 
 def get_file_info(client: Anthropic, file_id: str) -> dict[str, Any] | None:
     """
-    Retrieve metadata about a file from the Files API.
+    Files API에서 파일 metadata를 조회합니다.
 
     Args:
         client: Anthropic client instance
-        file_id: The file ID to query
+        file_id: query할 file ID
 
     Returns:
-        Dictionary with file metadata, or None if not found
+        파일 metadata dictionary, 찾지 못하면 None
 
     Example:
         >>> info = get_file_info(client, "file_abc123")
@@ -249,10 +249,10 @@ def get_file_info(client: Anthropic, file_id: str) -> dict[str, Any] | None:
 
 def print_download_summary(results: list[dict[str, Any]]) -> None:
     """
-    Print a formatted summary of file download results.
+    파일 다운로드 결과의 서식 지정 요약을 출력합니다.
 
     Args:
-        results: List of download results from download_all_files()
+        results: download_all_files()의 다운로드 결과 목록
 
     Example:
         >>> results = download_all_files(client, response)

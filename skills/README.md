@@ -1,139 +1,139 @@
 # Claude Skills Cookbook 🚀
 
-A comprehensive guide to using Claude's Skills feature for document generation, data analysis, and business automation. This cookbook demonstrates how to leverage Claude's built-in skills for Excel, PowerPoint, and PDF creation, as well as how to build custom skills for specialized workflows.
+문서 생성, data 분석, 업무 자동화를 위해 Claude의 Skills 기능을 사용하는 종합 가이드입니다. 이 cookbook은 Excel, PowerPoint, PDF 생성을 위한 내장 skill을 활용하는 방법과 특화된 workflow를 위한 custom skill 구축 방법을 보여 줍니다.
 
-> **🎯 See Skills in Action:** Check out **[Claude Creates Files](https://www.anthropic.com/news/create-files)** to see how these Skills power Claude's ability to create and edit documents directly in Claude.ai and the desktop app!
+> **🎯 Skills의 실제 동작 보기:** **[Claude의 파일 생성](https://www.anthropic.com/news/create-files)**에서 Skills가 Claude.ai와 desktop app 안에서 직접 문서를 생성하고 편집하는 능력을 뒷받침하는 방법을 확인하세요!
 
-## What are Skills?
+## Skills란 무엇인가요?
 
-Skills are organized packages of instructions, executable code, and resources that give Claude specialized capabilities for specific tasks. Think of them as "expertise packages" that Claude can discover and load dynamically to:
+Skills는 특정 작업에 특화된 능력을 Claude에 제공하는 지시, 실행 코드, resource로 구성된 package입니다. Claude가 다음을 위해 동적으로 발견하고 불러올 수 있는 "전문성 package"라고 생각하세요.
 
-- Create professional documents (Excel, PowerPoint, PDF, Word)
-- Perform complex data analysis and visualization
-- Apply company-specific workflows and branding
-- Automate business processes with domain expertise
+- 전문적인 문서 생성(Excel, PowerPoint, PDF, Word)
+- 복잡한 data 분석과 시각화 수행
+- 회사별 workflow와 branding 적용
+- 도메인 전문성으로 업무 과정 자동화
 
-📖 Read our engineering blog post on [Equipping agents for the real world with Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
+📖 engineering 블로그 [Skills로 agent가 실제 세계에 대응할 수 있게 하기](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)를 읽어 보세요.
 
-## Key Features
+## 핵심 기능
 
-- ✨ **Progressive Disclosure Architecture** - Skills load only when needed, optimizing token usage
-- 📊 **Financial Focus** - Real-world examples for finance and business analytics
-- 🔧 **Custom Skills Development** - Learn to build and deploy your own skills
-- 🎯 **Production-Ready Examples** - Code you can adapt for immediate use
+- ✨ **Progressive Disclosure Architecture** - 필요할 때만 Skills를 불러와 token 사용 최적화
+- 📊 **재무 중심** - 재무와 business analytics의 실제 예제
+- 🔧 **Custom Skills 개발** - 자신의 skill 구축과 배포 학습
+- 🎯 **Production에 사용할 수 있는 예제** - 즉시 사용하도록 조정할 수 있는 코드
 
-## Cookbook Structure
+## Cookbook 구조
 
-### 📚 [Notebook 1: Introduction to Skills](notebooks/01_skills_introduction.ipynb)
+### 📚 [Notebook 1: Skills 소개](notebooks/01_skills_introduction.ipynb)
 
-Learn the fundamentals of Claude's Skills feature with quick-start examples.
+빠른 시작 예제로 Claude Skills 기능의 기초를 배웁니다.
 
-- Understanding Skills architecture
-- Setting up the API with beta headers
-- Creating your first Excel spreadsheet
-- Generating PowerPoint presentations
-- Exporting to PDF format
+- Skills architecture 이해
+- beta header로 API 설정
+- 첫 Excel spreadsheet 생성
+- PowerPoint presentation 생성
+- PDF 형식으로 export
 
-### 💼 [Notebook 2: Financial Applications](notebooks/02_skills_financial_applications.ipynb)
+### 💼 [Notebook 2: 재무 Application](notebooks/02_skills_financial_applications.ipynb)
 
-Explore powerful business use cases with real financial data.
+실제 재무 data로 강력한 업무 사용 사례를 탐색합니다.
 
-- Building financial dashboards with charts and pivot tables
-- Portfolio analysis and investment reporting
-- Cross-format workflows: CSV → Excel → PowerPoint → PDF
-- Token optimization strategies
+- chart와 pivot table이 있는 재무 dashboard 구축
+- Portfolio 분석과 투자 보고
+- 형식 간 workflow: CSV → Excel → PowerPoint → PDF
+- Token 최적화 전략
 
-### 🔧 [Notebook 3: Custom Skills Development](notebooks/03_skills_custom_development.ipynb)
+### 🔧 [Notebook 3: Custom Skills 개발](notebooks/03_skills_custom_development.ipynb)
 
-Master the art of creating your own specialized skills.
+자신의 특화 skill을 만드는 기술을 익힙니다.
 
-- Building a financial ratio calculator
-- Creating company brand guidelines skill
-- Advanced: Financial modeling suite
-- [Best practices](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices) and security considerations
+- 재무 비율 계산기 구축
+- 회사 brand 지침 skill 생성
+- 고급: 재무 modeling suite
+- [모범 사례](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices)와 보안 고려 사항
 
-## Quick Start
+## 빠른 시작
 
-### Prerequisites
+### 사전 요구 사항
 
-- Python 3.8 or higher
-- Anthropic API key ([get one here](https://console.anthropic.com/))
-- Jupyter Notebook or JupyterLab
+- Python 3.8 이상
+- Anthropic API key([여기서 받기](https://console.anthropic.com/))
+- Jupyter Notebook 또는 JupyterLab
 
-### Installation
+### 설치
 
-1. **Clone the repository**
+1. **repository clone**
 
 ```bash
 git clone https://github.com/anthropics/claude-cookbooks.git
 cd claude-cookbooks/skills
 ```
 
-2. **Create virtual environment** (recommended)
+2. **virtual environment 생성**(권장)
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
 
-3. **Install dependencies**
+3. **dependency 설치**
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **Configure API key**
+4. **API key 설정**
 
 ```bash
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
+# .env를 편집하고 ANTHROPIC_API_KEY 추가
 ```
 
-5. **Launch Jupyter**
+5. **Jupyter 실행**
 
 ```bash
 jupyter notebook
 ```
 
-6. **Start with Notebook 1**
-   Open `notebooks/01_skills_introduction.ipynb` and follow along!
+6. **Notebook 1부터 시작**
+   `notebooks/01_skills_introduction.ipynb`를 열고 따라 하세요!
 
 ## Sample Data
 
-The cookbook includes realistic financial datasets in `sample_data/`:
+cookbook은 `sample_data/`에 현실적인 재무 dataset을 포함합니다.
 
-- 📊 **financial_statements.csv** - Quarterly P&L, balance sheet, and cash flow data
-- 💰 **portfolio_holdings.json** - Investment portfolio with performance metrics
-- 📋 **budget_template.csv** - Department budget with variance analysis
-- 📈 **quarterly_metrics.json** - KPIs and operational metrics
+- 📊 **financial_statements.csv** - 분기별 P&L, 재무상태표, 현금흐름 data
+- 💰 **portfolio_holdings.json** - 성과 metric이 있는 투자 portfolio
+- 📋 **budget_template.csv** - variance 분석이 있는 부서 budget
+- 📈 **quarterly_metrics.json** - KPI 및 운영 metric
 
-## Project Structure
+## 프로젝트 구조
 
 ```
 skills/
-├── notebooks/                    # Jupyter notebooks
+├── notebooks/                    # Jupyter notebook
 │   ├── 01_skills_introduction.ipynb
 │   ├── 02_skills_financial_applications.ipynb
 │   └── 03_skills_custom_development.ipynb
-├── sample_data/                  # Financial datasets
+├── sample_data/                  # 재무 dataset
 │   ├── financial_statements.csv
 │   ├── portfolio_holdings.json
 │   ├── budget_template.csv
 │   └── quarterly_metrics.json
-├── custom_skills/                # Your custom skills
+├── custom_skills/                # 자신의 custom skill
 │   ├── financial_analyzer/
 │   ├── brand_guidelines/
 │   └── report_generator/
-├── outputs/                      # Generated files
-├── docs/                         # Documentation
-├── requirements.txt             # Python dependencies
-├── .env.example                 # Environment template
-└── README.md                    # This file
+├── outputs/                      # 생성한 파일
+├── docs/                         # 문서
+├── requirements.txt             # Python dependency
+├── .env.example                 # 환경 template
+└── README.md                    # 이 파일
 ```
 
-## API Configuration
+## API 설정
 
-Skills require specific beta headers. The notebooks handle this automatically, but here's what's happening behind the scenes:
+Skills에는 특정 beta header가 필요합니다. notebook이 자동으로 처리하지만 내부적으로는 다음이 이루어집니다.
 
 ```python
 from anthropic import Anthropic
@@ -146,31 +146,31 @@ client = Anthropic(
 )
 ```
 
-**Required Beta Headers:**
+**필수 Beta Header:**
 
-- `code-execution-2025-08-25` - Enables code execution for Skills
-- `files-api-2025-04-14` - Required for downloading generated files
-- `skills-2025-10-02` - Enables Skills feature
+- `code-execution-2025-08-25` - Skills의 code execution 활성화
+- `files-api-2025-04-14` - 생성 파일 다운로드에 필요
+- `skills-2025-10-02` - Skills 기능 활성화
 
-## Working with Generated Files
+## 생성한 파일 사용
 
-When Skills create documents (Excel, PowerPoint, PDF, etc.), they return `file_id` attributes in the response. You must use the **Files API** to download these files.
+Skills가 문서(Excel, PowerPoint, PDF 등)를 만들면 응답에 `file_id` attribute를 반환합니다. 파일을 다운로드하려면 **Files API**를 사용해야 합니다.
 
-### How It Works
+### 작동 방식
 
-1. **Skills create files** during code execution
-2. **Response includes file_ids** for each created file
-3. **Use Files API** to download the actual file content
-4. **Save locally** or process as needed
+1. code execution 중 **Skills가 파일 생성**
+2. 각 생성 파일의 **file_id가 응답에 포함**
+3. 실제 파일 content를 다운로드하려면 **Files API 사용**
+4. **로컬 저장** 또는 필요에 따라 처리
 
-### Example: Creating and Downloading an Excel File
+### 예제: Excel 파일 생성과 다운로드
 
 ```python
 from anthropic import Anthropic
 
 client = Anthropic(api_key="your-api-key")
 
-# Step 1: Use a skill to create a file
+# 1단계: skill로 파일 생성
 response = client.messages.create(
     model="claude-sonnet-4-6",
     max_tokens=4096,
@@ -186,169 +186,169 @@ response = client.messages.create(
     }]
 )
 
-# Step 2: Extract file_id from the response
+# 2단계: 응답에서 file_id 추출
 file_id = None
 for block in response.content:
     if block.type == "tool_result" and hasattr(block, 'output'):
-        # Look for file_id in the tool output
+        # tool 출력에서 file_id 찾기
         if 'file_id' in str(block.output):
-            file_id = extract_file_id(block.output)  # Parse the file_id
+            file_id = extract_file_id(block.output)  # file_id parse
             break
 
-# Step 3: Download the file using Files API
+# 3단계: Files API로 파일 다운로드
 if file_id:
     file_content = client.beta.files.download(file_id=file_id)
 
-    # Step 4: Save to disk
+    # 4단계: disk에 저장
     with open("outputs/budget.xlsx", "wb") as f:
         f.write(file_content.read())
 
     print(f"✅ File downloaded: budget.xlsx")
 ```
 
-### Files API Methods
+### Files API Method
 
 ```python
-# Download file content (binary)
+# 파일 content 다운로드(binary)
 content = client.beta.files.download(file_id="file_abc123...")
 with open("output.xlsx", "wb") as f:
-    f.write(content.read())  # Use .read() not .content
+    f.write(content.read())  # .content 대신 .read() 사용
 
-# Get file metadata
+# 파일 metadata 얻기
 info = client.beta.files.retrieve_metadata(file_id="file_abc123...")
-print(f"Filename: {info.filename}, Size: {info.size_bytes} bytes")  # Use size_bytes not size
+print(f"Filename: {info.filename}, Size: {info.size_bytes} bytes")  # size 대신 size_bytes 사용
 
-# List all files
+# 모든 파일 나열
 files = client.beta.files.list()
 for file in files.data:
     print(f"{file.filename} - {file.created_at}")
 
-# Delete a file
+# 파일 삭제
 client.beta.files.delete(file_id="file_abc123...")
 ```
 
-**Important Notes:**
+**중요 참고 사항:**
 
-- Files are stored temporarily on Anthropic's servers
-- Downloaded files should be saved to your local `outputs/` directory
-- The Files API uses the same API key as the Messages API
-- All notebooks include helper functions for file download
-- **Files are overwritten by default** - rerunning cells will replace existing files (you'll see `[overwritten]` in the output)
+- 파일은 Anthropic server에 일시 저장됨
+- 다운로드한 파일은 로컬 `outputs/` directory에 저장해야 함
+- Files API는 Messages API와 같은 API key 사용
+- 모든 notebook에 파일 다운로드 helper 함수 포함
+- **기본적으로 파일 덮어쓰기** - 셀을 다시 실행하면 기존 파일 교체(출력에 `[overwritten]` 표시)
 
-See the [Files API documentation](https://docs.claude.com/en/api/files-content) for complete details.
+전체 세부 사항은 [Files API 문서](https://docs.claude.com/en/api/files-content)를 참조하세요.
 
-## Built-in Skills Reference
+## 내장 Skills Reference
 
-Claude comes with these pre-built skills:
+Claude에는 다음 사전 제작 skill이 있습니다.
 
-| Skill      | ID     | Description                                                                 |
+| Skill      | ID     | 설명                                                                 |
 | ---------- | ------ | --------------------------------------------------------------------------- |
-| Excel      | `xlsx` | Create and manipulate Excel workbooks with formulas, charts, and formatting |
-| PowerPoint | `pptx` | Generate professional presentations with slides, charts, and transitions    |
-| PDF        | `pdf`  | Create formatted PDF documents with text, tables, and images                |
-| Word       | `docx` | Generate Word documents with rich formatting and structure                  |
+| Excel      | `xlsx` | formula, chart, 서식이 있는 Excel workbook 생성 및 조작 |
+| PowerPoint | `pptx` | slide, chart, transition이 있는 전문적인 presentation 생성 |
+| PDF        | `pdf`  | 텍스트, table, 이미지가 있는 서식 지정 PDF 문서 생성 |
+| Word       | `docx` | 풍부한 서식과 구조가 있는 Word 문서 생성 |
 
-## Creating Custom Skills
+## Custom Skills 생성
 
-Custom skills follow this structure:
+Custom skill은 다음 구조를 따릅니다.
 
 ```
 my_skill/
-├── SKILL.md           # Required: Instructions for Claude
-├── scripts/           # Optional: Python/JS code
+├── SKILL.md           # 필수: Claude용 지시
+├── scripts/           # 선택: Python/JS 코드
 │   └── processor.py
-└── resources/         # Optional: Templates, data
+└── resources/         # 선택: template, data
     └── template.xlsx
 ```
 
-Learn more in [Notebook 3](notebooks/03_skills_custom_development.ipynb).
+[Notebook 3](notebooks/03_skills_custom_development.ipynb)에서 더 알아보세요.
 
-## Common Use Cases
+## 일반적인 사용 사례
 
-### Financial Reporting
+### 재무 보고
 
-- Automated quarterly reports
-- Budget variance analysis
-- Investment performance dashboards
+- 자동 분기 보고서
+- Budget variance 분석
+- 투자 성과 dashboard
 
-### Data Analysis
+### Data 분석
 
-- Excel-based analytics with complex formulas
-- Pivot table generation
-- Statistical analysis and visualization
+- 복잡한 formula를 사용하는 Excel 기반 analytics
+- Pivot table 생성
+- 통계 분석 및 시각화
 
-### Document Automation
+### 문서 자동화
 
-- Branded presentation generation
-- Report compilation from multiple sources
-- Cross-format document conversion
+- brand가 적용된 presentation 생성
+- 여러 source에서 보고서 취합
+- 형식 간 문서 변환
 
-## Performance Tips
+## 성능 팁
 
-1. **Use Progressive Disclosure**: Skills load in stages to minimize token usage
-2. **Batch Operations**: Process multiple files in a single conversation
-3. **Skill Composition**: Combine multiple skills for complex workflows
-4. **Cache Reuse**: Use container IDs to reuse loaded skills
+1. **Progressive Disclosure 사용**: token 사용 최소화를 위해 단계별 Skills 로딩
+2. **Batch 작업**: 한 대화에서 여러 파일 처리
+3. **Skill 조합**: 복잡한 workflow에 여러 skill 결합
+4. **Cache 재사용**: container ID로 로드된 skill 재사용
 
-## Troubleshooting
+## 문제 해결
 
-### Common Issues
+### 일반적인 문제
 
-**API Key Not Found**
+**API Key를 찾지 못함**
 
 ```
 ValueError: ANTHROPIC_API_KEY not found
 ```
 
-→ Make sure you've copied `.env.example` to `.env` and added your key
+→ `.env.example`을 `.env`로 복사하고 key를 추가했는지 확인
 
-**Skills Beta Header Missing**
+**Skills Beta Header 누락**
 
 ```
 Error: Skills feature requires beta header
 ```
 
-→ Ensure you're using the correct beta headers as shown in the notebooks
+→ notebook에 나온 올바른 beta header 사용 확인
 
-**Token Limit Exceeded**
+**Token Limit 초과**
 
 ```
 Error: Request exceeds token limit
 ```
 
-→ Break large operations into smaller chunks or use progressive disclosure
+→ 큰 작업을 작은 chunk로 나누거나 progressive disclosure 사용
 
-## Resources
+## Resource
 
-### Documentation
+### 문서
 
-- 📖 [Claude API Documentation](https://docs.anthropic.com/en/api/messages)
-- 🔧 [Skills Documentation](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview)
+- 📖 [Claude API 문서](https://docs.anthropic.com/en/api/messages)
+- 🔧 [Skills 문서](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview)
 
-### Support Articles
+### 지원 문서
 
-- 📚 [Teach Claude your way of working using Skills](https://support.claude.com/en/articles/12580051-teach-claude-your-way-of-working-using-skills) - User guide for working with Skills
-- 🛠️ [How to create a skill with Claude through conversation](https://support.claude.com/en/articles/12599426-how-to-create-a-skill-with-claude-through-conversation) - Interactive skill creation guide
+- 📚 [Skills로 Claude에게 자신의 작업 방식 가르치기](https://support.claude.com/en/articles/12580051-teach-claude-your-way-of-working-using-skills) - Skills 작업 사용자 가이드
+- 🛠️ [대화를 통해 Claude로 skill 만드는 방법](https://support.claude.com/en/articles/12599426-how-to-create-a-skill-with-claude-through-conversation) - Interactive skill 생성 가이드
 
-### Community & Support
+### Community 및 Support
 
 - 💬 [Claude Support](https://support.claude.com)
 - 🐙 [GitHub Issues](https://github.com/anthropics/claude-cookbooks/issues)
 
-## Contributing
+## 기여
 
-We welcome contributions! Please see [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+기여를 환영합니다! 지침은 [CONTRIBUTING.md](../CONTRIBUTING.md)를 참조하세요.
 
 ## License
 
-This cookbook is provided under the MIT License. See [LICENSE](../LICENSE) for details.
+이 cookbook은 MIT License로 제공됩니다. 자세한 내용은 [LICENSE](../LICENSE)를 참조하세요.
 
-## Acknowledgments
+## 감사의 말
 
-Special thanks to the Anthropic team for developing the Skills feature and providing the SDK.
+Skills 기능 개발과 SDK 제공에 대해 Anthropic 팀에 특별히 감사드립니다.
 
 ---
 
-**Questions?** Check the [FAQ](docs/FAQ.md) or open an issue.
+**질문이 있나요?** [FAQ](docs/FAQ.md)를 확인하거나 issue를 여세요.
 
-**Ready to start?** Open [Notebook 1](notebooks/01_skills_introduction.ipynb) and let's build something amazing! 🎉
+**시작할 준비가 됐나요?** [Notebook 1](notebooks/01_skills_introduction.ipynb)을 열고 멋진 것을 만들어 봅시다! 🎉

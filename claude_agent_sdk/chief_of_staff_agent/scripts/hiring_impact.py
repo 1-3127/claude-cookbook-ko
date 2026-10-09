@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Hiring Impact Calculator for TechStart Inc
-Calculates the financial impact of hiring engineers
+TechStart Inc용 Hiring Impact Calculator
+Engineer 채용의 재무 영향을 계산합니다
 """
 
 import json
@@ -12,38 +12,38 @@ def calculate_hiring_impact(
     num_engineers: int, salary_per_engineer: int = 200000
 ) -> dict[str, int | float | str]:
     """
-    Calculate the financial impact of hiring engineers.
+    Engineer 채용의 재무 영향을 계산합니다.
 
     Args:
-        num_engineers: Number of engineers to hire
-        salary_per_engineer: Annual salary per engineer (default: $200K)
+        num_engineers: 채용할 engineer 수
+        salary_per_engineer: Engineer당 연봉(기본값: $200K)
 
     Returns:
-        Dictionary with financial impact metrics
+        재무 영향 metrics의 dictionary
     """
-    # Current financials (from CLAUDE.md)
-    CURRENT_BURN_MONTHLY = 500000  # $500K/month
-    CURRENT_RUNWAY_MONTHS = 20  # 20 months
+    # 현재 재무 정보(CLAUDE.md에서 가져옴)
+    CURRENT_BURN_MONTHLY = 500000  # $500K/월
+    CURRENT_RUNWAY_MONTHS = 20  # 20개월
     CASH_IN_BANK = 10000000  # $10M
 
-    # Calculate loaded cost (salary + benefits + taxes = salary * 1.3)
+    # 총부담 비용 계산(급여 + 복리후생 + 세금 = 급여 * 1.3)
     annual_loaded_cost_per_engineer = salary_per_engineer * 1.3
     monthly_cost_per_engineer = annual_loaded_cost_per_engineer / 12
 
-    # Total monthly cost increase
+    # 총 월 비용 증가
     total_monthly_increase = monthly_cost_per_engineer * num_engineers
 
-    # New burn rate
+    # 새로운 burn rate
     new_burn_monthly = CURRENT_BURN_MONTHLY + total_monthly_increase
 
-    # New runway
+    # 새로운 runway
     new_runway_months = CASH_IN_BANK / new_burn_monthly
     runway_reduction_months = CURRENT_RUNWAY_MONTHS - new_runway_months
 
-    # Calculate potential revenue impact (assumption: engineers increase velocity by 15%)
-    velocity_increase = 0.15 * num_engineers / 5  # Assuming 5 engineers = 15% increase
+    # 잠재적 매출 영향 계산(가정: engineer가 velocity를 15% 증가)
+    velocity_increase = 0.15 * num_engineers / 5  # Engineer 5명 = 15% 증가로 가정
 
-    # Recommendation
+    # 권고
     if runway_reduction_months > 3:
         recommendation = "HIGH RISK: Significant runway reduction. Consider phased hiring."
     elif runway_reduction_months > 1.5:
@@ -67,7 +67,7 @@ def calculate_hiring_impact(
 
 
 def main() -> None:
-    # Parse command line arguments
+    # command line argument 파싱
     if len(sys.argv) < 2:
         print("Usage: python hiring_impact.py <num_engineers> [salary_per_engineer]")
         sys.exit(1)
@@ -75,13 +75,13 @@ def main() -> None:
     num_engineers = int(sys.argv[1])
     salary = int(sys.argv[2]) if len(sys.argv) > 2 else 200000
 
-    # Calculate impact
+    # 영향 계산
     impact = calculate_hiring_impact(num_engineers, salary)
 
-    # Output as JSON for easy parsing
+    # 쉽게 parsing하도록 JSON 출력
     print(json.dumps(impact, indent=2))
 
-    # Also print summary
+    # 요약도 출력
     print("\n=== HIRING IMPACT SUMMARY ===")
     print(f"Hiring {impact['num_engineers']} engineers at ${impact['salary_per_engineer']:,}/year")
     print(f"Monthly burn increase: ${impact['total_monthly_increase']:,.0f}")

@@ -1,10 +1,9 @@
-"""Transparent SSE relay between client and agent pod.
+"""Client와 agent pod 사이의 투명한 SSE relay.
 
-The gateway doesn't understand the agent's event stream — it just pipes
-bytes through.  ``hosting/server.py`` inside the pod speaks Server-Sent
-Events on ``POST /sessions/{id}/messages``; we open that request and
-forward the raw SSE bytes to the caller without parsing them.  If the
-agent's wire format changes, this file doesn't care.
+Gateway는 agent의 event stream을 이해하지 않으며 byte를 그대로 전달합니다.
+Pod 안의 ``hosting/server.py``는 ``POST /sessions/{id}/messages``에서
+Server-Sent Events를 사용합니다. 해당 요청을 열어 parsing 없이 raw SSE byte를
+호출자에게 전달합니다. Agent의 wire format이 바뀌어도 이 파일은 영향을 받지 않습니다.
 """
 
 import json
@@ -18,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 AGENT_PORT = 8000
 
-# Connect/write/pool bounded so a dead pod IP fails fast; read unbounded
-# because an agent turn can legitimately stream for minutes.
+# 죽은 pod IP가 빠르게 실패하도록 connect/write/pool은 제한하고 read는 무제한.
+# Agent turn은 정상적으로도 몇 분 동안 streaming할 수 있기 때문입니다.
 _TIMEOUT = httpx.Timeout(connect=10.0, read=None, write=10.0, pool=10.0)
 
 
@@ -28,19 +27,19 @@ async def relay_sse(
     session_id: str,
     body: dict,
 ) -> AsyncIterator[bytes]:
-    """POST the request body to the agent pod and return a raw-SSE byte stream.
+    """Agent pod에 request body를 POST하고 raw-SSE byte stream을 반환합니다.
 
-    The upstream connection is established **before** this coroutine returns,
-    so a dead/unreachable pod surfaces as a clean 502 to the caller instead
-    of a dropped connection mid-stream (which clients see as ``curl (18)``).
-    The caller awaits this coroutine and wraps the returned iterator in a
-    ``StreamingResponse`` with ``media_type="text/event-stream"``.
+    이 coroutine이 반환되기 전에 upstream connection을 수립하므로, 죽거나
+    접근 불가능한 pod는 stream 도중 connection 중단(client에서는 ``curl (18)``)
+    대신 호출자에게 명확한 502로 나타납니다. 호출자는 coroutine을 await하고
+    반환한 iterator를 ``media_type="text/event-stream"``의 ``StreamingResponse``로
+    감쌉니다.
 
-    ``aiter_raw()`` (not ``aiter_lines()``) preserves multi-line ``data:``
-    payloads and the blank-line event delimiter exactly — no re-framing.
+    ``aiter_lines()``가 아닌 ``aiter_raw()``가 여러 줄의 ``data:`` payload 및
+    빈 줄 event delimiter를 정확히 보존합니다. Re-framing하지 않습니다.
     """
     url = f"http://{pod_ip}:{AGENT_PORT}/sessions/{session_id}/messages"
-    # Not async with on purpose — the client must outlive send(..., stream=True).
+    # 의도적으로 async with가 아님 — client는 send(..., stream=True)보다 오래 유지돼야 함.
     client = httpx.AsyncClient(timeout=_TIMEOUT)
     try:
         req = client.build_request("POST", url, json=body)
@@ -67,9 +66,9 @@ async def relay_sse(
             async for chunk in upstream.aiter_raw():
                 yield chunk
         except httpx.HTTPError as exc:
-            # The pod died mid-stream (OOM-kill, eviction).  The HTTP status
-            # already went out, so we can't 502 — emit the contract's
-            # ``event: error`` frame instead of dropping the connection.
+            # Stream 중간에 pod가 종료됨(OOM-kill, eviction). HTTP status를 이미
+            # 보냈으므로 502를 반환할 수 없습니다. Connection을 끊는 대신 contract의
+            # ``event: error`` frame을 내보냅니다.
             logger.warning(f"Upstream stream from {pod_ip} aborted: {exc!r}")
             payload = json.dumps({"message": f"agent pod stream aborted: {exc}"})
             yield f"event: error\ndata: {payload}\n\n".encode()

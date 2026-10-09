@@ -8,15 +8,15 @@ client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 def llm_call(prompt: str, system_prompt: str = "", model="claude-sonnet-4-6") -> str:
     """
-    Calls the model with the given prompt and returns the response.
+    주어진 프롬프트로 model을 호출하고 응답을 반환합니다.
 
     Args:
-        prompt (str): The user prompt to send to the model.
-        system_prompt (str, optional): The system prompt to send to the model. Defaults to "".
-        model (str, optional): The model to use for the call. Defaults to "claude-sonnet-4-6".
+        prompt (str): model에 보낼 user prompt.
+        system_prompt (str, optional): model에 보낼 system prompt. 기본값은 ""입니다.
+        model (str, optional): 호출에 사용할 model. 기본값은 "claude-sonnet-4-6"입니다.
 
     Returns:
-        str: The response from the language model.
+        str: language model의 응답.
     """
     client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     messages = [{"role": "user", "content": prompt}]
@@ -32,14 +32,14 @@ def llm_call(prompt: str, system_prompt: str = "", model="claude-sonnet-4-6") ->
 
 def extract_xml(text: str, tag: str) -> str:
     """
-    Extracts the content of the specified XML tag from the given text. Used for parsing structured responses
+    주어진 텍스트에서 지정한 XML tag의 내용을 추출합니다. 구조화된 응답을 parsing하는 데 사용합니다.
 
     Args:
-        text (str): The text containing the XML.
-        tag (str): The XML tag to extract content from.
+        text (str): XML이 포함된 텍스트.
+        tag (str): 내용을 추출할 XML tag.
 
     Returns:
-        str: The content of the specified XML tag, or an empty string if the tag is not found.
+        str: 지정한 XML tag의 내용. tag를 찾지 못하면 빈 문자열.
     """
     match = re.search(f"<{tag}>(.*?)</{tag}>", text, re.DOTALL)
     return match.group(1) if match else ""

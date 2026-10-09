@@ -1,5 +1,5 @@
 """
-Standalone Claude API Response Visualizer
+Standalone Claude API response 시각화 도구
 """
 
 import json
@@ -13,7 +13,7 @@ from rich.tree import Tree
 
 
 class ParsedContent:
-    """Represents a parsed content block from a Claude message."""
+    """Claude message에서 파싱한 content block을 나타냅니다."""
 
     def __init__(self, content_type: str, data: dict[str, Any]):
         self.type = content_type
@@ -21,7 +21,7 @@ class ParsedContent:
 
 
 class ParsedMessage:
-    """Represents a parsed Claude message with metadata."""
+    """Metadata가 포함된 파싱된 Claude message를 나타냅니다."""
 
     def __init__(
         self,
@@ -39,16 +39,16 @@ class ParsedMessage:
 
 
 def parse_content_block(block: dict[str, Any] | Any) -> ParsedContent:
-    """Parse a single content block from a message."""
-    # Handle dict format (from JSON)
+    """Message에서 content block 하나를 파싱합니다."""
+    # Dictionary 형식 처리 (JSON에서 변환)
     if isinstance(block, dict):
         content_type = block.get("type", "unknown")
         return ParsedContent(content_type, block)
 
-    # Handle Anthropic SDK objects
+    # Anthropic SDK object 처리
     if hasattr(block, "type"):
         content_type = block.type
-        # Convert to dict for easier access
+        # 쉽게 접근하도록 dictionary로 변환
         if hasattr(block, "model_dump"):
             data = block.model_dump()
         elif hasattr(block, "dict"):
@@ -57,7 +57,7 @@ def parse_content_block(block: dict[str, Any] | Any) -> ParsedContent:
             data = {"raw": str(block)}
         return ParsedContent(content_type, data)
 
-    # Fallback for text strings
+    # Text string을 위한 fallback
     if isinstance(block, str):
         return ParsedContent("text", {"text": block})
 
@@ -65,8 +65,8 @@ def parse_content_block(block: dict[str, Any] | Any) -> ParsedContent:
 
 
 def parse_response(response: dict[str, Any] | Any) -> ParsedMessage:
-    """Parse a Claude API response into a structured format."""
-    # Handle dict format (from JSON)
+    """Claude API response를 구조화된 형식으로 파싱합니다."""
+    # Dictionary 형식 처리 (JSON에서 변환)
     if isinstance(response, dict):
         role = response.get("role", "unknown")
         content_blocks = response.get("content", [])
@@ -84,14 +84,14 @@ def parse_response(response: dict[str, Any] | Any) -> ParsedMessage:
             usage=usage,
         )
 
-    # Handle Anthropic SDK Message object
+    # Anthropic SDK Message object 처리
     if hasattr(response, "content"):
         role = getattr(response, "role", "unknown")
         content_blocks = response.content
         model = getattr(response, "model", None)
         stop_reason = getattr(response, "stop_reason", None)
 
-        # Extract usage stats
+        # Usage 통계 추출
         usage = {}
         if hasattr(response, "usage"):
             usage_obj = response.usage
@@ -114,7 +114,7 @@ def parse_response(response: dict[str, Any] | Any) -> ParsedMessage:
 
 
 def format_json(data: Any, max_length: int = 500) -> str:
-    """Format data as JSON string, truncating if too long."""
+    """데이터를 JSON string으로 형식화하고 너무 길면 자릅니다."""
     json_str = json.dumps(data, indent=2)
     if len(json_str) > max_length:
         json_str = json_str[:max_length] + "\n  ... (truncated)"
@@ -122,10 +122,10 @@ def format_json(data: Any, max_length: int = 500) -> str:
 
 
 def render_text_content(content: ParsedContent, tree: Tree) -> None:
-    """Render a text content block."""
+    """Text content block을 render합니다."""
     text = content.data.get("text", "")
     if text:
-        # Truncate very long text
+        # 매우 긴 텍스트 자르기
         if len(text) > 1000:
             text = text[:1000] + "\n... (truncated)"
         text_node = tree.add("[cyan]Text[/cyan]")
@@ -133,7 +133,7 @@ def render_text_content(content: ParsedContent, tree: Tree) -> None:
 
 
 def render_tool_use(content: ParsedContent, tree: Tree) -> None:
-    """Render a tool_use content block."""
+    """tool_use content block을 render합니다."""
     tool_name = content.data.get("name", "unknown")
     tool_id = content.data.get("id", "")
     tool_input = content.data.get("input", {})
@@ -144,7 +144,7 @@ def render_tool_use(content: ParsedContent, tree: Tree) -> None:
     if tool_id:
         tool_node.add(f"[dim white]ID:[/dim white] {tool_id}")
 
-    # Show caller type if available
+    # Caller type이 있으면 표시
     if caller:
         caller_type = caller.get("type", "unknown")
         if caller_type == "code_execution_20250825":
@@ -162,7 +162,7 @@ def render_tool_use(content: ParsedContent, tree: Tree) -> None:
 
 
 def render_server_tool_use(content: ParsedContent, tree: Tree) -> None:
-    """Render a server_tool_use content block."""
+    """server_tool_use content block을 render합니다."""
     tool_id = content.data.get("id", "")
     tool_input = content.data.get("input", {})
     caller = content.data.get("caller", {})
@@ -176,7 +176,7 @@ def render_server_tool_use(content: ParsedContent, tree: Tree) -> None:
         caller_type = caller.get("type", "unknown")
         server_node.add(f"[dim white]Caller:[/dim white] {caller_type}")
 
-    # Show code from input if available
+    # Input에 code가 있으면 표시
     if tool_input:
         code = tool_input.get("code")
         if code:
@@ -194,7 +194,7 @@ def render_server_tool_use(content: ParsedContent, tree: Tree) -> None:
 
 
 def render_tool_result(content: ParsedContent, tree: Tree) -> None:
-    """Render a tool_result content block."""
+    """tool_result content block을 render합니다."""
     tool_id = content.data.get("tool_use_id", "")
     is_error = content.data.get("is_error", False)
     result_content = content.data.get("content", "")
@@ -227,7 +227,7 @@ def render_tool_result(content: ParsedContent, tree: Tree) -> None:
 
 
 def render_code_execution_result(content: ParsedContent, tree: Tree) -> None:
-    """Render a code_execution_tool_result content block."""
+    """code_execution_tool_result content block을 render합니다."""
     nested_content = content.data.get("content", {})
 
     if isinstance(nested_content, dict):
@@ -263,7 +263,7 @@ def render_code_execution_result(content: ParsedContent, tree: Tree) -> None:
 
 
 def render_content_block(content: ParsedContent, tree: Tree) -> None:
-    """Render a single content block based on its type."""
+    """Type에 따라 content block 하나를 render합니다."""
     if content.type == "text":
         render_text_content(content, tree)
     elif content.type == "tool_use":
@@ -275,18 +275,18 @@ def render_content_block(content: ParsedContent, tree: Tree) -> None:
     elif content.type == "code_execution_tool_result":
         render_code_execution_result(content, tree)
     else:
-        # Unknown content type
+        # 알 수 없는 content type
         unknown_node = tree.add(f"[magenta]Unknown Type:[/magenta] {content.type}")
         json_syntax = Syntax(format_json(content.data), "json", theme="monokai", line_numbers=False)
         unknown_node.add(json_syntax)
 
 
 def visualize_message(message: ParsedMessage, console: Console = None) -> None:
-    """Visualize a Claude API message in the terminal."""
+    """Terminal에서 Claude API message를 시각화합니다."""
     if console is None:
         console = Console()
 
-    # Create main tree with token usage in the title
+    # 제목에 token 사용량을 포함한 main tree 생성
     usage_str = ""
     if message.usage:
         input_tokens = message.usage.get("input_tokens", 0)
@@ -296,21 +296,21 @@ def visualize_message(message: ParsedMessage, console: Console = None) -> None:
 
     tree = Tree(f"[bold cyan]Claude Message[/bold cyan] ([green]{message.role}[/green]){usage_str}")
 
-    # Add metadata
+    # Metadata 추가
     if message.model:
         tree.add(f"[dim white]Model:[/dim white] {message.model}")
 
     if message.stop_reason:
         tree.add(f"[dim white]Stop Reason:[/dim white] {message.stop_reason}")
 
-    # Add content blocks
+    # Content block 추가
     if message.content:
         content_tree = tree.add(f"[bold white]Content[/bold white] ({len(message.content)} blocks)")
         for i, content in enumerate(message.content, 1):
             block_tree = content_tree.add(f"[dim white]Block {i}[/dim white]")
             render_content_block(content, block_tree)
 
-    # Create panel with the tree
+    # Tree를 포함한 panel 생성
     panel = Panel(
         tree,
         title="[bold]Claude API Response[/bold]",
@@ -323,9 +323,9 @@ def visualize_message(message: ParsedMessage, console: Console = None) -> None:
 
 class visualize:
     """
-    Context manager for auto-visualization of Claude API responses.
+    Claude API response의 자동 시각화를 위한 context manager.
 
-    Usage:
+    사용법:
         viz = visualize(auto_show=True)
         response = client.messages.create(...)
         viz.capture(response)
@@ -333,10 +333,10 @@ class visualize:
 
     def __init__(self, auto_show: bool = True):
         """
-        Initialize the visualizer.
+        Visualizer를 초기화합니다.
 
         Args:
-            auto_show: Whether to automatically show visualization (default: True)
+            auto_show: 자동으로 시각화를 표시할지 여부 (기본값: True)
         """
         self.auto_show = auto_show
         self.responses = []
@@ -344,10 +344,10 @@ class visualize:
 
     def capture(self, response: Any) -> None:
         """
-        Capture a response for visualization.
+        시각화를 위해 response를 capture합니다.
 
         Args:
-            response: Claude API response to capture
+            response: Capture할 Claude API response
         """
         self.responses.append(response)
 
@@ -356,7 +356,7 @@ class visualize:
             visualize_message(message, self.console)
 
     def show_all(self) -> None:
-        """Show all captured responses."""
+        """Capture한 모든 response를 표시합니다."""
         for response in self.responses:
             message = parse_response(response)
             visualize_message(message, self.console)
@@ -364,10 +364,10 @@ class visualize:
 
 def show_response(response: Any) -> None:
     """
-    Simple helper to visualize a single response.
+    Response 하나를 시각화하는 간단한 helper.
 
     Args:
-        response: Claude API response (Message object or dict)
+        response: Claude API response (Message object 또는 dictionary)
     """
     message = parse_response(response)
     visualize_message(message)

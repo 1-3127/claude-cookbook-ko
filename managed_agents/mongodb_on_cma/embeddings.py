@@ -1,9 +1,9 @@
-"""Embedding + rerank client for the MongoDB-on-CMA cookbook.
+"""MongoDB-on-CMA cookbook의 embedding + rerank client.
 
-`AtlasEmbeddingClient` adapts the MongoDB Atlas AI endpoint (`/v1/embeddings`, `/v1/rerank`)
-to the same `.embed()` / `.rerank()` surface as the `voyageai` SDK, so the rest of the
-cookbook is provider-agnostic. `make_embedding_client()` picks Atlas, Voyage, or neither
-(the seed ships precomputed vectors, so retrieval works with no provider at all).
+`AtlasEmbeddingClient`는 MongoDB Atlas AI endpoint(`/v1/embeddings`, `/v1/rerank`)를
+`voyageai` SDK와 같은 `.embed()` / `.rerank()` 인터페이스에 맞추어 cookbook의 나머지가
+provider에 구애받지 않게 합니다. `make_embedding_client()`는 Atlas, Voyage 또는 없음 중
+선택합니다(seed는 사전 계산된 vector를 제공하므로 provider가 전혀 없어도 retrieval 가능).
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ class _RerankResponse:
 
 
 class AtlasEmbeddingClient:
-    # Adapts the MongoDB Atlas AI endpoint to the voyageai .embed()/.rerank() interface.
+    # MongoDB Atlas AI endpoint를 voyageai .embed()/.rerank() 인터페이스에 맞춥니다.
     def __init__(
         self,
         api_key,

@@ -1,6 +1,6 @@
 ---
 name: slash-command-test
-description: example of how a slash-command works
+description: Slash command 작동 방식 예제
 ---
 
-Reverse the following sentence word wise: $ARGUMENTS
+다음 문장의 단어 순서를 뒤집으세요: $ARGUMENTS

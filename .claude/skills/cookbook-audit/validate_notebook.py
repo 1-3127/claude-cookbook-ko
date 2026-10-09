@@ -6,15 +6,15 @@
 # ]
 # ///
 """
-Automated validation checks for Anthropic Cookbook notebooks.
-Run this before manual review to catch common issues.
+Anthropic Cookbook Notebook의 자동 검증 검사입니다.
+일반적인 문제를 발견하도록 수동 검토 전에 실행하세요.
 
-Usage:
+사용법:
     python validate_notebook.py <notebook.ipynb>
 
-Exit codes:
-    0 - No issues found
-    1 - Critical issues found (must fix)
+Exit code:
+    0 - 발견된 문제 없음
+    1 - 중대한 문제 발견(반드시 수정)
 """
 
 import json
@@ -40,7 +40,7 @@ class NotebookValidator:
         self.cells = self.nb.get("cells", [])
 
     def get_cell_source(self, cell: dict) -> str:
-        """Get cell source as a single string."""
+        """셀 source를 하나의 문자열로 가져옵니다."""
         source = cell.get("source", [])
         if isinstance(source, list):
             return "".join(source)
@@ -48,21 +48,21 @@ class NotebookValidator:
 
     def convert_to_markdown(self) -> Path:
         """
-        Convert notebook to markdown for easier review.
-        Returns path to the markdown file in a temp directory.
-        Includes code cells but excludes outputs to save context.
-        Uses uv to run jupyter nbconvert with dependencies.
+        검토하기 쉽도록 Notebook을 Markdown으로 변환합니다.
+        임시 디렉터리의 Markdown 파일 경로를 반환합니다.
+        Context를 절약하도록 코드 셀은 포함하고 출력은 제외합니다.
+        Dependency와 함께 jupyter nbconvert를 실행하도록 uv를 사용합니다.
         """
-        # Create temp directory within skill folder
+        # Skill 폴더 안에 임시 디렉터리 생성
         skill_dir = Path(__file__).parent
         temp_dir = skill_dir / "tmp"
         temp_dir.mkdir(exist_ok=True)
 
-        # Generate output filename
+        # 출력 파일명 생성
         output_file = temp_dir / f"{self.notebook_path.stem}_review.md"
 
-        # Use uv to run jupyter nbconvert with nbconvert dependency
-        # Include code but exclude outputs for cleaner review
+        # Nbconvert dependency와 함께 jupyter nbconvert를 실행하도록 uv 사용
+        # 깔끔한 검토를 위해 코드는 포함하고 출력은 제외
         cmd = [
             "uv",
             "run",
@@ -74,7 +74,7 @@ class NotebookValidator:
             "markdown",
             "--output",
             str(output_file.absolute()),
-            "--no-prompt",  # Remove input/output prompts
+            "--no-prompt",  # 입력/출력 prompt 제거
             "--TemplateExporter.exclude_output=True",  # Exclude cell outputs
             str(self.notebook_path.absolute()),
         ]
@@ -85,20 +85,20 @@ class NotebookValidator:
         return output_file
 
     def check_hardcoded_secrets(self):
-        """Check for hardcoded API keys and secrets using detect-secrets."""
+        """Detect-secrets로 hardcoded API key와 secret을 확인합니다."""
         try:
-            # Run detect-secrets on the notebook file
-            # Use absolute path to ensure it works regardless of cwd
+            # Notebook 파일에 detect-secrets 실행
+            # Cwd와 관계없이 작동하도록 절대 경로 사용
             notebook_abs = self.notebook_path.absolute()
 
-            # Find project root (look for .git or go up until we find it)
+            # 프로젝트 루트 찾기(.git을 찾거나 발견할 때까지 상위로 이동)
             project_root = notebook_abs.parent
             while project_root.parent != project_root:
                 if (project_root / ".git").exists():
                     break
                 project_root = project_root.parent
 
-            # Check for baseline in multiple locations
+            # 여러 위치에서 baseline 확인
             baseline_paths = [
                 project_root / "scripts" / "detect-secrets" / ".secrets.baseline",
                 project_root / ".secrets.baseline",
@@ -111,7 +111,7 @@ class NotebookValidator:
 
             plugins_path = project_root / "scripts" / "detect-secrets" / "plugins.py"
 
-            # Build command with baseline if it exists
+            # Baseline이 있으면 포함하여 명령 구성
             if baseline_path:
                 cmd = [
                     "sh",
@@ -129,16 +129,16 @@ class NotebookValidator:
                 cmd,
                 capture_output=True,
                 text=True,
-                cwd=project_root,  # Run from repo root for scripts/detect-secrets access
+                cwd=project_root,  # scripts/detect-secrets에 접근할 수 있도록 repo root에서 실행
             )
 
-            # detect-secrets returns non-zero exit code if secrets found
+            # Detect-secrets는 secret을 발견하면 0이 아닌 exit code 반환
             if result.returncode != 0:
-                # Check both stdout and stderr for output (detect-secrets uses stdout)
+                # Stdout과 stderr 모두에서 출력 확인(detect-secrets는 stdout 사용)
                 output = result.stdout.strip() or result.stderr.strip()
 
                 if output:
-                    # Extract secret locations from output
+                    # 출력에서 secret 위치 추출
                     secret_lines = [
                         line
                         for line in output.split("\n")
@@ -149,7 +149,7 @@ class NotebookValidator:
                         self.issues.append(
                             "Contains potential hardcoded secrets (see details below)"
                         )
-                        # Print the full detect-secrets output for review
+                        # 검토를 위해 전체 detect-secrets 출력 표시
                         print(f"\n{'=' * 60}")
                         print("DETECT-SECRETS OUTPUT:")
                         print(f"{'=' * 60}")
@@ -167,7 +167,7 @@ class NotebookValidator:
                     )
 
         except FileNotFoundError:
-            # Fall back to basic pattern matching if detect-secrets not available
+            # Detect-secrets를 사용할 수 없으면 기본 pattern matching으로 fallback
             self.warnings.append(
                 "detect-secrets not found - using basic secret detection. "
                 "Install with: pip install detect-secrets"
@@ -178,7 +178,7 @@ class NotebookValidator:
             self._check_hardcoded_secrets_fallback()
 
     def _check_hardcoded_secrets_fallback(self):
-        """Fallback basic secret detection if detect-secrets unavailable."""
+        """Detect-secrets를 사용할 수 없으면 기본 secret 감지로 fallback합니다."""
         patterns = {
             "Anthropic API key": r"sk-ant-[a-zA-Z0-9-]+",
             "OpenAI API key": r"sk-[a-zA-Z0-9]{32,}",
@@ -192,7 +192,7 @@ class NotebookValidator:
                     self.issues.append(f"Cell {i}: Contains hardcoded {secret_type}")
 
     def check_introduction(self):
-        """Check for proper introduction."""
+        """적절한 도입부가 있는지 확인합니다."""
         if not self.cells:
             self.issues.append("Notebook is empty")
             return
@@ -204,14 +204,14 @@ class NotebookValidator:
 
         intro_text = self.get_cell_source(first_cell)
 
-        # Check for minimum length
+        # 최소 길이 확인
         if len(intro_text) < 200:
             self.warnings.append(
                 "Introduction seems too short (< 200 chars). Should include "
                 "problem statement, audience, and what will be accomplished"
             )
 
-        # Check for key elements
+        # 핵심 요소 확인
         has_prerequisites = bool(
             re.search(r"prerequisite|requirement|need|require", intro_text, re.IGNORECASE)
         )
@@ -219,7 +219,7 @@ class NotebookValidator:
             self.warnings.append("Introduction doesn't mention prerequisites")
 
     def check_pip_install_output(self):
-        """Check that pip install outputs are suppressed."""
+        """Pip install 출력이 억제되는지 확인합니다."""
         for i, cell in enumerate(self.cells):
             if cell.get("cell_type") != "code":
                 continue
@@ -234,16 +234,16 @@ class NotebookValidator:
                 )
 
     def check_code_explanations(self):
-        """Check that code blocks have explanatory text before them."""
+        """코드 블록 앞에 설명 텍스트가 있는지 확인합니다."""
         prev_cell_type = None
 
         for i, cell in enumerate(self.cells):
             cell_type = cell.get("cell_type")
 
             if cell_type == "code" and prev_cell_type == "code":
-                # Two code cells in a row - might be missing explanation
+                # 연속된 두 코드 셀 - 설명이 누락되었을 수 있음
                 source = self.get_cell_source(cell)
-                # Skip if it's just a simple continuation (e.g., print statement)
+                # 단순한 연속이면 건너뛰기(예: print 문)
                 if source.strip() and not source.strip().startswith("#"):
                     self.warnings.append(
                         f"Cell {i}: Code cell without preceding markdown "
@@ -253,7 +253,7 @@ class NotebookValidator:
             prev_cell_type = cell_type
 
     def check_verbose_output(self):
-        """Check for verbose debug output."""
+        """장황한 debug 출력을 확인합니다."""
         verbose_patterns = [
             r'print\(["\']debug',
             r"\.debug\(",
@@ -270,7 +270,7 @@ class NotebookValidator:
                     self.warnings.append(f"Cell {i}: Contains verbose debug output")
 
     def check_variable_names(self):
-        """Check for poor variable naming."""
+        """좋지 않은 변수 네이밍을 확인합니다."""
         poor_names = [r"\bx\d*\b", r"\btemp\d*\b", r"\bresult\d*\b", r"\bdata\d*\b"]
 
         for i, cell in enumerate(self.cells):
@@ -284,13 +284,13 @@ class NotebookValidator:
                     self.warnings.append(
                         f"Cell {i}: Contains unclear variable names: {', '.join(set(matches))}"
                     )
-                    break  # Only warn once per cell
+                    break  # cell당 한 번만 경고
 
     def check_model_constant(self):
-        """Check that model name is defined as a constant at the top."""
+        """Model 이름이 상단에 상수로 정의되어 있는지 확인합니다."""
         model_constant_pattern = r'(MODEL|model|MODEL_NAME|model_name)\s*=\s*["\']claude-'
 
-        # Check first 5 code cells for model constant definition
+        # 처음 5개 코드 셀에서 model 상수 정의 확인
         code_cells_checked = 0
         found_constant = False
 
@@ -308,7 +308,7 @@ class NotebookValidator:
                 break
 
         if not found_constant:
-            # Check if there are any model references at all
+            # Model 참조가 있는지 확인
             has_model_refs = False
             for cell in self.cells:
                 if cell.get("cell_type") != "code":
@@ -325,8 +325,8 @@ class NotebookValidator:
                 )
 
     def check_deprecated_patterns(self):
-        """Check for deprecated API patterns and invalid models."""
-        # Valid models
+        """Deprecated API 패턴과 유효하지 않은 model을 확인합니다."""
+        # 유효한 model
         valid_models = [
             "claude-fable-5",
             "claude-sonnet-5",
@@ -336,10 +336,10 @@ class NotebookValidator:
             "claude-opus-4-6",
         ]
 
-        # Pattern to match model strings
+        # Model 문자열과 일치하는 pattern
         model_pattern = r'["\']claude-([a-z0-9\.-]+)["\']'
 
-        # Deprecated models that should be migrated
+        # Migration해야 하는 deprecated model
         deprecated_models = {
             "claude-opus-4-1": "claude-opus-4-6",
         }
@@ -354,18 +354,18 @@ class NotebookValidator:
 
             source = self.get_cell_source(cell)
 
-            # Check for dated API model IDs (exclude Bedrock IDs which require dates)
+            # 날짜가 있는 API model ID 확인(날짜가 필요한 Bedrock ID 제외)
             dated_pattern = r'["\']claude-\w+-[\d.]+-\d{8}["\']'
             dated_matches = re.findall(dated_pattern, source)
             for match in dated_matches:
-                # Skip Bedrock model IDs (anthropic.claude-*) which require dates
+                # 날짜가 필요한 Bedrock model ID(anthropic.claude-*) 건너뛰기
                 if f"anthropic.{match.strip(chr(34)).strip(chr(39))}" not in source:
                     self.issues.append(
                         f"Cell {i}: Dated model ID {match} found. "
                         "Use non-dated aliases instead (e.g., claude-sonnet-4-6)"
                     )
 
-            # Check for invalid or deprecated models
+            # 유효하지 않거나 deprecated된 model 확인
             model_matches = re.findall(model_pattern, source)
             for match in model_matches:
                 full_model = f"claude-{match}"
@@ -380,17 +380,17 @@ class NotebookValidator:
                         f"Valid models are: {', '.join(valid_models)}"
                     )
 
-            # Check for other deprecated patterns
+            # 기타 deprecated pattern 확인
             for pattern, message in deprecated_patterns.items():
                 if re.search(pattern, source):
                     self.warnings.append(f"Cell {i}: {message}")
 
     def check_conclusion(self):
-        """Check for a conclusion section."""
+        """결론 섹션이 있는지 확인합니다."""
         if len(self.cells) < 3:
-            return  # Too short to require conclusion
+            return  # 결론을 요구하기에는 너무 짧음
 
-        # Check last few cells for conclusion-like content
+        # 마지막 몇 개 셀에서 결론에 해당하는 내용 확인
         last_markdown = None
         for cell in reversed(self.cells[-5:]):
             if cell.get("cell_type") == "markdown":
@@ -403,7 +403,7 @@ class NotebookValidator:
             self.warnings.append("Conclusion section seems too brief")
 
     def run_all_checks(self):
-        """Run all validation checks."""
+        """모든 검증 검사를 실행합니다."""
         self.check_hardcoded_secrets()
         self.check_introduction()
         self.check_pip_install_output()
@@ -415,7 +415,7 @@ class NotebookValidator:
         self.check_conclusion()
 
     def print_report(self):
-        """Print validation report."""
+        """검증 보고서를 출력합니다."""
         print(f"\n{'=' * 60}")
         print(f"Validation Report: {self.notebook_path.name}")
         print(f"{'=' * 60}\n")
@@ -449,7 +449,7 @@ class NotebookValidator:
         print(f"{'=' * 60}\n")
 
     def get_exit_code(self) -> int:
-        """Return appropriate exit code."""
+        """적절한 exit code를 반환합니다."""
         return 1 if self.issues else 0
 
 
@@ -466,11 +466,11 @@ def main():
     try:
         validator = NotebookValidator(notebook_path)
 
-        # Convert to markdown for easier review
+        # 검토하기 쉽도록 Markdown으로 변환
         print("Converting notebook to markdown for review...")
         validator.convert_to_markdown()
 
-        # Run validation checks
+        # 검증 검사 실행
         validator.run_all_checks()
         validator.print_report()
         sys.exit(validator.get_exit_code())

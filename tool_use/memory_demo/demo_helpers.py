@@ -1,8 +1,8 @@
 """
-Helper functions for memory cookbook demos.
+Memory cookbook demo용 helper 함수.
 
-This module provides reusable functions for running conversation loops
-with Claude, handling tool execution, and managing context.
+이 module은 Claude와의 대화 loop 실행, tool 실행 처리,
+context 관리를 위한 재사용 가능한 함수를 제공합니다.
 """
 
 from typing import Any
@@ -13,14 +13,14 @@ from memory_tool import MemoryToolHandler
 
 def execute_tool(tool_use: Any, memory_handler: MemoryToolHandler) -> str:
     """
-    Execute a tool use and return the result.
+    Tool 사용을 실행하고 결과를 반환합니다.
 
     Args:
-        tool_use: The tool use object from Claude's response
-        memory_handler: The memory tool handler instance
+        tool_use: Claude response의 tool use object
+        memory_handler: Memory tool handler instance
 
     Returns:
-        str: The result of the tool execution
+        str: Tool 실행 결과
     """
     if tool_use.name == "memory":
         result = memory_handler.execute(**tool_use.input)
@@ -40,21 +40,21 @@ def run_conversation_turn(
     verbose: bool = False,
 ) -> tuple[Any, list[dict[str, Any]], list[dict[str, Any]]]:
     """
-    Run a single conversation turn, handling tool uses.
+    Tool 사용을 처리하며 대화 turn 하나를 실행합니다.
 
     Args:
         client: Anthropic client instance
-        model: Model to use
-        messages: Current conversation messages
+        model: 사용할 model
+        messages: 현재 대화 message
         memory_handler: Memory tool handler instance
         system: System prompt
-        context_management: Optional context management config
-        thinking: Optional extended thinking config (e.g., {"type": "enabled", "budget_tokens": 10000})
-        max_tokens: Max tokens for response
-        verbose: Whether to print tool operations
+        context_management: 선택적 context 관리 config
+        thinking: 선택적 extended thinking config (예: {"type": "enabled", "budget_tokens": 10000})
+        max_tokens: Response의 최대 token 수
+        verbose: Tool 작업을 출력할지 여부
 
     Returns:
-        Tuple of (response, assistant_content, tool_results)
+        (response, assistant_content, tool_results)의 tuple
     """
     memory_tool: dict[str, Any] = {"type": "memory_20250818", "name": "memory"}
 
@@ -80,8 +80,8 @@ def run_conversation_turn(
 
     for content in response.content:
         if content.type == "thinking":
-            # Include thinking blocks in assistant content (required for tool use with thinking)
-            # Must include signature field when passing back to API
+            # Assistant content에 thinking block 포함 (thinking을 사용한 tool use에 필요)
+            # API에 다시 전달할 때 signature field를 포함해야 함
             if verbose:
                 thinking_preview = (
                     content.thinking[:100] + "..."
@@ -132,22 +132,22 @@ def run_conversation_loop(
     verbose: bool = False,
 ) -> Any:
     """
-    Run a complete conversation loop until Claude stops using tools.
+    Claude가 tool 사용을 멈출 때까지 전체 대화 loop를 실행합니다.
 
     Args:
         client: Anthropic client instance
-        model: Model to use
-        messages: Current conversation messages (will be modified in-place)
+        model: 사용할 model
+        messages: 현재 대화 message (제자리에서 수정)
         memory_handler: Memory tool handler instance
         system: System prompt
-        context_management: Optional context management config
-        thinking: Optional extended thinking config (e.g., {"type": "enabled", "budget_tokens": 10000})
-        max_tokens: Max tokens for response
-        max_turns: Maximum number of turns to prevent infinite loops
-        verbose: Whether to print progress
+        context_management: 선택적 context 관리 config
+        thinking: 선택적 extended thinking config (예: {"type": "enabled", "budget_tokens": 10000})
+        max_tokens: Response의 최대 token 수
+        max_turns: 무한 loop를 방지하기 위한 최대 turn 수
+        verbose: 진행 상황을 출력할지 여부
 
     Returns:
-        The final API response
+        최종 API response
     """
     turn = 1
     response = None
@@ -174,7 +174,7 @@ def run_conversation_loop(
             messages.append({"role": "user", "content": tool_results})
             turn += 1
         else:
-            # No more tool uses, conversation complete
+            # 더 이상 tool 사용이 없으면 대화 완료
             break
 
     return response
@@ -182,13 +182,13 @@ def run_conversation_loop(
 
 def print_context_management_info(response: Any) -> tuple[bool, int]:
     """
-    Print context management information from response.
+    Response에서 context 관리 정보를 출력합니다.
 
     Args:
-        response: API response to analyze
+        response: 분석할 API response
 
     Returns:
-        Tuple of (context_cleared, saved_tokens)
+        (context_cleared, saved_tokens)의 tuple
     """
     context_cleared = False
     saved_tokens = 0
@@ -199,7 +199,7 @@ def print_context_management_info(response: Any) -> tuple[bool, int]:
             context_cleared = True
             print("  ✂️  Context editing triggered!")
 
-            # Process all edits and sum up what was cleared
+            # 모든 edit을 처리하고 제거한 내용 합산
             total_tokens = 0
             for edit in edits:
                 edit_type = getattr(edit, "type", "unknown")

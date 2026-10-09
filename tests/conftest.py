@@ -1,4 +1,4 @@
-"""Pytest configuration and fixtures for notebook testing."""
+"""Notebook 테스트용 Pytest 설정과 fixture입니다."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from tests.notebook_tests.utils import (
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
-    """Add custom command-line options for notebook testing."""
+    """Notebook 테스트를 위한 custom 명령줄 option을 추가합니다."""
     parser.addoption(
         "--notebook",
         action="store",
@@ -59,12 +59,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def get_project_root() -> Path:
-    """Get the project root directory."""
+    """프로젝트 루트 디렉터리를 가져옵니다."""
     return Path(__file__).parent.parent
 
 
 def load_registry() -> list[dict[str, Any]]:
-    """Load the notebook registry."""
+    """Notebook registry를 불러옵니다."""
     registry_path = get_project_root() / "registry.yaml"
     if not registry_path.exists():
         return []
@@ -76,11 +76,11 @@ def load_registry() -> list[dict[str, Any]]:
 
 
 def get_notebooks_to_test(config: pytest.Config) -> list[Path]:
-    """Determine which notebooks to test based on config options."""
+    """Config option을 기준으로 테스트할 Notebook을 결정합니다."""
     root = get_project_root()
     notebooks = []
 
-    # Specific notebook
+    # 특정 Notebook
     if config.getoption("--notebook"):
         nb_path = Path(config.getoption("--notebook"))
         if not nb_path.is_absolute():
@@ -89,14 +89,14 @@ def get_notebooks_to_test(config: pytest.Config) -> list[Path]:
             return [nb_path]
         return []
 
-    # Specific directory
+    # 특정 디렉터리
     if config.getoption("--notebook-dir"):
         nb_dir = Path(config.getoption("--notebook-dir"))
         if not nb_dir.is_absolute():
             nb_dir = root / nb_dir
         return find_all_notebooks(nb_dir)
 
-    # Registry only
+    # Registry만
     if config.getoption("--registry-only"):
         registry = load_registry()
         for entry in registry:
@@ -105,7 +105,7 @@ def get_notebooks_to_test(config: pytest.Config) -> list[Path]:
                 notebooks.append(nb_path)
         return notebooks
 
-    # All notebooks
+    # 모든 Notebook
     exclude_patterns = [".ipynb_checkpoints/*"]
     if config.getoption("--skip-third-party"):
         exclude_patterns.append("third_party/*")
@@ -114,11 +114,11 @@ def get_notebooks_to_test(config: pytest.Config) -> list[Path]:
 
 
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
-    """Generate parameterized tests for notebooks."""
+    """Notebook에 대한 parameterized test를 생성합니다."""
     if "notebook_path" in metafunc.fixturenames:
         notebooks = get_notebooks_to_test(metafunc.config)
         if notebooks:
-            # Use relative paths for cleaner test names
+            # 깔끔한 테스트 이름을 위해 상대 경로 사용
             root = get_project_root()
             ids = [str(nb.relative_to(root)) for nb in notebooks]
             metafunc.parametrize("notebook_path", notebooks, ids=ids)
@@ -126,47 +126,47 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
 
 @pytest.fixture
 def project_root() -> Path:
-    """Fixture providing the project root directory."""
+    """프로젝트 루트 디렉터리를 제공하는 fixture입니다."""
     return get_project_root()
 
 
 @pytest.fixture
 def notebook_data(notebook_path: Path) -> dict[str, Any]:
-    """Fixture providing loaded notebook data."""
+    """불러온 Notebook 데이터를 제공하는 fixture입니다."""
     return load_notebook(notebook_path)
 
 
 @pytest.fixture
 def notebook_cells(notebook_data: dict[str, Any]) -> list:
-    """Fixture providing parsed notebook cells."""
+    """파싱된 Notebook 셀을 제공하는 fixture입니다."""
     return parse_notebook_cells(notebook_data)
 
 
 @pytest.fixture
 def validation_result(notebook_path: Path):
-    """Fixture providing validation result for a notebook."""
+    """Notebook 검증 결과를 제공하는 fixture입니다."""
     return validate_notebook_structure(notebook_path)
 
 
 @pytest.fixture
 def execute_notebooks(request: pytest.FixtureRequest) -> bool:
-    """Fixture indicating whether to execute notebooks."""
+    """Notebook 실행 여부를 나타내는 fixture입니다."""
     return request.config.getoption("--execute-notebooks")
 
 
 @pytest.fixture
 def notebook_timeout(request: pytest.FixtureRequest) -> int:
-    """Fixture providing the notebook execution timeout."""
+    """Notebook 실행 timeout을 제공하는 fixture입니다."""
     return request.config.getoption("--notebook-timeout")
 
 
 @pytest.fixture
 def has_api_key() -> bool:
-    """Fixture indicating whether the Anthropic API key is available."""
+    """Anthropic API key 사용 가능 여부를 나타내는 fixture입니다."""
     return bool(os.environ.get("ANTHROPIC_API_KEY"))
 
 
 @pytest.fixture
 def registry() -> list[dict[str, Any]]:
-    """Fixture providing the notebook registry."""
+    """Notebook registry를 제공하는 fixture입니다."""
     return load_registry()

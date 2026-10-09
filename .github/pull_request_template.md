@@ -1,43 +1,43 @@
 # Pull Request
 
-## Description
+## 설명
 
-<!-- Provide a clear and detailed description of your changes. -->
-<!-- For cookbook contributions, explain what the cookbook demonstrates and why it's valuable. -->
+<!-- 변경 내용을 명확하고 상세하게 설명하세요. -->
+<!-- Cookbook 기여의 경우 cookbook이 무엇을 보여주는지, 왜 가치가 있는지 설명하세요. -->
 
-## Type of Change
+## 변경 유형
 
-<!-- Check all that apply by replacing [ ] with [x] -->
+<!-- [ ]를 [x]로 바꾸어 해당하는 항목을 모두 선택하세요. -->
 
-- [ ] New cookbook
-- [ ] Bug fix (fixes an issue in existing cookbook)
-- [ ] Documentation update
-- [ ] Code quality improvement (refactoring, optimization)
-- [ ] Dependency update
-- [ ] Other (please describe):
+- [ ] 새로운 cookbook
+- [ ] 버그 수정(기존 cookbook의 문제 수정)
+- [ ] 문서 업데이트
+- [ ] 코드 품질 개선(refactoring, optimization)
+- [ ] Dependency 업데이트
+- [ ] 기타(설명해 주세요):
 
-## Cookbook Checklist (if applicable)
+## Cookbook 체크리스트(해당하는 경우)
 
-<!-- For new cookbooks or significant updates to existing ones -->
+<!-- 새로운 cookbook 또는 기존 cookbook의 주요 업데이트에 해당 -->
 
-- [ ] Cookbook has a clear, descriptive title
-- [ ] Includes a problem statement or use case description
-- [ ] Code is well-commented and easy to follow
-- [ ] Includes expected outputs or results
-- [ ] Added entry to `registry.yaml` (run `/add-registry <notebook-path>` or add manually)
+- [ ] Cookbook에 명확하고 내용을 잘 설명하는 제목이 있습니다.
+- [ ] 문제 정의 또는 사용 사례 설명이 포함되어 있습니다.
+- [ ] 코드에 주석이 잘 작성되어 있고 따라가기 쉽습니다.
+- [ ] 예상 출력 또는 결과가 포함되어 있습니다.
+- [ ] `registry.yaml`에 항목을 추가했습니다(`/add-registry <notebook-path>`를 실행하거나 수동으로 추가).
 
-## Testing
+## 테스트
 
-<!-- Describe how you tested your changes -->
+<!-- 변경 내용을 어떻게 테스트했는지 설명하세요. -->
 
-- [ ] I have tested this cookbook/change locally
-- [ ] All cells execute without errors
+- [ ] 이 cookbook/변경을 로컬에서 테스트했습니다.
+- [ ] 모든 셀이 오류 없이 실행됩니다.
 
-## Additional Context
+## 추가 맥락
 
-<!-- Add any other context, screenshots, or information about the pull request here -->
-<!-- Link to related issues, documentation, or discussions -->
+<!-- Pull request에 관한 추가 맥락, 스크린샷 또는 정보를 여기에 추가하세요. -->
+<!-- 관련 issue, 문서 또는 논의에 링크를 추가하세요. -->
 
 ---
 
-**Note:** Pull requests that do not follow these guidelines or lack sufficient detail may be closed. This helps us maintain high-quality, useful cookbooks for the community. If you're unsure about any requirements, please open an issue to discuss before submitting a PR.
+**참고:** 이 가이드라인을 따르지 않거나 세부 정보가 부족한 pull request는 닫힐 수 있습니다. 이는 커뮤니티를 위해 품질이 높고 유용한 cookbook을 유지하는 데 도움이 됩니다. 요구사항 중 확실하지 않은 것이 있다면 PR을 제출하기 전에 issue를 열어 논의해 주세요.

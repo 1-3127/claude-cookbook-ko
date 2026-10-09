@@ -1,6 +1,6 @@
 """
-Data processor with multiple concurrency and thread-safety issues.
-Used for Session 3 to demonstrate context editing with multiple bugs.
+여러 동시성 및 thread-safety 문제가 있는 data processor.
+여러 bug로 context editing을 시연하기 위해 Session 3에서 사용합니다.
 """
 
 import json
@@ -11,22 +11,22 @@ from typing import Any
 
 
 class DataProcessor:
-    """Process data files concurrently with various thread-safety issues."""
+    """여러 thread-safety 문제가 있는 데이터 파일을 동시에 처리합니다."""
 
     def __init__(self, max_workers: int = 5):
         self.max_workers = max_workers
-        self.processed_count = 0  # BUG: Race condition on counter
-        self.results = []  # BUG: Shared list without locking
-        self.errors = {}  # BUG: Shared dict without locking
-        self.lock = threading.Lock()  # Available but not used!
+        self.processed_count = 0  # BUG: Counter의 race condition
+        self.results = []  # BUG: Locking 없는 공유 list
+        self.errors = {}  # BUG: Locking 없는 공유 dict
+        self.lock = threading.Lock()  # 사용 가능하지만 사용하지 않습니다!
 
     def process_file(self, file_path: str) -> dict[str, Any]:
-        """Process a single file."""
+        """파일 하나를 처리합니다."""
         try:
             with open(file_path) as f:
                 data = json.load(f)
 
-            # Simulate some processing
+            # 일부 처리 simulation
             processed = {
                 "file": file_path,
                 "record_count": len(data) if isinstance(data, list) else 1,
@@ -40,13 +40,13 @@ class DataProcessor:
 
     def process_batch(self, file_paths: list[str]) -> list[dict[str, Any]]:
         """
-        Process multiple files concurrently.
+        여러 파일을 동시에 처리합니다.
 
-        MULTIPLE BUGS:
-        1. self.processed_count is incremented without locking
-        2. self.results is appended to from multiple threads
-        3. self.errors is modified from multiple threads
-        4. We have a lock but don't use it!
+        여러 BUG:
+        1. Locking 없이 self.processed_count 증가
+        2. 여러 thread에서 self.results에 추가
+        3. 여러 thread에서 self.errors 수정
+        4. Lock이 있지만 사용하지 않습니다!
         """
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             futures = [executor.submit(self.process_file, fp) for fp in file_paths]
@@ -54,30 +54,30 @@ class DataProcessor:
             for future in futures:
                 result = future.result()
 
-                # RACE CONDITION: Increment counter without lock
+                # RACE CONDITION: Lock 없이 counter 증가
                 self.processed_count += 1  # BUG!
 
                 if "error" in result:
-                    # RACE CONDITION: Modify dict without lock
+                    # RACE CONDITION: Lock 없이 dict 수정
                     self.errors[result["file"]] = result["error"]  # BUG!
                 else:
-                    # RACE CONDITION: Append to list without lock
+                    # RACE CONDITION: Lock 없이 list에 추가
                     self.results.append(result)  # BUG!
 
         return self.results
 
     def get_statistics(self) -> dict[str, Any]:
         """
-        Get processing statistics.
+        처리 통계를 가져옵니다.
 
-        BUG: Accessing shared state without ensuring thread-safety.
-        If called while processing, could get inconsistent values.
+        BUG: Thread-safety를 보장하지 않고 shared state에 접근합니다.
+        처리 중 호출하면 일관되지 않은 값을 얻을 수 있습니다.
         """
         total_files = self.processed_count
         successful = len(self.results)
         failed = len(self.errors)
 
-        # BUG: These counts might not add up correctly due to race conditions
+        # BUG: Race condition 때문에 이 수의 합계가 올바르지 않을 수 있습니다
         return {
             "total_processed": total_files,
             "successful": successful,
@@ -87,9 +87,9 @@ class DataProcessor:
 
     def reset(self):
         """
-        Reset processor state.
+        Processor state를 초기화합니다.
 
-        BUG: No locking - if called during processing, causes corruption.
+        BUG: Locking이 없어 처리 중 호출하면 손상을 일으킵니다.
         """
         self.processed_count = 0  # RACE CONDITION
         self.results = []  # RACE CONDITION
@@ -98,31 +98,31 @@ class DataProcessor:
 
 class SharedCache:
     """
-    A shared cache with thread-safety issues.
+    Thread-safety 문제가 있는 공유 cache.
 
-    BUG: Classic read-modify-write race condition pattern.
+    BUG: 전형적인 read-modify-write race condition 패턴.
     """
 
     def __init__(self):
-        self.cache = {}  # BUG: Shared dict without locking
+        self.cache = {}  # BUG: Locking 없는 공유 dict
         self.hit_count = 0  # BUG: Race condition
         self.miss_count = 0  # BUG: Race condition
 
     def get(self, key: str) -> Any:
-        """Get from cache - RACE CONDITION on hit/miss counts."""
+        """Cache에서 가져오기 - hit/miss 수의 RACE CONDITION."""
         if key in self.cache:
-            self.hit_count += 1  # BUG: Not atomic!
+            self.hit_count += 1  # BUG: Atomic하지 않습니다!
             return self.cache[key]
         else:
-            self.miss_count += 1  # BUG: Not atomic!
+            self.miss_count += 1  # BUG: Atomic하지 않습니다!
             return None
 
     def set(self, key: str, value: Any):
-        """Set in cache - RACE CONDITION on dict modification."""
-        self.cache[key] = value  # BUG: Dict access not synchronized!
+        """Cache에 설정 - dict 수정의 RACE CONDITION."""
+        self.cache[key] = value  # BUG: Dict 접근이 synchronized되지 않습니다!
 
     def get_stats(self) -> dict[str, Any]:
-        """Get cache statistics - may be inconsistent."""
+        """Cache 통계 가져오기 - 일관되지 않을 수 있습니다."""
         total = self.hit_count + self.miss_count
         return {
             "hits": self.hit_count,
@@ -132,10 +132,10 @@ class SharedCache:
 
 
 if __name__ == "__main__":
-    # Create some test files (not included)
+    # 테스트 파일 생성(포함되지 않음)
     processor = DataProcessor(max_workers=10)
 
-    # Simulate processing many files
+    # 많은 파일 처리 simulation
     file_paths = [f"data/file_{i}.json" for i in range(100)]
 
     print("Processing files concurrently...")

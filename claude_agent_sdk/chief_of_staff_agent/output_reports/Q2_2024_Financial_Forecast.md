@@ -1,83 +1,83 @@
-# Q2 2024 Financial Forecast Report
-**TechStart Inc - Chief of Staff Analysis**
-*Report Date: September 12, 2025*
+# 2024년 Q2 재무 예측 보고서
+**TechStart Inc - Chief of Staff 분석**
+*보고서 날짜: 2025년 9월 12일*
 
-## Executive Summary
-TechStart Inc maintains a strong financial position in Q2 2024 with 20 months of runway and accelerating revenue growth. Current burn rate is well-controlled at $500K monthly while revenue grows 15% month-over-month.
+## 경영진용 요약
+TechStart Inc는 2024년 Q2에 20개월 runway와 가속하는 매출 성장을 바탕으로 강한 재무 상태를 유지합니다. 현재 burn rate는 월 $500K로 잘 관리되며, 매출은 전월 대비 15% 성장합니다.
 
-## Current Financial Position (as of Q2 2024)
+## 현재 재무 상태(2024년 Q2 기준)
 
-### Cash & Runway
-- **Cash in Bank**: $10,000,000
-- **Monthly Burn Rate**: $500,000
-- **Daily Burn Rate**: $16,667
-- **Current Runway**: 20 months (until September 2025)
-- **Quarterly Burn**: $1,500,000
+### 현금 및 Runway
+- **은행 현금**: $10,000,000
+- **월 Burn Rate**: $500,000
+- **일 Burn Rate**: $16,667
+- **현재 Runway**: 20개월(2025년 9월까지)
+- **분기 Burn**: $1,500,000
 
-### Revenue Metrics
-- **Annual Recurring Revenue (ARR)**: $2,400,000
-- **Monthly Growth Rate**: 15%
-- **Revenue per Employee**: $48,000
-- **Customer Count**: 120 enterprise customers
+### 매출 Metrics
+- **Annual Recurring Revenue(ARR)**: $2,400,000
+- **월 성장률**: 15%
+- **직원당 매출**: $48,000
+- **고객 수**: Enterprise 고객 120개
 
-## Q2 2024 Projections
+## 2024년 Q2 예측
 
-### Cash Flow Forecast
-| Month | Starting Cash | Monthly Burn | Revenue Growth | Ending Cash |
+### Cash Flow 예측
+| 월 | 기초 현금 | 월 Burn | 매출 성장 | 기말 현금 |
 |-------|---------------|--------------|----------------|-------------|
-| Apr 2024 | $10,000,000 | $500,000 | +15% | $9,500,000 |
-| May 2024 | $9,500,000 | $500,000 | +15% | $9,000,000 |
-| Jun 2024 | $9,000,000 | $500,000 | +15% | $8,500,000 |
+| 2024년 4월 | $10,000,000 | $500,000 | +15% | $9,500,000 |
+| 2024년 5월 | $9,500,000 | $500,000 | +15% | $9,000,000 |
+| 2024년 6월 | $9,000,000 | $500,000 | +15% | $8,500,000 |
 
-### Key Financial Ratios
-- **CAC/LTV Ratio**: 0.18 (Healthy - under 0.3)
-- **CAC Payback Period**: 10 months
-- **Monthly Churn**: 2.5%
+### 핵심 재무 비율
+- **CAC/LTV 비율**: 0.18(양호 - 0.3 미만)
+- **CAC 회수 기간**: 10개월
+- **월 Churn**: 2.5%
 - **Gross Revenue Retention**: 97.5%
 
-## Strategic Initiatives Impact
+## 전략적 계획의 영향
 
-### Planned Hiring (10 Engineers)
-- **Additional Monthly Cost**: ~$150,000
-- **Revised Burn Rate**: $650,000/month
-- **Adjusted Runway**: 15.4 months
+### 계획된 채용(Engineer 10명)
+- **추가 월 비용**: 약 $150,000
+- **수정 Burn Rate**: $650,000/월
+- **조정 Runway**: 15.4개월
 
-### European Expansion
-- **Setup Costs**: ~$200,000 (one-time)
-- **Ongoing Operations**: ~$50,000/month additional
+### 유럽 진출
+- **설립 비용**: 약 $200,000(일회성)
+- **계속되는 운영**: 추가 약 $50,000/월
 
-## Series B Fundraising Timeline
-- **Target Amount**: $30,000,000
-- **Recommended Timing**: Begin conversations in Q3 2024
-- **Runway Buffer**: Maintain 12+ months post-raise
+## Series B 자금 조달 일정
+- **목표 금액**: $30,000,000
+- **권장 시점**: 2024년 Q3에 논의 시작
+- **Runway Buffer**: 조달 이후 12개월 이상 유지
 
-## Risk Assessment
+## 위험 평가
 
-### High Priority Risks
-1. **AWS Dependency**: 70% of COGS tied to single provider
-2. **Key Personnel Risk**: 3 critical engineers requiring retention packages
-3. **Market Competition**: Big Tech entering space
+### 우선순위가 높은 위험
+1. **AWS 의존도**: COGS의 70%가 단일 provider에 연결됨
+2. **핵심 인력 위험**: 인재 유지 package가 필요한 중요 engineer 3명
+3. **시장 경쟁**: Big Tech의 시장 진입
 
-### Mitigation Strategies
-- Diversify cloud providers (reduce AWS to <50%)
-- Implement equity refresh program for key employees
-- Accelerate product development to maintain competitive advantage
+### 완화 전략
+- Cloud provider 다양화(AWS를 50% 미만으로 낮춤)
+- 핵심 직원용 지분 갱신 program 시행
+- 경쟁 우위 유지를 위해 제품 개발 가속
 
-## Recommendations
+## 권고
 
-### Immediate Actions (Q2 2024)
-1. **Accelerate Hiring**: Front-load engineering hires to maximize development time
-2. **Revenue Optimization**: Focus on enterprise expansion (higher LTV)
-3. **Cost Management**: Implement quarterly budget reviews
+### 즉시 행동(2024년 Q2)
+1. **채용 가속**: 개발 시간을 최대화하도록 engineering 채용을 앞당김
+2. **매출 최적화**: Enterprise 확장에 집중(높은 LTV)
+3. **비용 관리**: 분기별 예산 검토 시행
 
-### Medium-term Strategy (Q3-Q4 2024)
-1. **Series B Preparation**: Begin investor conversations by July 2024
-2. **Market Expansion**: Validate European demand before major investment
-3. **Product Development**: Prioritize AI code review feature completion
+### 중기 전략(2024년 Q3-Q4)
+1. **Series B 준비**: 2024년 7월까지 투자자 논의 시작
+2. **시장 확장**: 대규모 투자 전 유럽 수요 검증
+3. **제품 개발**: AI code review 기능 완성에 우선순위
 
-## Financial Health Score: 8.5/10
-- **Strengths**: Strong runway, growing ARR, healthy unit economics
-- **Areas for Improvement**: AWS dependency, competitive positioning
+## 재무 건전성 점수: 8.5/10
+- **강점**: 충분한 runway, 성장하는 ARR, 양호한 unit economics
+- **개선 영역**: AWS 의존도, 경쟁적 위치
 
 ---
-*This report was generated using current financial data and company metrics. For detailed analysis or specific scenarios, consult with the financial-analyst agent.*
+*이 보고서는 현재 재무 data 및 회사 metrics를 사용해 생성했습니다. 상세 분석이나 특정 시나리오는 financial-analyst agent에 문의하세요.*

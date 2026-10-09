@@ -1,14 +1,10 @@
-"""Daytona analogue of modal_sandbox_webhook.py.
+"""modal_sandbox_webhook.py의 Daytona 대응 구현입니다.
 
-FastAPI app: receives the session.status_run_started webhook, drains the
-environment work queue, and per item creates a Daytona sandbox running the
-provider-agnostic ``sandbox_runner.py``. Deploy this anywhere that can serve
-HTTP and reach the Daytona API (Fly, Render, a VM, etc.).
+FastAPI app: session.status_run_started webhook을 수신하고, environment work queue를 비우며, item마다 provider-agnostic ``sandbox_runner.py``를 실행하는 Daytona sandbox를 생성합니다. HTTP를 제공하고 Daytona API에 접근할 수 있는 곳(Fly, Render, VM 등)에 배포하세요.
 
-The webhook is a wake-up signal only — each delivery drains *all* pending work
-items, so a single arriving webhook recovers any earlier missed deliveries.
+Webhook은 깨우기 신호일 뿐입니다. 각 delivery는 대기 중인 work item을 *모두* 비우므로 단 한 번 도착한 webhook으로 이전에 놓친 모든 delivery를 복구합니다.
 
-Env on the orchestrator host:
+Orchestrator host의 환경 변수:
   ANTHROPIC_WEBHOOK_SECRET, ANTHROPIC_BASE_URL,
   ANTHROPIC_ENVIRONMENT_ID, ANTHROPIC_ENVIRONMENT_KEY,
   DAYTONA_API_KEY, DAYTONA_API_URL
@@ -25,7 +21,7 @@ from daytona_sdk import CreateSandboxParams, Daytona
 from fastapi import FastAPI, HTTPException, Request
 
 SDK_PACKAGE = "anthropic"
-# Same provider-agnostic sandbox_runner.py the Modal demo uses.
+# Modal demo가 사용하는 것과 동일한 provider-agnostic sandbox_runner.py.
 RUNNER_SRC = (
     Path(__file__).resolve().parent.parent
     / "modal"
@@ -33,17 +29,17 @@ RUNNER_SRC = (
 ).read_text()
 
 app = FastAPI()
-daytona = Daytona()  # reads DAYTONA_API_KEY / DAYTONA_API_URL from env
+daytona = Daytona()  # 환경 변수에서 DAYTONA_API_KEY / DAYTONA_API_URL을 읽습니다
 
 
 @cache
 def _client() -> anthropic.AsyncAnthropic:
-    """Shared client for both webhook verification and the work poller.
+    """Webhook 검증과 work poller가 공유하는 client입니다.
 
-    Async because ``client.beta.environments.work.poller(...)`` is async-only
-    (it lives on ``AsyncWork``). ``unwrap()`` is synchronous even on the async
-    client — do not ``await`` it. The ``whsec_`` secret is passed to
-    ``webhook_key`` as-is: the SDK decodes its URL-safe base64 internally.
+    ``client.beta.environments.work.poller(...)``는 async 전용이므로 async입니다
+    (``AsyncWork``에 있음). ``unwrap()``은 async client에서도 동기식이므로
+    ``await``하지 마세요. ``whsec_`` secret은 ``webhook_key``에 그대로 전달합니다.
+    SDK가 내부에서 URL-safe base64를 decode합니다.
     """
     return anthropic.AsyncAnthropic(
         auth_token=os.environ["ANTHROPIC_ENVIRONMENT_KEY"],
@@ -54,17 +50,16 @@ def _client() -> anthropic.AsyncAnthropic:
 def _verify_webhook(
     client: anthropic.AsyncAnthropic, raw: bytes, headers: "Mapping[str, str]"
 ) -> UnwrapWebhookEvent:
-    # `unwrap()` verifies via `standardwebhooks` and lets its
-    # `WebhookVerificationError` propagate unwrapped — import it the same lazy
-    # way the SDK does (it's the `anthropic[webhooks]` extra).
+    # `unwrap()`은 `standardwebhooks`로 검증하며 `WebhookVerificationError`를
+    # 감싸지 않고 전파합니다. SDK와 같은 lazy 방식으로 import하세요
+    # (`anthropic[webhooks]` extra입니다).
     from standardwebhooks import WebhookVerificationError
 
     try:
         return client.beta.webhooks.unwrap(raw.decode(), headers=headers)
     except (WebhookVerificationError, KeyError) as e:
-        # Messages are signature/config shaped, never the request body — safe
-        # to log. Other exceptions propagate (they indicate a bug, not a bad
-        # delivery).
+        # 메시지는 signature/config 형태이며 request body가 아니므로 log에 남겨도
+        # 안전합니다. 다른 exception은 전파합니다(잘못된 delivery가 아니라 버그를 나타냄).
         print(f"[webhook] signature reject: {type(e).__name__}: {e}", flush=True)
         raise HTTPException(
             status_code=401, detail="signature verification failed"
@@ -74,14 +69,14 @@ def _verify_webhook(
 def _spawn(
     session_id: str, *, environment_id: str, work_id: str, environment_key: str
 ) -> str:
-    """Create a Daytona sandbox and start sandbox_runner.py inside it."""
+    """Daytona sandbox를 생성하고 그 안에서 sandbox_runner.py를 시작합니다."""
     sb = daytona.create(
         CreateSandboxParams(
             language="python",
             labels={"session_id": session_id},
-            # Same env contract as `ant beta:worker poll --on-work`: sandbox_runner.py
-            # reads these to build the client and run the worker's handle_item().
-            # ANTHROPIC_ENVIRONMENT_KEY is the runner's single credential.
+            # `ant beta:worker poll --on-work`와 같은 환경 변수 contract: sandbox_runner.py가
+            # 이를 읽어 client를 구성하고 worker의 handle_item()을 실행합니다.
+            # ANTHROPIC_ENVIRONMENT_KEY는 runner의 단일 credential입니다.
             env_vars={
                 "ANTHROPIC_BASE_URL": os.environ.get(
                     "ANTHROPIC_BASE_URL", "https://api.anthropic.com"
@@ -107,22 +102,21 @@ def _find_live(session_id: str) -> str | None:
 
 
 async def _drain_work(client: anthropic.AsyncAnthropic, environment_id: str) -> list[dict]:
-    """Drain the queue via the SDK poller, spawning a sandbox per work item.
+    """SDK poller를 통해 queue를 비우고 work item마다 sandbox를 생성합니다.
 
-    ``client.beta.environments.work.poller`` is the user-facing entry point: it
-    builds a scoped sub-client from the environment key and yields each ack'd
-    work item. It is async-only (lives on ``AsyncWork``). ``drain=True`` returns
-    when the queue is empty (the webhook handler must respond, not loop forever).
-    ``auto_stop=False`` because each item is handed off to a detached Daytona
-    sandbox that owns ``/stop`` — the poller must not terminate the lease out
-    from under it.
+    ``client.beta.environments.work.poller``는 사용자용 entry point입니다.
+    Environment key에서 범위가 지정된 sub-client를 만들고 ack된 각 work item을
+    yield합니다. Async 전용입니다(``AsyncWork``에 있음). ``drain=True``는 queue가
+    비면 반환합니다(webhook handler는 끝없이 loop하지 않고 응답해야 함).
+    ``auto_stop=False``는 각 item이 ``/stop``을 담당하는 detached Daytona sandbox로
+    전달되기 때문입니다. Poller가 그 아래에서 lease를 종료해서는 안 됩니다.
     """
     environment_key = os.environ["ANTHROPIC_ENVIRONMENT_KEY"]
     spawned: list[dict] = []
     async for work in client.beta.environments.work.poller(
         environment_id=environment_id,
         environment_key=environment_key,
-        # None -> omit -> non-blocking. The API rejects block_ms=0.
+        # None -> 생략 -> non-blocking. API는 block_ms=0을 거부합니다.
         block_ms=None,
         reclaim_older_than_ms=2000,
         drain=True,
@@ -169,7 +163,7 @@ async def _drain_work(client: anthropic.AsyncAnthropic, environment_id: str) -> 
                 }
             )
         except Exception as e:
-            # SDK / Daytona exceptions can embed request context, so log type only.
+            # SDK / Daytona exception에는 request context가 포함될 수 있으므로 type만 log에 남김.
             detail = type(e).__name__
             print(
                 f"[webhook] FAILED work={work.id} session={session_id}: {detail}",

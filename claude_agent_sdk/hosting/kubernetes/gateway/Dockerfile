@@ -2,11 +2,11 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install dependencies first (layer caching — only re-run when requirements change)
+# 먼저 dependency 설치(layer caching — requirements가 바뀔 때만 재실행)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code (flat layout — no sub-packages)
+# Application 코드 복사(평면 구조 — sub-package 없음)
 COPY main.py k8s.py proxy.py ./
 
 EXPOSE 8080

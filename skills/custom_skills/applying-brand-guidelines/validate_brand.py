@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Brand Validation Script
-Validates content against brand guidelines including colors, fonts, tone, and messaging.
+Brand 검증 Script
+색상, font, 어조, 메시지를 포함한 brand 지침에 대조해 content를 검증합니다.
 """
 
 import json
@@ -11,7 +11,7 @@ from dataclasses import asdict, dataclass
 
 @dataclass
 class BrandGuidelines:
-    """Brand guidelines configuration"""
+    """Brand 지침 설정"""
 
     brand_name: str
     primary_colors: list[str]
@@ -25,7 +25,7 @@ class BrandGuidelines:
 
 @dataclass
 class ValidationResult:
-    """Result of brand validation"""
+    """brand 검증 결과"""
 
     passed: bool
     score: float
@@ -35,24 +35,24 @@ class ValidationResult:
 
 
 class BrandValidator:
-    """Validates content against brand guidelines"""
+    """brand 지침에 대조해 content 검증"""
 
     def __init__(self, guidelines: BrandGuidelines):
         self.guidelines = guidelines
 
     def validate_colors(self, content: str) -> tuple[list[str], list[str]]:
         """
-        Validate color usage in content (hex codes, RGB, color names)
+        content의 색상 사용 검증(hex 코드, RGB, 색상 이름)
         Returns: (violations, warnings)
         """
         violations = []
         warnings = []
 
-        # Find hex colors
+        # hex 색상 찾기
         hex_pattern = r"#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{3}"
         found_colors = re.findall(hex_pattern, content)
 
-        # Find RGB colors
+        # RGB 색상 찾기
         rgb_pattern = r"rgb\s*\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)"
         found_colors.extend(re.findall(rgb_pattern, content, re.IGNORECASE))
 
@@ -66,13 +66,13 @@ class BrandValidator:
 
     def validate_fonts(self, content: str) -> tuple[list[str], list[str]]:
         """
-        Validate font usage in content
+        content의 font 사용 검증
         Returns: (violations, warnings)
         """
         violations = []
         warnings = []
 
-        # Common font specification patterns
+        # 일반적인 font 지정 패턴
         font_patterns = [
             r'font-family\s*:\s*["\']?([^;"\']+)["\']?',
             r"font:\s*[^;]*\s+([A-Za-z][A-Za-z\s]+)(?:,|;|\s+\d)",
@@ -85,7 +85,7 @@ class BrandValidator:
 
         for font in found_fonts:
             font_clean = font.strip().lower()
-            # Check if any approved font is in the found font string
+            # 찾은 font 문자열에 승인된 font가 있는지 확인
             if not any(approved.lower() in font_clean for approved in self.guidelines.fonts):
                 violations.append(f"Unapproved font used: {font}")
 
@@ -93,19 +93,19 @@ class BrandValidator:
 
     def validate_tone(self, content: str) -> tuple[list[str], list[str]]:
         """
-        Validate tone and messaging
+        어조와 메시지 검증
         Returns: (violations, warnings)
         """
         violations = []
         warnings = []
 
-        # Check for prohibited words
+        # 금지 단어 확인
         content_lower = content.lower()
         for word in self.guidelines.prohibited_words:
             if word.lower() in content_lower:
                 violations.append(f"Prohibited word/phrase used: '{word}'")
 
-        # Check for tone keywords (should have at least some)
+        # 어조 keyword 확인(최소 일부 있어야 함)
         tone_matches = sum(
             1 for keyword in self.guidelines.tone_keywords if keyword.lower() in content_lower
         )
@@ -120,13 +120,13 @@ class BrandValidator:
 
     def validate_brand_name(self, content: str) -> tuple[list[str], list[str]]:
         """
-        Validate brand name usage and capitalization
+        brand 이름 사용과 대소문자 검증
         Returns: (violations, warnings)
         """
         violations = []
         warnings = []
 
-        # Find all variations of the brand name
+        # brand 이름의 모든 변형 찾기
         brand_pattern = re.compile(re.escape(self.guidelines.brand_name), re.IGNORECASE)
         matches = brand_pattern.findall(content)
 
@@ -140,7 +140,7 @@ class BrandValidator:
         return violations, warnings
 
     def calculate_score(self, violations: list[str], warnings: list[str]) -> float:
-        """Calculate compliance score (0-100)"""
+        """준수 점수 계산(0~100)"""
         violation_penalty = len(violations) * 10
         warning_penalty = len(warnings) * 3
 
@@ -148,7 +148,7 @@ class BrandValidator:
         return round(score, 2)
 
     def generate_suggestions(self, violations: list[str], warnings: list[str]) -> list[str]:
-        """Generate helpful suggestions based on violations and warnings"""
+        """위반과 경고에 따른 유용한 제안 생성"""
         suggestions = []
 
         if any("color" in v.lower() for v in violations):
@@ -171,13 +171,13 @@ class BrandValidator:
 
     def validate(self, content: str) -> ValidationResult:
         """
-        Perform complete brand validation
+        전체 brand 검증 수행
         Returns: ValidationResult
         """
         all_violations = []
         all_warnings = []
 
-        # Run all validation checks
+        # 모든 검증 실행
         color_v, color_w = self.validate_colors(content)
         all_violations.extend(color_v)
         all_warnings.extend(color_w)
@@ -194,7 +194,7 @@ class BrandValidator:
         all_violations.extend(brand_v)
         all_warnings.extend(brand_w)
 
-        # Calculate score and generate suggestions
+        # 점수 계산 및 제안 생성
         score = self.calculate_score(all_violations, all_warnings)
         suggestions = self.generate_suggestions(all_violations, all_warnings)
 
@@ -209,18 +209,18 @@ class BrandValidator:
 
 def load_guidelines_from_json(filepath: str) -> BrandGuidelines:
     """
-    Load brand guidelines from JSON file
+    JSON 파일에서 brand 지침 로딩
 
     Args:
-        filepath: Path to JSON file containing brand guidelines
+        filepath: brand 지침이 있는 JSON 파일 경로
 
     Returns:
-        BrandGuidelines object
+        BrandGuidelines 객체
 
     Raises:
-        FileNotFoundError: If the file doesn't exist
-        json.JSONDecodeError: If the file contains invalid JSON
-        TypeError: If required fields are missing
+        FileNotFoundError: 파일이 없으면
+        json.JSONDecodeError: 파일에 유효하지 않은 JSON이 있으면
+        TypeError: 필수 field가 누락되면
     """
     try:
         with open(filepath) as f:
@@ -238,13 +238,13 @@ def load_guidelines_from_json(filepath: str) -> BrandGuidelines:
 
 def get_acme_corporation_guidelines() -> BrandGuidelines:
     """
-    Get default Acme Corporation brand guidelines.
+    기본 Acme Corporation brand 지침을 얻습니다.
 
-    These guidelines match the standards defined in the SKILL.md reference.
-    Users should customize these for their own organization.
+    이 지침은 SKILL.md reference에 정의된 기준과 일치합니다.
+    사용자는 자신의 조직에 맞게 사용자 지정해야 합니다.
 
     Returns:
-        BrandGuidelines object with Acme Corporation standards
+        Acme Corporation 기준이 있는 BrandGuidelines 객체
     """
     return BrandGuidelines(
         brand_name="Acme Corporation",
@@ -271,12 +271,12 @@ def get_acme_corporation_guidelines() -> BrandGuidelines:
 
 
 def main():
-    """Example usage demonstrating brand validation"""
-    # Load Acme Corporation brand guidelines
-    # Users should customize this for their own organization
+    """brand 검증을 보여 주는 사용 예제"""
+    # Acme Corporation brand 지침 불러오기
+    # 사용자는 자신의 조직에 맞게 사용자 지정해야 함
     guidelines = get_acme_corporation_guidelines()
 
-    # Example content to validate (intentionally contains violations for demonstration)
+    # 검증할 예제 content(시연용으로 의도적인 위반 포함)
     test_content = """
     Welcome to acme corporation!
 
@@ -289,11 +289,11 @@ def main():
     Background: rgb(255, 0, 0)
     """
 
-    # Validate
+    # 검증
     validator = BrandValidator(guidelines)
     result = validator.validate(test_content)
 
-    # Print results
+    # 결과 출력
     print("=" * 60)
     print("BRAND VALIDATION REPORT")
     print("=" * 60)
@@ -317,7 +317,7 @@ def main():
 
     print("\n" + "=" * 60)
 
-    # Return JSON for programmatic use
+    # programmatic 사용을 위해 JSON 반환
     return asdict(result)
 
 

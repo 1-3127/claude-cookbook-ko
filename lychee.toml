@@ -1,28 +1,28 @@
-# Lychee configuration for Claude Cookbooks
-# Validates links in notebooks and documentation
+# Claude Cookbooks용 Lychee 설정
+# Notebook과 문서의 링크 검증
 
-# Core settings
+# 핵심 설정
 timeout = 30
 max_redirects = 10
 include_fragments = true
 require_https = false
 
-# Caching to speed up repeated checks
+# 반복 검사를 빠르게 하기 위한 caching
 cache = true
 max_cache_age = "1d"
 
-# Retry configuration for transient failures
+# 일시적인 실패에 대한 재시도 설정
 max_retries = 3
 retry_wait_time = 2
 
-# Code blocks are skipped by default (include_verbatim defaults to false;
-# the old skip_code_blocks field was removed in lychee 0.23)
+# 코드 블록은 기본적으로 건너뜁니다(include_verbatim 기본값은 false;
+# 이전 skip_code_blocks field는 lychee 0.23에서 제거됨).
 
-# Fallback extensions for local file checking
-# When checking relative links, try these extensions if the exact path doesn't exist
+# 로컬 파일 확인을 위한 fallback extension
+# 상대 링크 확인 시 정확한 경로가 없으면 이 extension들을 시도
 fallback_extensions = ["ipynb", "md", "html", "py"]
 
-# Exclude certain paths from being searched
+# 특정 경로를 검색에서 제외
 exclude_path = [
     ".git/",
     "__pycache__/",
@@ -34,21 +34,21 @@ exclude_path = [
 ]
 
 
-# Accepted status codes: success codes plus 403 (gated sites) and
-# 429 (rate limited). Note this list REPLACES lychee's defaults, so the
-# 2xx codes must be listed explicitly.
+# 허용 status code: 성공 code와 403(접근 제한 사이트),
+# 429(rate limit 적용)입니다. 이 목록은 lychee 기본값을 대체하므로
+# 2xx code를 명시적으로 나열해야 합니다.
 accept = [200, 201, 202, 203, 204, 206, 301, 302, 304, 307, 308, 403, 429]
 
-# User agent for requests ("headers" was renamed in lychee 0.23; the only
-# header we set is the user agent, which has a dedicated option)
+# 요청용 user agent(lychee 0.23에서 "headers"가 이름이 바뀌었으며, 설정하는 유일한
+# Header는 전용 option이 있는 user agent입니다).
 user_agent = "Mozilla/5.0 (compatible; lychee; anthropic-cookbook)"
 
-# The check-links workflow converts changed notebooks into a flat temp_md/
-# scratch dir, which breaks resolution of any relative file link (they
-# point at real files in the notebook's own directory). Notebook links to
-# repo files should be absolute GitHub URLs (house convention); the one
-# legitimate relative link is a notebook's own image, which must stay
-# relative to render on GitHub. Exclude the artifact class.
+# Check-links workflow는 변경된 Notebook을 평평한 temp_md/
+# 작업 디렉터리로 변환하므로 모든 상대 파일 링크의 해석이 깨집니다(링크는
+# Notebook 자체 디렉터리의 실제 파일을 가리킵니다). 리포지토리 파일로 향하는
+# Notebook 링크는 절대 GitHub URL이어야 합니다(내부 관례). 유일하게
+# 정당한 상대 링크는 Notebook 자체 이미지이며, GitHub rendering을 위해
+# 상대 경로를 유지해야 합니다. 해당 artifact 종류를 제외하세요.
 exclude = [
     "https://api.anthropic.com.*",
     "https://console.anthropic.com.*",

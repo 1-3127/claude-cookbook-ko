@@ -1,9 +1,9 @@
 """
-Shared utilities for Claude tool use cookbooks.
+Claude tool use cookbook의 공용 utility.
 
-This package contains reusable components for creating cookbook demonstrations:
-- visualize: Rich terminal visualization for Claude API responses
-- team_expense_api: Example mock API for team expense management demonstrations
+이 package에는 cookbook 시연을 만드는 재사용 가능한 구성 요소가 포함됩니다.
+- visualize: Claude API response를 위한 Rich terminal 시각화
+- team_expense_api: 팀 지출 관리 시연용 mock API 예제
 """
 
 from .visualize import show_response, visualize

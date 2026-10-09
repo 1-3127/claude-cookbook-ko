@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-Verify authors.yaml and registry.yaml integrity:
-1. GitHub handles exist
-2. Website and avatar URLs are valid
-3. All registry.yaml authors are defined in authors.yaml
-4. All registry.yaml paths exist
+authors.yaml과 registry.yaml의 무결성 검증:
+1. GitHub handle 존재
+2. 웹사이트와 avatar URL 유효
+3. 모든 registry.yaml 작성자가 authors.yaml에 정의됨
+4. 모든 registry.yaml 경로 존재
 
-Usage:
+사용법:
     python verify_registry.py [command]
 
-Commands:
-    all          Run all verifications (default)
-    authors      Verify GitHub handles and author URLs only
-    paths        Verify registry paths only
-    registry     Verify registry authors exist in authors.yaml
-    schema       Verify YAML files match their JSON schemas
+명령:
+    all          모든 검증 실행(기본값)
+    authors      GitHub handle과 작성자 URL만 검증
+    paths        Registry 경로만 검증
+    registry     Registry 작성자가 authors.yaml에 존재하는지 검증
+    schema       YAML 파일이 JSON schema와 일치하는지 검증
 """
 
 import json
@@ -33,7 +33,7 @@ except ImportError:
 
 
 def check_github_handle(username):
-    """Check if a GitHub handle exists."""
+    """GitHub handle이 존재하는지 확인합니다."""
     try:
         response = requests.head(f"https://github.com/{username}", timeout=10, allow_redirects=True)
         if response.status_code == 404:
@@ -46,8 +46,8 @@ def check_github_handle(username):
 
 
 def check_url(url):
-    """Check if a URL is accessible."""
-    # Skip x.com URLs as they block HEAD requests
+    """URL에 접근할 수 있는지 확인합니다."""
+    # HEAD 요청을 차단하는 x.com URL 건너뛰기
     if "x.com" in url:
         return True, "skipped (x.com)"
 
@@ -61,11 +61,11 @@ def check_url(url):
 
 
 def verify_authors(authors):
-    """Verify GitHub handles and author URLs."""
+    """GitHub handle과 작성자 URL을 검증합니다."""
     failed_handles = []
     failed_urls = []
 
-    # Verify GitHub handles
+    # GitHub handle 검증
     print("=== Verifying GitHub Handles ===\n")
     for username in authors.keys():
         print(f"Checking GitHub handle: {username}...")
@@ -76,12 +76,12 @@ def verify_authors(authors):
         else:
             print("  ✓ OK")
 
-    # Verify URLs
+    # URL 검증
     print("\n=== Verifying Author URLs ===\n")
     for username, details in authors.items():
         print(f"Checking URLs for {username}...")
 
-        # Check website URL
+        # 웹사이트 URL 확인
         if "website" in details:
             url = details["website"]
             success, error = check_url(url)
@@ -93,7 +93,7 @@ def verify_authors(authors):
             else:
                 print(f"  ✓ Website URL OK: {url}")
 
-        # Check avatar URL
+        # Avatar URL 확인
         if "avatar" in details:
             url = details["avatar"]
             success, error = check_url(url)
@@ -109,7 +109,7 @@ def verify_authors(authors):
 
 
 def verify_registry_authors(registry, authors):
-    """Verify registry authors exist in authors.yaml."""
+    """Registry 작성자가 authors.yaml에 존재하는지 검증합니다."""
     missing_authors = []
 
     print("\n=== Verifying Registry Authors ===\n")
@@ -132,7 +132,7 @@ def verify_registry_authors(registry, authors):
 
 
 def verify_paths(registry, repo_root):
-    """Verify registry paths exist."""
+    """Registry 경로가 존재하는지 검증합니다."""
     missing_paths = []
 
     print("\n=== Verifying Registry Paths ===\n")
@@ -159,7 +159,7 @@ def verify_paths(registry, repo_root):
 
 
 def verify_schemas(repo_root, authors, registry):
-    """Verify YAML files match their JSON schemas."""
+    """YAML 파일이 JSON schema와 일치하는지 검증합니다."""
     if not HAS_JSONSCHEMA:
         print("\n⚠️  Skipping schema validation (jsonschema not installed)")
         return []
@@ -168,7 +168,7 @@ def verify_schemas(repo_root, authors, registry):
 
     print("\n=== Verifying JSON Schemas ===\n")
 
-    # Verify authors.yaml against schema
+    # Schema를 기준으로 authors.yaml 검증
     authors_schema_path = repo_root / ".github" / "authors_schema.json"
     if authors_schema_path.exists():
         print("Checking authors.yaml against schema...")
@@ -186,7 +186,7 @@ def verify_schemas(repo_root, authors, registry):
     else:
         print("  ⊘ authors_schema.json not found, skipping")
 
-    # Verify registry.yaml against schema
+    # Schema를 기준으로 registry.yaml 검증
     registry_schema_path = repo_root / ".github" / "registry_schema.json"
     if registry_schema_path.exists():
         print("\nChecking registry.yaml against schema...")
@@ -211,7 +211,7 @@ def verify_schemas(repo_root, authors, registry):
 
 
 def main():
-    # Parse command line argument
+    # 명령줄 인수 파싱
     command = sys.argv[1] if len(sys.argv) > 1 else "all"
 
     if command not in ["all", "authors", "paths", "registry", "schema"]:
@@ -219,7 +219,7 @@ def main():
         print(__doc__)
         sys.exit(1)
 
-    # Load YAML files
+    # YAML 파일 불러오기
     repo_root = Path(__file__).parent.parent.parent
     authors_path = repo_root / "authors.yaml"
     registry_path = repo_root / "registry.yaml"
@@ -235,7 +235,7 @@ def main():
         with open(registry_path) as f:
             registry = yaml.safe_load(f)
 
-    # Run verifications based on command
+    # 명령에 따라 검증 실행
     failed_handles = []
     failed_urls = []
     missing_authors = []
@@ -254,7 +254,7 @@ def main():
     if command in ["all", "schema"]:
         schema_errors = verify_schemas(repo_root, authors, registry)
 
-    # Report results
+    # 결과 보고
     has_failures = False
 
     if failed_handles:

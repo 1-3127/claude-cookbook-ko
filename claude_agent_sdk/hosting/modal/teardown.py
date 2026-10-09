@@ -1,6 +1,6 @@
-"""Stop all sandboxes for this app and delete the sessions volume.
+"""이 app의 모든 sandbox를 중지하고 session volume을 삭제합니다.
 
-Run when you're done with the cookbook so you aren't billed for idle resources::
+Idle resource에 과금되지 않도록 cookbook을 마치면 실행하세요::
 
     python hosting/modal/teardown.py
 """
@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import modal
 
-# Inlined (not imported from modal_app) so teardown doesn't trigger an image
-# build as an import-time side effect.
+# Teardown이 import 시 부작용으로 image build를 일으키지 않도록
+# modal_app에서 import하지 않고 inline으로 정의합니다.
 APP_NAME = "research-agent-hosting"
 VOLUME_NAME = "research-agent-sessions"
 

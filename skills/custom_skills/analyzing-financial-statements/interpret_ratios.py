@@ -1,15 +1,15 @@
 """
-Financial ratio interpretation module.
-Provides industry benchmarks and contextual analysis.
+재무 비율 해석 module입니다.
+업계 benchmark와 맥락적 분석을 제공합니다.
 """
 
 from typing import Any
 
 
 class RatioInterpreter:
-    """Interpret financial ratios with industry context."""
+    """업계 맥락으로 재무 비율을 해석합니다."""
 
-    # Industry benchmark ranges (simplified for demonstration)
+    # 업계 benchmark 범위(시연을 위해 간소화)
     BENCHMARKS = {
         "technology": {
             "current_ratio": {"excellent": 2.5, "good": 1.8, "acceptable": 1.2, "poor": 1.0},
@@ -49,16 +49,16 @@ class RatioInterpreter:
 
     def __init__(self, industry: str = "general"):
         """
-        Initialize interpreter with industry context.
+        업계 맥락으로 interpreter를 초기화합니다.
 
         Args:
-            industry: Industry sector for benchmarking
+            industry: benchmarking할 업계 sector
         """
         self.industry = industry.lower()
         self.benchmarks = self.BENCHMARKS.get(self.industry, self._get_general_benchmarks())
 
     def _get_general_benchmarks(self) -> dict[str, Any]:
-        """Get general industry-agnostic benchmarks."""
+        """업계에 종속되지 않는 일반 benchmark를 얻습니다."""
         return {
             "current_ratio": {"excellent": 2.0, "good": 1.5, "acceptable": 1.0, "poor": 0.8},
             "debt_to_equity": {"excellent": 0.5, "good": 1.0, "acceptable": 1.5, "poor": 2.5},
@@ -69,14 +69,14 @@ class RatioInterpreter:
 
     def interpret_ratio(self, ratio_name: str, value: float) -> dict[str, Any]:
         """
-        Interpret a single ratio with context.
+        맥락과 함께 비율 하나를 해석합니다.
 
         Args:
-            ratio_name: Name of the ratio
-            value: Calculated ratio value
+            ratio_name: 비율 이름
+            value: 계산한 비율 값
 
         Returns:
-            Dictionary with interpretation details
+            해석 상세 정보 dictionary
         """
         interpretation = {
             "value": value,
@@ -90,9 +90,9 @@ class RatioInterpreter:
             benchmark = self.benchmarks[ratio_name]
             interpretation["benchmark_comparison"] = benchmark
 
-            # Determine rating based on benchmarks
+            # benchmark로 rating 결정
             if ratio_name in ["current_ratio", "roe", "gross_margin"]:
-                # Higher is better
+                # 높을수록 좋음
                 if value >= benchmark["excellent"]:
                     interpretation["rating"] = "Excellent"
                     interpretation["message"] = (
@@ -111,7 +111,7 @@ class RatioInterpreter:
                     interpretation["message"] = "Below industry standards - attention needed"
 
             elif ratio_name == "debt_to_equity":
-                # Lower is better
+                # 낮을수록 좋음
                 if value <= benchmark["excellent"]:
                     interpretation["rating"] = "Excellent"
                     interpretation["message"] = "Very conservative capital structure"
@@ -126,7 +126,7 @@ class RatioInterpreter:
                     interpretation["message"] = "High leverage - potential risk"
 
             elif ratio_name == "pe_ratio":
-                # Context-dependent
+                # 맥락에 따라 다름
                 if value > 0:
                     if value < benchmark["undervalued"]:
                         interpretation["rating"] = "Potentially Undervalued"
@@ -143,7 +143,7 @@ class RatioInterpreter:
                         interpretation["rating"] = "Expensive"
                         interpretation["message"] = "High valuation relative to industry"
 
-        # Add specific recommendations
+        # 구체적인 권고 추가
         interpretation["recommendation"] = self._get_recommendation(
             ratio_name, interpretation["rating"]
         )
@@ -151,7 +151,7 @@ class RatioInterpreter:
         return interpretation
 
     def _get_recommendation(self, ratio_name: str, rating: str) -> str:
-        """Generate actionable recommendations based on ratio and rating."""
+        """비율과 rating으로 실행 가능한 권고를 생성합니다."""
         recommendations = {
             "current_ratio": {
                 "Poor": "Consider improving working capital management, reducing short-term debt, or increasing liquid assets",
@@ -188,15 +188,15 @@ class RatioInterpreter:
         self, ratio_name: str, values: list[float], periods: list[str]
     ) -> dict[str, Any]:
         """
-        Analyze trend in a ratio over time.
+        시간에 따른 비율 추세를 분석합니다.
 
         Args:
-            ratio_name: Name of the ratio
-            values: List of ratio values
-            periods: List of period labels
+            ratio_name: 비율 이름
+            values: 비율 값 목록
+            periods: 기간 label 목록
 
         Returns:
-            Trend analysis dictionary
+            추세 분석 dictionary
         """
         if len(values) < 2:
             return {
@@ -204,13 +204,13 @@ class RatioInterpreter:
                 "message": "Need at least 2 periods for trend analysis",
             }
 
-        # Calculate trend
+        # 추세 계산
         first_value = values[0]
         last_value = values[-1]
         change = last_value - first_value
         pct_change = (change / abs(first_value)) * 100 if first_value != 0 else 0
 
-        # Determine trend direction
+        # 추세 방향 결정
         if abs(pct_change) < 5:
             trend = "Stable"
         elif pct_change > 0:
@@ -228,13 +228,13 @@ class RatioInterpreter:
 
     def generate_report(self, ratios: dict[str, Any]) -> str:
         """
-        Generate a comprehensive interpretation report.
+        종합 해석 보고서를 생성합니다.
 
         Args:
-            ratios: Dictionary of calculated ratios
+            ratios: 계산한 비율 dictionary
 
         Returns:
-            Formatted report string
+            서식 지정 보고서 문자열
         """
         report_lines = [
             f"Financial Analysis Report - {self.industry.title()} Industry Context",
@@ -264,15 +264,15 @@ def perform_comprehensive_analysis(
     historical_data: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
-    Perform comprehensive ratio analysis with interpretations.
+    해석을 포함한 종합 비율 분석을 수행합니다.
 
     Args:
-        ratios: Calculated financial ratios
-        industry: Industry sector for benchmarking
-        historical_data: Optional historical ratio data for trend analysis
+        ratios: 계산된 재무 비율
+        industry: benchmarking할 업계 sector
+        historical_data: 추세 분석용 선택적 과거 비율 data
 
     Returns:
-        Complete analysis with interpretations and recommendations
+        해석과 권고가 포함된 전체 분석
     """
     interpreter = RatioInterpreter(industry)
     analysis = {
@@ -282,7 +282,7 @@ def perform_comprehensive_analysis(
         "recommendations": [],
     }
 
-    # Analyze current ratios
+    # 현재 비율 분석
     for category, category_ratios in ratios.items():
         analysis["current_analysis"][category] = {}
         for ratio_name, value in category_ratios.items():
@@ -291,7 +291,7 @@ def perform_comprehensive_analysis(
                     ratio_name, value
                 )
 
-    # Perform trend analysis if historical data provided
+    # 과거 data가 있으면 추세 분석 수행
     if historical_data:
         for ratio_name, historical_values in historical_data.items():
             if "values" in historical_values and "periods" in historical_values:
@@ -299,27 +299,27 @@ def perform_comprehensive_analysis(
                     ratio_name, historical_values["values"], historical_values["periods"]
                 )
 
-    # Generate overall health assessment
+    # 전반적인 건전성 평가 생성
     analysis["overall_health"] = _assess_overall_health(analysis["current_analysis"])
 
-    # Generate key recommendations
+    # 핵심 권고 생성
     analysis["recommendations"] = _generate_key_recommendations(analysis)
 
-    # Add formatted report
+    # 서식 지정 보고서 추가
     analysis["report"] = interpreter.generate_report(ratios)
 
     return analysis
 
 
 def _assess_overall_health(current_analysis: dict[str, Any]) -> dict[str, str]:
-    """Assess overall financial health based on ratio analysis."""
+    """비율 분석으로 전반적인 재무 건전성을 평가합니다."""
     ratings = []
     for _category, category_analysis in current_analysis.items():
         for _ratio_name, ratio_analysis in category_analysis.items():
             if "rating" in ratio_analysis:
                 ratings.append(ratio_analysis["rating"])
 
-    # Simple scoring system
+    # 간단한 scoring 시스템
     score_map = {
         "Excellent": 4,
         "Good": 3,
@@ -351,10 +351,10 @@ def _assess_overall_health(current_analysis: dict[str, Any]) -> dict[str, str]:
 
 
 def _generate_key_recommendations(analysis: dict[str, Any]) -> list[str]:
-    """Generate prioritized recommendations based on analysis."""
+    """분석에 따른 우선순위 권고를 생성합니다."""
     recommendations = []
 
-    # Check for critical issues
+    # 핵심 문제 확인
     for _category, category_analysis in analysis["current_analysis"].items():
         for ratio_name, ratio_analysis in category_analysis.items():
             if ratio_analysis.get("rating") == "Poor":
@@ -362,16 +362,16 @@ def _generate_key_recommendations(analysis: dict[str, Any]) -> list[str]:
                     f"Priority: Address {ratio_name.replace('_', ' ')} - {ratio_analysis.get('recommendation', '')}"
                 )
 
-    # Add trend-based recommendations
+    # 추세 기반 권고 추가
     for ratio_name, trend in analysis.get("trend_analysis", {}).items():
         if trend.get("trend") == "Deteriorating":
             recommendations.append(
                 f"Monitor: {ratio_name.replace('_', ' ')} showing negative trend"
             )
 
-    # Add general recommendations if healthy
+    # 건전하면 일반적인 권고 추가
     if not recommendations:
         recommendations.append("Continue current financial management practices")
         recommendations.append("Consider strategic growth opportunities")
 
-    return recommendations[:5]  # Return top 5 recommendations
+    return recommendations[:5]  # 상위 5개 권고 반환

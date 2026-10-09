@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Talent Scorer Tool - Evaluate and rank candidates based on multiple criteria
-Custom Python tool for the Recruiter subagent
+Talent Scorer Tool - 여러 기준으로 후보자를 평가하고 순위화
+Recruiter subagent용 custom Python tool
 """
 
 import argparse
@@ -9,7 +9,7 @@ import json
 
 
 def score_candidate(candidate: dict) -> dict:
-    """Score a candidate based on weighted criteria"""
+    """가중 기준에 따라 후보자를 평가합니다"""
 
     weights = {
         "technical_skills": 0.30,
@@ -22,11 +22,11 @@ def score_candidate(candidate: dict) -> dict:
 
     scores = {}
 
-    # Technical skills (0-100)
+    # 기술 역량(0-100)
     tech_match = candidate.get("tech_skills_match", 70)
     scores["technical_skills"] = min(100, tech_match)
 
-    # Experience (0-100, peaks at 8 years)
+    # 경험(0-100, 8년에서 최대)
     years = candidate.get("years_experience", 5)
     if years <= 2:
         scores["experience_years"] = 40
@@ -35,26 +35,26 @@ def score_candidate(candidate: dict) -> dict:
     elif years <= 8:
         scores["experience_years"] = 90
     else:
-        scores["experience_years"] = 85  # Slight decline for overqualified
+        scores["experience_years"] = 85  # 과도한 자격에는 약간 감소
 
-    # Startup experience (0-100)
+    # Startup 경험(0-100)
     scores["startup_experience"] = 100 if candidate.get("has_startup_exp", False) else 50
 
-    # Education (0-100)
+    # 교육(0-100)
     education = candidate.get("education", "bachelors")
     edu_scores = {"high_school": 40, "bachelors": 70, "masters": 85, "phd": 90}
     scores["education"] = edu_scores.get(education, 70)
 
-    # Culture fit (0-100)
+    # 문화 적합성(0-100)
     scores["culture_fit"] = candidate.get("culture_score", 75)
 
-    # Salary fit (0-100, penalize if too high or too low)
+    # 급여 적합성(0-100, 너무 높거나 낮으면 감점)
     salary = candidate.get("salary_expectation", 150000)
     target = candidate.get("target_salary", 160000)
     diff_pct = abs(salary - target) / target
     scores["salary_fit"] = max(0, 100 - (diff_pct * 200))
 
-    # Calculate weighted total
+    # 가중 총점 계산
     total = sum(scores[k] * weights[k] for k in weights)
 
     return {
@@ -67,7 +67,7 @@ def score_candidate(candidate: dict) -> dict:
 
 
 def get_recommendation(score: float) -> str:
-    """Generate hiring recommendation based on score"""
+    """점수에 따라 채용 권고를 생성합니다"""
     if score >= 85:
         return "STRONG HIRE - Extend offer immediately"
     elif score >= 75:
@@ -81,7 +81,7 @@ def get_recommendation(score: float) -> str:
 
 
 def identify_risks(candidate: dict, scores: dict) -> list[str]:
-    """Identify potential risk factors"""
+    """잠재적 위험 요인을 식별합니다"""
     risks = []
 
     if scores["technical_skills"] < 60:
@@ -103,7 +103,7 @@ def identify_risks(candidate: dict, scores: dict) -> list[str]:
 
 
 def rank_candidates(candidates: list[dict]) -> list[dict]:
-    """Rank multiple candidates"""
+    """여러 후보자를 순위화합니다"""
     scored = [score_candidate(c) for c in candidates]
     return sorted(scored, key=lambda x: x["total_score"], reverse=True)
 
@@ -121,12 +121,12 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.input:
-        # Score multiple candidates from file
+        # 파일에서 여러 후보자 평가
         with open(args.input) as f:
             candidates = json.load(f)
         results = rank_candidates(candidates)
     else:
-        # Score single candidate from args
+        # Argument에서 단일 후보자 평가
         candidate = {
             "name": args.name or "Candidate",
             "years_experience": args.years,
@@ -142,7 +142,7 @@ def main() -> None:
     if args.format == "json":
         print(json.dumps(results, indent=2))
     else:
-        # Text output
+        # Text 출력
         print("🎯 CANDIDATE EVALUATION")
         print("=" * 50)
 

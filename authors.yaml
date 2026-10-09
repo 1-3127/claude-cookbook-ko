@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=./.github/authors_schema.json
-# Authors mapping: GitHub username -> Author details
-# This file maps author GitHub usernames (used in registry.yaml) to their full details
-# for display on the website.
+# 작성자 매핑: GitHub username -> 작성자 세부 정보
+# 이 파일은 웹사이트에 표시할 수 있도록 작성자의 GitHub username(registry.yaml에서 사용)을
+# 전체 세부 정보에 매핑합니다.
 
 Adriaan-ANT:
   name: Adriaan Engelbrecht

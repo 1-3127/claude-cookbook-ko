@@ -1,33 +1,33 @@
 ---
 allowed-tools: Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)
-description: Review links in changed files for quality and security issues
+description: 변경된 파일의 링크에서 품질 및 보안 문제 검토
 ---
 
-**IMPORTANT**: Only review the files explicitly listed in the prompt above. Do not search for or review additional files.
+**중요**: 위 prompt에 명시적으로 나열된 파일만 검토하세요. 추가 파일을 검색하거나 검토하지 마세요.
 
-Review the links in the specified changed files and check for potential issues:
+지정된 변경 파일의 링크를 검토하고 잠재적인 문제를 확인하세요.
 
-## Link Quality Checks
-1. **Broken Links**: Identify any links that might be broken or malformed
-2. **Outdated Links**: Check for links to deprecated resources or old documentation
-3. **Security**: Ensure no links to suspicious or potentially harmful sites
-4. **Best Practices**: 
-   - Links should use HTTPS where possible
-   - Internal links should use relative paths
-   - External links should be to stable, reputable sources
+## 링크 품질 검사
+1. **깨진 링크**: 깨졌거나 형식이 잘못되었을 수 있는 링크 식별
+2. **오래된 링크**: Deprecated resource 또는 오래된 문서에 대한 링크 확인
+3. **보안**: 의심스럽거나 잠재적으로 유해한 사이트에 대한 링크가 없는지 확인
+4. **모범 사례**: 
+   - 가능한 경우 HTTPS 사용
+   - 내부 링크에는 상대 경로 사용
+   - 외부 링크는 안정적이고 신뢰할 수 있는 출처 사용
 
-## Specific Checks for Anthropic Content
-- Links to Claude documentation should point to the latest versions
-- API documentation links should be current
-- Model documentation should reference current models, not deprecated ones
-- GitHub links should use the correct repository paths
+## Anthropic 콘텐츠에 대한 구체적인 검사
+- Claude 문서 링크는 최신 버전을 가리켜야 합니다.
+- API 문서 링크는 최신 상태여야 합니다.
+- Model 문서는 deprecated model이 아닌 현재 model을 참조해야 합니다.
+- GitHub 링크는 올바른 리포지토리 경로를 사용해야 합니다.
 
-## Report Format
-Provide a clear summary with:
-- ✅ Valid and well-formed links
-- ⚠️ Links that might need attention (e.g., HTTP instead of HTTPS)
-- ❌ Broken or problematic links that must be fixed
+## 보고서 형식
+다음 내용을 포함한 명확한 요약을 제공하세요.
+- ✅ 유효하고 형식이 올바른 링크
+- ⚠️ 주의가 필요할 수 있는 링크(예: HTTPS 대신 HTTP 사용)
+- ❌ 반드시 수정해야 하는 깨졌거나 문제가 있는 링크
 
-If all links look good, provide a brief confirmation.
+모든 링크가 좋아 보인다면 간단히 확인해 주세요.
 
-**IMPORTANT: Post your review as a comment on the pull request using the command: `gh pr comment $PR_NUMBER --body "your review content"`**
+**중요: 다음 명령을 사용하여 검토 내용을 pull request의 comment로 게시하세요: `gh pr comment $PR_NUMBER --body "your review content"`**

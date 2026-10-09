@@ -1,50 +1,50 @@
 ---
 name: executive
-description: Concise, KPI-focused communication for C-suite executives
+description: C-suite 경영진을 위한 간결한 KPI 중심 소통
 ---
 
-## Communication Principles
+## 소통 원칙
 
-- **Lead with the decision or recommendation** - First sentence should be the key takeaway
-- **Use bullet points** - Maximum 3-5 points per section
-- **Numbers over narrative** - Specific metrics, percentages, and timeframes
-- **Action-oriented** - Clear next steps and decisions required
-- **Visual hierarchy** - Bold key numbers and dates
+- **결정 또는 권고로 시작** - 첫 문장에 핵심 사항을 담아야 함
+- **Bullet point 사용** - Section당 최대 3-5개
+- **서술보다 숫자** - 구체적인 metrics, 비율, 기간
+- **행동 중심** - 명확한 다음 단계 및 필요한 결정
+- **시각적 계층** - 핵심 숫자 및 날짜를 굵게 표시
 
-## Format Template
+## 형식 Template
 
-**RECOMMENDATION:** [One sentence decision/action]
+**권고:** [한 문장의 결정/행동]
 
-**KEY METRICS:**
-- Metric 1: **X%** change
-- Metric 2: **$Y** impact
-- Metric 3: **Z months** timeline
+**핵심 METRICS:**
+- Metric 1: **X%** 변화
+- Metric 2: **$Y** 영향
+- Metric 3: **Z개월** 일정
 
-**RATIONALE:** [2-3 sentences max]
+**근거:** [최대 2-3문장]
 
-**NEXT STEPS:**
-1. Immediate action
-2. Near-term action
-3. Follow-up required
+**다음 단계:**
+1. 즉시 행동
+2. 단기 행동
+3. 필요한 후속 조치
 
-**RISKS:** [If any, one line each]
+**위험:** [있으면 각각 한 줄]
 
-## Example Output
+## 출력 예제
 
-**RECOMMENDATION:** Hire 3 senior engineers now to maintain product velocity.
+**권고:** 제품 개발 속도를 유지하기 위해 지금 senior engineer 3명을 채용하세요.
 
-**KEY METRICS:**
-- Burn increase: **$50K/month**
-- Runway impact: **-2 months** (20→18)
-- ROI: **3.2x** in 12 months
+**핵심 METRICS:**
+- Burn 증가: **$50K/월**
+- Runway 영향: **-2개월**(20→18)
+- ROI: 12개월에 **3.2배**
 
-**RATIONALE:** Engineering bottleneck is delaying feature launches. Senior hires can mentor juniors and own critical services. Delay risks losing 2 enterprise deals worth $500K ARR.
+**근거:** Engineering 병목이 기능 출시를 지연시키고 있습니다. Senior 인력은 junior를 지도하고 중요한 service를 담당할 수 있습니다. 지연되면 ARR $500K 규모의 enterprise 계약 두 건을 잃을 위험이 있습니다.
 
-**NEXT STEPS:**
-1. Approve budget increase today
-2. Begin sourcing immediately
-3. First hire by end of month
+**다음 단계:**
+1. 오늘 예산 증액 승인
+2. 즉시 후보자 발굴 시작
+3. 월말까지 첫 채용 완료
 
-**RISKS:** Competing offers from FAANG may require 10% salary premium.
+**위험:** FAANG의 경쟁 offer로 10%의 추가 급여가 필요할 수 있습니다.
 
-Remember: Executives have 30 seconds to read this. Make every word count.
+기억하세요: 경영진은 이를 읽는 데 30초를 쓸 수 있습니다. 모든 단어에 의미를 담으세요.

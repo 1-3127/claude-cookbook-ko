@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-SRE Bot - Slack Integration with Claude Agent SDK
+SRE Bot - Claude Agent SDK의 Slack integration
 
-This version integrates with Slack for real-time incident response.
-It uses the Claude Agent SDK with in-process MCP tools.
+이 version은 실시간 incident 대응을 위해 Slack과 통합됩니다.
+in-process MCP tool과 Claude Agent SDK를 사용합니다.
 
-Configuration:
-    Create a .env file with:
+설정:
+    다음 내용으로 .env 파일을 만드세요:
         ANTHROPIC_API_KEY=your-anthropic-key
         SLACK_BOT_TOKEN=xoxb-your-bot-token
         SLACK_APP_TOKEN=xapp-your-app-token
 
-Usage:
+사용법:
     python sre_bot_slack.py
 """
 
@@ -22,7 +22,7 @@ import re
 import json
 from pathlib import Path
 
-# Check aiohttp for webhook server
+# webhook server용 aiohttp 확인
 try:
     from aiohttp import web, ClientSession
 except ImportError:
@@ -30,10 +30,10 @@ except ImportError:
     print("   Run: pip install aiohttp")
     sys.exit(1)
 
-# Path to our subprocess MCP server (lives in the project root, one level up)
+# subprocess MCP server 경로(한 단계 위 프로젝트 루트에 있음)
 MCP_SERVER_PATH = Path(__file__).parent.parent / "sre_mcp_server.py"
 
-# Load environment variables from .env file FIRST
+# 먼저 .env 파일에서 environment variable 불러오기
 try:
     from dotenv import load_dotenv
 
@@ -42,11 +42,11 @@ except ImportError:
     print("⚠️  python-dotenv not installed, using environment variables only")
     print("   Run: pip install python-dotenv")
 
-# Webhook server configuration (must be after dotenv loads)
+# webhook server 설정(dotenv를 불러온 뒤여야 함)
 WEBHOOK_PORT = int(os.environ.get("WEBHOOK_PORT", "8585"))
 PAGERDUTY_API_KEY = os.environ.get("PAGERDUTY_API_KEY", "")
 
-# Check Slack dependency
+# Slack dependency 확인
 try:
     from slack_bolt.async_app import AsyncApp
     from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler
@@ -55,7 +55,7 @@ except ImportError:
     print("   Run: pip install slack-bolt")
     sys.exit(1)
 
-# Check Claude Agent SDK
+# Claude Agent SDK 확인
 try:
     from claude_agent_sdk import (
         query,
@@ -73,7 +73,7 @@ except ImportError:
     print("   npm install -g @anthropic-ai/claude-code")
     sys.exit(1)
 
-# Validate environment variables
+# environment variable 검증
 missing_vars = []
 for var in ["ANTHROPIC_API_KEY", "SLACK_BOT_TOKEN", "SLACK_APP_TOKEN"]:
     if not os.environ.get(var):
@@ -91,34 +91,34 @@ if missing_vars:
     sys.exit(1)
 
 
-# Initialize Slack app
+# Slack app 초기화
 app = AsyncApp(token=os.environ["SLACK_BOT_TOKEN"])
 
-# Slack channel for PagerDuty notifications (set in .env or defaults to #general)
+# PagerDuty 알림용 Slack channel(.env에서 설정, 기본값 #general)
 SLACK_INCIDENT_CHANNEL = os.environ.get("SLACK_INCIDENT_CHANNEL", "#general")
 
-# Store reference to Slack client for webhook handler
+# webhook handler용 Slack client 참조 저장
 slack_client = None
 
-# Track threads where the bot has been mentioned (for auto-responding to follow-ups)
+# bot이 mention된 thread 추적(후속 message 자동 응답용)
 # Key: thread_ts, Value: channel_id
 MAX_ACTIVE_THREADS = 1000
 active_threads: dict[str, str] = {}
 
-# Store the most recent post-mortem URL (created before resolving incident)
+# 최신 post-mortem URL 저장(incident 해결 전에 생성)
 pending_postmortem_url: str = ""
 
 
 # ============================================================================
-# PagerDuty Webhook Handler
+# PagerDuty webhook handler
 # ============================================================================
 
 
 async def handle_pagerduty_webhook(request: web.Request) -> web.Response:
-    """Handle incoming PagerDuty webhook events (V3 format).
+    """수신 PagerDuty webhook event(V3 형식)를 처리합니다.
 
-    NOTE: Production deployments should verify the X-PagerDuty-Signature header
-    to authenticate that requests originate from PagerDuty. See:
+    참고: production deployment는 X-PagerDuty-Signature header를 검증하여
+    요청이 PagerDuty에서 온 것인지 인증해야 합니다. 참고:
     https://developer.pagerduty.com/docs/db0fa8c8984fc-verifying-signatures
     """
     try:
@@ -128,14 +128,14 @@ async def handle_pagerduty_webhook(request: web.Request) -> web.Response:
 
     print("📥 Received PagerDuty webhook")
 
-    # PagerDuty V3 webhook format
+    # PagerDuty V3 webhook 형식
     event = payload.get("event", {})
     event_type = event.get("event_type", "")
     incident = event.get("data", {})
 
     print(f"   Event type: {event_type}")
 
-    # Handle incident.triggered events
+    # incident.triggered event 처리
     if event_type == "incident.triggered":
         incident_id = incident.get("id", "unknown")
         title = incident.get("title", "No title")
@@ -143,7 +143,7 @@ async def handle_pagerduty_webhook(request: web.Request) -> web.Response:
         urgency = incident.get("urgency", "unknown")
         html_url = incident.get("html_url", "")
 
-        # Format Slack message
+        # Slack message formatting
         urgency_emoji = "🔴" if urgency == "high" else "🟡"
         slack_message = (
             f"{urgency_emoji} *PagerDuty Incident Triggered*\n\n"
@@ -154,7 +154,7 @@ async def handle_pagerduty_webhook(request: web.Request) -> web.Response:
             f"*Link:* {html_url}"
         )
 
-        # Post to Slack channel
+        # Slack channel에 게시
         if slack_client:
             try:
                 await slack_client.chat_postMessage(
@@ -172,7 +172,7 @@ async def handle_pagerduty_webhook(request: web.Request) -> web.Response:
         title = incident.get("title", "No title")
         html_url = incident.get("html_url", "")
 
-        # Fetch full incident details from PagerDuty API to get accurate timestamps
+        # 정확한 timestamp를 얻기 위해 PagerDuty API에서 전체 incident 세부 정보 가져오기
         duration_str = "Unknown"
         resolution = ""
         if PAGERDUTY_API_KEY and incident_id != "unknown":
@@ -212,10 +212,10 @@ async def handle_pagerduty_webhook(request: web.Request) -> web.Response:
             except Exception as e:
                 print(f"⚠️ Could not fetch incident details: {e}")
 
-        # Get root cause from resolution note
+        # 해결 메모에서 근본 원인 가져오기
         root_cause = resolution if resolution else "See post-mortem for details"
 
-        # Check for pending post-mortem URL (created before resolving)
+        # 대기 중 post-mortem URL 확인(해결 전에 생성)
         global pending_postmortem_url
         if pending_postmortem_url:
             print(
@@ -236,7 +236,7 @@ async def handle_pagerduty_webhook(request: web.Request) -> web.Response:
             f"*Post-mortem:* {postmortem_value}"
         )
 
-        # Post to Slack channel
+        # Slack channel에 게시
         if slack_client:
             try:
                 await slack_client.chat_postMessage(
@@ -256,7 +256,7 @@ async def handle_pagerduty_webhook(request: web.Request) -> web.Response:
 
 
 async def handle_health(request: web.Request) -> web.Response:
-    """Health check endpoint."""
+    """health check endpoint."""
     return web.Response(status=200, text="OK")
 
 
@@ -385,14 +385,14 @@ Be thorough but efficient. Always explain your reasoning.
 
 
 def convert_markdown_to_slack(text: str) -> str:
-    """Convert standard Markdown to Slack mrkdwn format."""
-    # Remove ### headers - replace with bold text
+    """표준 Markdown을 Slack mrkdwn 형식으로 변환합니다."""
+    # ### header 제거 - bold text로 교체
     text = re.sub(r"^###\s*(.+)$", r"*\1*", text, flags=re.MULTILINE)
     text = re.sub(r"^##\s*(.+)$", r"*\1*", text, flags=re.MULTILINE)
     text = re.sub(r"^#\s*(.+)$", r"*\1*", text, flags=re.MULTILINE)
 
-    # Convert **bold** to *bold* (but not inside code blocks)
-    # This is a simplified conversion - handles most cases
+    # **bold**를 *bold*로 변환(code block 내부 제외)
+    # 단순화한 변환 - 대부분의 경우 처리
     text = re.sub(r"\*\*([^*]+)\*\*", r"*\1*", text)
 
     return text
@@ -406,23 +406,23 @@ async def process_investigation(
     is_followup: bool = False,
     is_investigation: bool = False,
 ):
-    """Process the investigation in the background, streaming output to Slack.
+    """background에서 조사를 처리하며 출력을 Slack으로 streaming합니다.
 
     Args:
-        incident_text: The incident description or follow-up request
+        incident_text: incident 설명 또는 후속 요청
         channel: Slack channel ID
-        thread_ts: Thread timestamp for replies
-        say: Slack say function
-        is_followup: If True, skip verbose tool messages
-            (for post-mortems, confirmations, etc.)
-        is_investigation: If True, this is an actual
-            investigation (show completion message)
+        thread_ts: reply용 thread timestamp
+        say: Slack say 함수
+        is_followup: True이면 장황한 tool message 건너뛰기
+            (post-mortem, 확인 등)
+        is_investigation: True이면 실제 조사
+            (완료 message 표시)
     """
-    # Get the Python executable path (use the venv python)
+    # Python 실행 파일 경로 가져오기(venv python 사용)
     python_path = sys.executable
 
-    # Configure the agent with subprocess-based MCP server
-    # This avoids the SDK MCP race condition bug
+    # subprocess 기반 MCP server로 agent 설정
+    # SDK MCP race condition 버그를 피합니다
     options = ClaudeAgentOptions(
         system_prompt=SYSTEM_PROMPT,
         mcp_servers={
@@ -432,7 +432,7 @@ async def process_investigation(
             }
         },
         allowed_tools=[
-            # Investigation tools
+            # 조사 tool
             "mcp__sre__query_metrics",
             "mcp__sre__list_metrics",
             "mcp__sre__get_service_health",
@@ -440,16 +440,16 @@ async def process_investigation(
             "mcp__sre__get_alerts",
             "mcp__sre__get_recent_deployments",
             "mcp__sre__execute_runbook",
-            # PagerDuty tools
+            # PagerDuty tool
             "mcp__sre__pagerduty_create_incident",
             "mcp__sre__pagerduty_update_incident",
             "mcp__sre__pagerduty_get_incident",
             "mcp__sre__pagerduty_list_incidents",
-            # Confluence tools
+            # Confluence tool
             "mcp__sre__confluence_create_postmortem",
             "mcp__sre__confluence_get_page",
             "mcp__sre__confluence_list_postmortems",
-            # Remediation tools
+            # 복구 tool
             "mcp__sre__read_config_file",
             "mcp__sre__edit_config_file",
             "mcp__sre__run_shell_command",
@@ -459,8 +459,8 @@ async def process_investigation(
         model="claude-opus-4-6",
     )
 
-    # Stream responses to Slack as they arrive
-    # Track last tool to avoid duplicate "Checking X..." messages
+    # 도착하는 대로 Slack에 응답 streaming
+    # "Checking X..." message 중복 방지를 위해 마지막 tool 추적
     last_tool_posted = None
 
     try:
@@ -468,12 +468,12 @@ async def process_investigation(
             if isinstance(message, AssistantMessage):
                 for block in message.content:
                     if isinstance(block, TextBlock) and block.text.strip():
-                        # Post text blocks immediately as they arrive
-                        # Convert any standard Markdown to Slack mrkdwn format
+                        # 도착하는 즉시 text block 게시
+                        # 표준 Markdown을 Slack mrkdwn 형식으로 변환
                         text = convert_markdown_to_slack(block.text.strip())
 
-                        # Check for Confluence post-mortem URL
-                        # and store it for the webhook
+                        # Confluence post-mortem URL 확인
+                        # webhook용으로 저장
                         confluence_match = re.search(
                             r"(https://[^/]+\.atlassian"
                             r"\.net/wiki/[^\s<>]+)",
@@ -486,9 +486,9 @@ async def process_investigation(
                                 f"📝 Stored post-mortem URL: {pending_postmortem_url}"
                             )
 
-                        # Reset tool tracking when we get actual content
+                        # 실제 내용이 오면 tool 추적 reset
                         last_tool_posted = None
-                        # Split long messages to respect Slack's 4000 char limit
+                        # Slack 4000자 제한을 준수하도록 긴 message 분할
                         if len(text) > 3900:
                             chunks = [
                                 text[i : i + 3900] for i in range(0, len(text), 3900)
@@ -500,8 +500,8 @@ async def process_investigation(
                             await say(text=text, thread_ts=thread_ts)
                             await asyncio.sleep(0.3)
                     elif isinstance(block, ToolUseBlock):
-                        # Show which tool is being used, but skip consecutive duplicates
-                        # Skip tool messages for follow-up actions (post-mortems, etc.)
+                        # 사용 중인 tool 표시, 연속 중복은 건너뜀
+                        # 후속 행동의 tool message 건너뛰기(post-mortem 등)
                         if not is_followup:
                             tool_name = block.name.replace("mcp__sre__", "")
                             if tool_name != last_tool_posted:
@@ -514,7 +514,7 @@ async def process_investigation(
             elif isinstance(message, ResultMessage):
                 if message.is_error:
                     await say(text=f"❌ Error: {message.result}", thread_ts=thread_ts)
-                # No completion message - let the response stand on its own
+                # 완료 message 없음 - 응답 자체로 전달
 
     except Exception as e:
         await say(text=f"❌ Failed: {str(e)}", thread_ts=thread_ts)
@@ -523,20 +523,20 @@ async def process_investigation(
 
 @app.event("app_mention")
 async def handle_mention(event, say, client):
-    """Handle @mentions in Slack channels."""
+    """Slack channel의 @mention을 처리합니다."""
 
     channel = event["channel"]
     thread_ts = event.get("thread_ts", event["ts"])
     incident_text = event["text"]
 
-    # Track this thread so we respond to follow-ups without needing @mention.
-    # Evict oldest entries to prevent unbounded growth in long-running bots.
+    # @mention 없이 후속 message에 응답하도록 thread 추적.
+    # 장시간 실행 bot에서 무제한 증가를 막으려고 가장 오래된 항목 제거.
     if len(active_threads) >= MAX_ACTIVE_THREADS:
         for old_key in list(active_threads)[: len(active_threads) // 2]:
             del active_threads[old_key]
     active_threads[thread_ts] = channel
 
-    # Remove the bot mention from the text
+    # text에서 bot mention 제거
     incident_text = re.sub(r"<@[A-Z0-9]+>\s*", "", incident_text).strip()
 
     if not incident_text:
@@ -551,7 +551,7 @@ async def handle_mention(event, say, client):
         )
         return
 
-    # If this is a reply in a thread, fetch thread history for context
+    # thread reply이면 context용 thread 이력 가져오기
     thread_context = ""
     if event.get("thread_ts") and client:
         try:
@@ -559,25 +559,25 @@ async def handle_mention(event, say, client):
                 channel=channel, ts=event["thread_ts"], limit=50
             )
             messages = result.get("messages", [])
-            if len(messages) > 1:  # More than just the current message
+            if len(messages) > 1:  # 현재 message만 있는 것보다 많은 경우
                 thread_context = "\n\n--- PREVIOUS CONVERSATION IN THIS THREAD ---\n"
-                for msg in messages[:-1]:  # Exclude the current message
+                for msg in messages[:-1]:  # 현재 message 제외
                     sender = "Bot" if msg.get("bot_id") else "User"
-                    text = msg.get("text", "")[:2000]  # Limit each message
+                    text = msg.get("text", "")[:2000]  # 각 message 제한
                     thread_context += f"\n{sender}: {text}\n"
                 thread_context += "\n--- END OF PREVIOUS CONVERSATION ---\n\n"
         except Exception as e:
             print(f"Could not fetch thread history: {e}")
 
-    # Combine context with current request
+    # context와 현재 요청 결합
     full_prompt = (
         thread_context + "Current request: " + incident_text
         if thread_context
         else incident_text
     )
 
-    # Detect if this is a short confirmation
-    # (skip tool messages for brief yes/no responses)
+    # 짧은 확인인지 감지
+    # (짧은 yes/no 응답에는 tool message 건너뜀)
     lower_text = incident_text.lower().strip()
     is_followup = len(lower_text) < 30 and any(
         keyword in lower_text
@@ -594,7 +594,7 @@ async def handle_mention(event, say, client):
         ]
     )
 
-    # Schedule the task as a background task so handler returns quickly
+    # handler가 빨리 반환하도록 background task로 예약
     asyncio.create_task(
         process_investigation(full_prompt, channel, thread_ts, say, is_followup)
     )
@@ -602,12 +602,12 @@ async def handle_mention(event, say, client):
 
 @app.event("message")
 async def handle_message(event, say, client):
-    """Handle direct messages and follow-ups in active threads."""
-    # Ignore bot messages
+    """direct message와 활성 thread의 후속 message를 처리합니다."""
+    # bot message 무시
     if event.get("bot_id"):
         return
 
-    # Ignore message_changed events (edits)
+    # message_changed event(편집) 무시
     if event.get("subtype") == "message_changed":
         return
 
@@ -618,14 +618,14 @@ async def handle_message(event, say, client):
     if not text:
         return
 
-    # Check if this is a DM
+    # DM인지 확인
     is_dm = channel.startswith("D")
 
-    # Check if this is a follow-up in an active thread
+    # 활성 thread의 후속 message인지 확인
     is_active_thread = thread_ts and thread_ts in active_threads
 
     if is_dm or is_active_thread:
-        # Pass to handle_mention (it will handle thread tracking)
+        # handle_mention으로 전달(thread 추적 처리)
         await handle_mention(
             {
                 "channel": channel,
@@ -640,7 +640,7 @@ async def handle_message(event, say, client):
 
 
 async def start_webhook_server():
-    """Start the webhook server for PagerDuty events."""
+    """PagerDuty event용 webhook server를 시작합니다."""
     webhook_app = web.Application()
     webhook_app.router.add_post("/webhooks/pagerduty", handle_pagerduty_webhook)
     webhook_app.router.add_get("/health", handle_health)
@@ -655,13 +655,13 @@ async def start_webhook_server():
         f" http://<your-host>:{WEBHOOK_PORT}/webhooks/pagerduty"
     )
 
-    # Keep the server running
+    # server를 계속 실행
     while True:
         await asyncio.sleep(3600)
 
 
 async def main():
-    """Start the Slack bot and webhook server."""
+    """Slack bot과 webhook server를 시작합니다."""
     global slack_client
 
     print("=" * 50)
@@ -674,12 +674,12 @@ async def main():
     print("Press Ctrl+C to stop")
     print("=" * 50)
 
-    # Initialize Slack client for webhook handler
+    # webhook handler용 Slack client 초기화
     from slack_sdk.web.async_client import AsyncWebClient
 
     slack_client = AsyncWebClient(token=os.environ["SLACK_BOT_TOKEN"])
 
-    # Start both the Slack bot and webhook server
+    # Slack bot과 webhook server 모두 시작
     handler = AsyncSocketModeHandler(app, os.environ["SLACK_APP_TOKEN"])
 
     await asyncio.gather(handler.start_async(), start_webhook_server())

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Infrastructure setup for the SRE Incident Response Agent notebook.
+SRE incident 대응 agent notebook의 infrastructure 설정.
 
-Generates local Docker-based infrastructure:
-- config/            Docker Compose, Prometheus, database init, API server env
-- services/          FastAPI API server, Dockerfile, and dependencies
-- scripts/           Traffic generator and healthy-services simulator
-- hooks/             Safety hook scripts for validating agent write operations
-- postmortems/       Directory for agent-generated post-mortems
+로컬 Docker 기반 infrastructure 생성:
+- config/            Docker Compose, Prometheus, database 초기화, API server env
+- services/          FastAPI API server, Dockerfile, dependency
+- scripts/           traffic generator와 정상 서비스 simulator
+- hooks/             agent 쓰기 작업 검증용 safety hook script
+- postmortems/       agent 생성 post-mortem 디렉터리
 
-Usage:
+사용법:
     python infra_setup.py
 """
 
@@ -23,14 +23,14 @@ for d in ["config", "services", "scripts", "hooks", "postmortems"]:
 # =============================================================================
 # DOCKER COMPOSE
 # =============================================================================
-# Defines the full service stack:
-#   - postgres:           PostgreSQL 15 database with health checks
-#   - api-server:         FastAPI app that queries the DB and exposes Prometheus metrics
-#   - healthy-services:   Simulates healthy payment-svc
-#                         and auth-svc (for baseline metrics)
-#   - traffic-generator:  Sends ~50 req/s to the API server to generate continuous load
-#   - prometheus:         Scrapes metrics from api-server every 5 seconds
-#   - grafana:            Optional dashboard UI (accessible at localhost:3000)
+# 전체 서비스 stack을 정의합니다:
+#   - postgres:           health check가 있는 PostgreSQL 15 database
+#   - api-server:         DB를 query하고 Prometheus metric을 노출하는 FastAPI app
+#   - healthy-services:   정상적인 payment-svc와
+#                         auth-svc를 모의합니다(baseline metric용)
+#   - traffic-generator:  지속적인 부하를 위해 API server에 초당 약 50개 요청 전송
+#   - prometheus:         5초마다 api-server에서 metric 수집
+#   - grafana:            선택적인 dashboard UI(localhost:3000에서 접근 가능)
 
 Path("config/docker-compose.yml").write_text("""\
 services:
@@ -137,12 +137,12 @@ volumes:
 """)
 
 # =============================================================================
-# API SERVER CONFIGURATION
+# API SERVER 설정
 # =============================================================================
-# Environment variables for the api-server container.
-# DB_POOL_SIZE is the key parameter we'll manipulate during the incident:
-#   - Healthy value: 20 (handles concurrent requests comfortably)
-#   - Broken value:  1  (causes connection pool exhaustion under load)
+# api-server container의 environment variable.
+# DB_POOL_SIZE는 incident 도중 조작할 핵심 parameter입니다:
+#   - 정상 값: 20(동시 요청을 여유 있게 처리)
+#   - 문제 값:  1(부하 시 connection pool 고갈 유발)
 
 Path("config/api-server.env").write_text("""\
 # API Server Configuration
@@ -164,7 +164,7 @@ DB_PASSWORD=demo
 SERVICE_NAME=api-server
 """)
 
-# Known-good backup of the config (the agent can reference this during investigation)
+# 정상으로 확인된 config backup(agent가 조사 중 참조 가능)
 Path("config/api-server.env.backup").write_text("""\
 # API Server Configuration - KNOWN GOOD VALUES
 # Use this as a reference for the correct configuration
@@ -185,11 +185,11 @@ SERVICE_NAME=api-server
 """)
 
 # =============================================================================
-# PROMETHEUS CONFIGURATION
+# PROMETHEUS 설정
 # =============================================================================
-# Scrapes the api-server's /metrics endpoint every 5 seconds.
-# The agent queries Prometheus via its HTTP API (localhost:9090) to check
-# error rates, latency percentiles, and DB connection pool utilization.
+# 5초마다 api-server의 /metrics endpoint를 수집합니다.
+# agent는 HTTP API(localhost:9090)로 Prometheus를 query하여
+# 오류율, latency percentile, DB connection pool 사용률을 확인합니다.
 
 Path("config/prometheus.yml").write_text("""\
 global:
@@ -208,10 +208,10 @@ scrape_configs:
 """)
 
 # =============================================================================
-# DATABASE INITIALIZATION
+# DATABASE 초기화
 # =============================================================================
-# Creates the schema used by the API server. PostgreSQL runs this automatically
-# on first startup via the docker-entrypoint-initdb.d volume mount.
+# API server가 사용하는 schema를 만듭니다. PostgreSQL은 첫 시작 시
+# docker-entrypoint-initdb.d volume mount로 자동 실행합니다.
 
 Path("config/init.sql").write_text("""\
 -- Database initialization script for SRE Demo
@@ -267,7 +267,7 @@ INSERT INTO orders (user_id, total, status) VALUES
     (4, 180.00, 'completed');
 """)
 
-# Grafana datasource provisioning (points Grafana at the local Prometheus)
+# Grafana datasource provisioning(로컬 Prometheus를 가리킴)
 Path("config/grafana-datasources.yml").write_text("""\
 apiVersion: 1
 
@@ -281,21 +281,21 @@ datasources:
 """)
 
 # =============================================================================
-# API SERVER (FastAPI Application)
+# API SERVER(FastAPI 애플리케이션)
 # =============================================================================
-# This is the service we'll break and fix. Key characteristics:
+# 문제를 일으키고 고칠 서비스입니다. 핵심 특성:
 #
-#   - Connects to PostgreSQL with a configurable connection pool (DB_POOL_SIZE)
-#   - Exposes Prometheus metrics at /metrics:
-#       * http_requests_total (counter, by status code and endpoint)
-#       * http_request_duration_milliseconds (histogram, p50/p90/p99)
-#       * db_connections_active (gauge, current pool usage)
-#       * db_pool_size (gauge, configured pool size)
-#   - When DB_POOL_SIZE=1 under load, connections exhaust immediately,
-#     causing 500 errors, high latency, and "connection pool exhausted" logs
+#   - 설정 가능한 connection pool(DB_POOL_SIZE)로 PostgreSQL에 연결
+#   - /metrics에 Prometheus metric 노출:
+#       * http_requests_total(counter, status code와 endpoint별)
+#       * http_request_duration_milliseconds(histogram, p50/p90/p99)
+#       * db_connections_active(gauge, 현재 pool 사용량)
+#       * db_pool_size(gauge, 설정된 pool 크기)
+#   - 부하 상태에서 DB_POOL_SIZE=1이면 connection이 즉시 고갈되어
+#     500 오류, 높은 latency, "connection pool exhausted" log 발생
 #
-# The agent will observe these symptoms via Prometheus and container logs,
-# trace them back to the config, and fix the pool size.
+# agent는 Prometheus와 container log로 증상을 관찰하고
+# config로 원인을 추적하여 pool 크기를 고칩니다.
 
 Path("services/api_server.py").write_text('''\
 """
@@ -663,10 +663,10 @@ if __name__ == "__main__":
 ''')
 
 # =============================================================================
-# DOCKERFILE & DEPENDENCIES
+# DOCKERFILE과 DEPENDENCY
 # =============================================================================
-# Builds the api-server container. Uses a single Uvicorn worker to make
-# pool exhaustion more pronounced (multiple workers would mask the issue).
+# api-server container를 만듭니다. pool 고갈을 더 두드러지게 하려고
+# Uvicorn worker 하나를 사용합니다(여러 worker는 문제를 가림).
 
 Path("services/Dockerfile").write_text("""\
 FROM python:3.11-slim
@@ -690,7 +690,7 @@ EXPOSE 8080
 CMD ["uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8080"]
 """)
 
-# Python dependencies for the API server
+# API server의 Python dependency
 Path("services/requirements.txt").write_text("""\
 fastapi==0.109.0
 uvicorn==0.27.0
@@ -700,11 +700,11 @@ prometheus-client==0.19.0
 """)
 
 # =============================================================================
-# HEALTHY SERVICES SIMULATOR
+# 정상 서비스 SIMULATOR
 # =============================================================================
-# Exposes fake Prometheus metrics for payment-svc and auth-svc.
-# These always report healthy values, providing a contrast when the
-# api-server starts failing during the incident.
+# payment-svc와 auth-svc의 모의 Prometheus metric을 노출합니다.
+# 항상 정상 값을 보고하여 incident 도중 api-server가
+# 실패하기 시작할 때 대비를 제공합니다.
 
 Path("scripts/healthy_services.py").write_text('''\
 #!/usr/bin/env python3
@@ -838,10 +838,10 @@ if __name__ == "__main__":
 # =============================================================================
 # TRAFFIC GENERATOR
 # =============================================================================
-# Sends continuous HTTP requests to the API server (~50 req/s).
-# This ensures Prometheus always has fresh metrics to scrape.
-# When the DB pool is exhausted, the traffic generator's requests start
-# failing, which shows up as elevated error rates in Prometheus.
+# API server에 지속적인 HTTP 요청을 보냅니다(초당 약 50개).
+# Prometheus가 수집할 최신 metric을 항상 갖게 합니다.
+# DB pool이 고갈되면 traffic generator 요청이 실패하기 시작하며
+# Prometheus에서 높아진 오류율로 나타납니다.
 
 Path("scripts/traffic_generator.py").write_text('''\
 #!/usr/bin/env python3
@@ -1011,19 +1011,19 @@ if __name__ == "__main__":
 ''')
 
 # =============================================================================
-# SAFETY HOOKS
+# SAFETY HOOK
 # =============================================================================
-# Shell scripts that validate agent write operations before they execute.
-# The Claude Agent SDK runs these as PreToolUse hooks — if a hook exits
-# with a non-zero status, the tool call is blocked.
+# 실행 전에 agent 쓰기 작업을 검증하는 shell script입니다.
+# Claude Agent SDK는 PreToolUse hook으로 실행하며 hook이
+# 0이 아닌 status로 종료하면 tool 호출을 차단합니다.
 #
 #   validate_pool_size.sh:
-#     Ensures DB_POOL_SIZE changes stay within 5–100 (safe operating range).
-#     Triggered before edit_config_file calls.
+#     DB_POOL_SIZE 변경을 5–100(안전 운영 범위) 안에 유지합니다.
+#     edit_config_file 호출 전에 실행합니다.
 #
 #   validate_config_before_deploy.sh:
-#     Checks that config values are sane before allowing a deploy command.
-#     Triggered before run_shell_command calls that redeploy the api-server.
+#     deploy 명령 허용 전에 config 값이 적절한지 확인합니다.
+#     api-server를 redeploy하는 run_shell_command 호출 전에 실행합니다.
 
 Path("hooks/validate_pool_size.sh").write_text("""\
 #!/bin/bash

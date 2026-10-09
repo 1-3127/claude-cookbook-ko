@@ -34,7 +34,7 @@ class VectorDB:
                     texts[batch : batch + 128], model="voyage-2"
                 ).embeddings
             ]
-            self.metadata = [item["metadata"] for item in data]  # Store only the inner metadata
+            self.metadata = [item["metadata"] for item in data]  # 내부 metadata만 저장
             self.save_db()
 
     def search(self, query, k=5, similarity_threshold=0.3):

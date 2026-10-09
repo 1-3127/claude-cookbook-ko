@@ -1,10 +1,10 @@
 /**
- * Cloudflare Worker (pure-Worker variant): webhook → drain environment work
- * queue → spin up a per-session Durable Object running the TS tool dispatcher
- * with an in-isolate fake filesystem. No container, no real shell.
+ * Cloudflare Worker(pure-Worker variant): webhook → environment work queue
+ * 비우기 → isolate 내 fake filesystem으로 TS tool dispatcher를 실행하는
+ * session별 Durable Object 시작. Container도 실제 shell도 없습니다.
  *
- * The webhook is a wake-up signal only — each delivery drains *all* pending
- * work items, so a single arriving webhook recovers any earlier missed ones.
+ * Webhook은 깨우기 신호일 뿐입니다. 각 delivery는 대기 중인 work item을 *모두*
+ * 비우므로 단 한 번 도착한 webhook으로 이전에 놓친 모든 item을 복구합니다.
  */
 import Anthropic from "@anthropic-ai/sdk";
 import type { SandboxRunner } from "./runner";
@@ -21,7 +21,7 @@ export interface Env {
 
 const MAX_DRAIN = 25;
 
-/** Scrub credential shapes before mirroring an error message to the function log. */
+/** 오류 메시지를 function log에 복사하기 전에 credential 형태를 제거합니다. */
 function redact(s: string): string {
   return s
     .replace(/sk-ant-[A-Za-z0-9._-]+/g, "sk-ant-[REDACTED]")
@@ -30,10 +30,10 @@ function redact(s: string): string {
 }
 
 /**
- * Structured, redacted error detail for log lines. Surfaces the SDK's
- * `status` + `requestID` when present so an API failure is correlatable to a
- * server-side trace, and the message (with credential shapes stripped) for
- * everything else (DO RPC failures, container start errors).
+ * Log 줄의 구조화된, 민감 정보를 제거한 오류 상세 정보입니다. SDK의
+ * `status` + `requestID`가 있으면 표시하여 API 실패를 server-side trace와
+ * 연결할 수 있도록 하며, 그 밖의 모든 것(DO RPC 실패, container 시작 오류)에는
+ * credential 형태를 제거한 메시지를 표시합니다.
  */
 function errDetail(e: unknown): string {
   if (e instanceof Error) {
@@ -48,25 +48,25 @@ function errDetail(e: unknown): string {
 }
 
 /**
- * Drain the work queue. The TS `WorkPoller` long-polls and never returns on an
- * empty queue, but a Worker fetch handler must respond — so poll → ack until
- * empty here. The runner DO owns the lease (heartbeat + force-stop), so the
- * webhook never posts `stop`.
+ * Work queue를 비웁니다. TS `WorkPoller`는 long-poll하며 빈 queue에서
+ * 절대로 반환하지 않지만 Worker fetch handler는 응답해야 하므로
+ * 여기서는 비워질 때까지 poll → ack합니다. Runner DO가 lease
+ * (heartbeat + force-stop)를 담당하므로 webhook은 절대로 `stop`을 게시하지 않습니다.
  */
 async function drainWork(env: Env, anthropic: Anthropic): Promise<object[]> {
   const spawned: object[] = [];
   for (let i = 0; i < MAX_DRAIN; i++) {
     let work;
     try {
-      // SDK auto-sends `anthropic-beta: managed-agents-2026-04-01` — no extra betas needed.
+      // SDK가 `anthropic-beta: managed-agents-2026-04-01`을 자동 전송 — 추가 beta는 필요 없음.
       work = await anthropic.beta.environments.work.poll(env.ANTHROPIC_ENVIRONMENT_ID, {
         reclaim_older_than_ms: 2000,
       });
     } catch (e) {
-      // /work/poll can 404 ("EnvironmentInstance not found for session …")
-      // when it dequeues a Redis entry whose session is gone. The stale entry
-      // is consumed server-side, so retrying moves past it; anything else is a
-      // config/transient failure — stop and recover on the next webhook.
+      // /work/poll은 session이 사라진 Redis entry를 dequeue할 때
+      // 404("EnvironmentInstance not found for session …")를 반환할 수 있습니다.
+      // 오래된 entry는 server-side에서 소비되므로 재시도하면 이를 지나갑니다.
+      // 그 외에는 config/일시적 실패이므로 중지하고 다음 webhook에서 복구합니다.
       const { status, requestID } = (e ?? {}) as { status?: number; requestID?: string | null };
       console.warn(
         `[webhook] poll failed status=${status ?? "?"} request_id=${requestID ?? "?"} — ${status === 404 ? "skipping" : "stopping drain"}`,
@@ -75,8 +75,8 @@ async function drainWork(env: Env, anthropic: Anthropic): Promise<object[]> {
       break;
     }
     if (!work) break;
-    // Log the claimed work item — explicit allowlist so `actor` (PII) and
-    // `metadata` (user-provided) never reach the log.
+    // Claim한 work item을 log에 기록 — `actor`(PII)와 `metadata`(사용자 제공)가
+    // 절대로 log에 전달되지 않도록 명시적인 allowlist를 사용합니다.
     console.log(
       `[webhook] polled work=${JSON.stringify({
         id: work.id,
@@ -91,8 +91,8 @@ async function drainWork(env: Env, anthropic: Anthropic): Promise<object[]> {
 
     const sessionId = work.data.id;
     try {
-      // The client is authed with the environment key — the single credential
-      // for poll / ack / stop — so no per-call Authorization header is needed.
+      // Client는 poll / ack / stop의 단일 credential인 environment key로
+      // 인증되므로 호출별 Authorization header가 필요하지 않습니다.
       await anthropic.beta.environments.work.ack(work.id, {
         environment_id: env.ANTHROPIC_ENVIRONMENT_ID,
       });
@@ -109,7 +109,7 @@ async function drainWork(env: Env, anthropic: Anthropic): Promise<object[]> {
       }
       spawned.push({ session_id: sessionId, work_id: work.id, created: !wasLive });
     } catch (e) {
-      // Skip and keep draining; the lease lapses and the next webhook reclaims.
+      // 건너뛰고 계속 queue를 비웁니다. Lease가 만료되면 다음 webhook이 다시 claim합니다.
       const detail = errDetail(e);
       console.warn(`[webhook] FAILED work=${work.id} session=${sessionId}: ${detail}`);
       spawned.push({ session_id: sessionId, work_id: work.id, error: detail });
@@ -123,7 +123,7 @@ export default {
     const anthropic = new Anthropic({
       authToken: env.ANTHROPIC_ENVIRONMENT_KEY,
       baseURL: env.ANTHROPIC_BASE_URL,
-      // Pass the whsec_ secret as-is: the SDK decodes its URL-safe base64 internally.
+      // whsec_ secret을 그대로 전달합니다. SDK가 내부에서 URL-safe base64를 decode합니다.
       webhookKey: env.ANTHROPIC_WEBHOOK_SECRET,
     });
 

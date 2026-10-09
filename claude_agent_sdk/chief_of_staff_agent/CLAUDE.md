@@ -1,95 +1,95 @@
 # CLAUDE.md - Chief of Staff Context
 
-## Company Overview
-- **Company**: TechStart Inc
-- **Stage**: Series A (Closed $10M in January 2024)
-- **Industry**: B2B SaaS - AI-powered developer tools
-- **Founded**: 2022
-- **HQ**: San Francisco, CA
+## 회사 개요
+- **회사**: TechStart Inc
+- **단계**: Series A(2024년 1월 $10M 유치 완료)
+- **산업**: B2B SaaS - AI 기반 developer tool
+- **설립**: 2022년
+- **본사**: San Francisco, CA
 
-## Financial Snapshot
-- **Monthly Burn Rate**: ~$500,000
-- **Current Runway**: 20 months (until September 2025)
-- **ARR**: $2.4M (growing 15% MoM)
-- **Cash in Bank**: $10M
-- **Revenue per Employee**: $48K
+## 재무 현황
+- **월 Burn Rate**: 약 $500,000
+- **현재 Runway**: 20개월(2025년 9월까지)
+- **ARR**: $2.4M(MoM 15% 성장)
+- **은행 현금**: $10M
+- **직원당 매출**: $48K
 
-## Team Structure
-- **Total Headcount**: 50
-- **Engineering**: 25 (50%)
+## 팀 구조
+- **총 인원**: 50
+- **Engineering**: 25(50%)
   - Backend: 12
   - Frontend: 8
   - DevOps/SRE: 5
-- **Sales & Marketing**: 12 (24%)
-- **Product**: 5 (10%)
-- **Operations**: 5 (10%)
-- **Executive**: 3 (6%)
+- **영업 및 Marketing**: 12(24%)
+- **Product**: 5(10%)
+- **운영**: 5(10%)
+- **경영진**: 3(6%)
 
-## Key Metrics
-- **Customer Count**: 120 enterprise customers
-- **NPS Score**: 72
-- **Monthly Churn**: 2.5%
+## 핵심 Metrics
+- **고객 수**: Enterprise 고객 120개
+- **NPS 점수**: 72
+- **월 Churn**: 2.5%
 - **CAC**: $15,000
 - **LTV**: $85,000
-- **CAC Payback Period**: 10 months
+- **CAC 회수 기간**: 10개월
 
-## Current Priorities (Q2 2024)
-1. **Hiring**: Add 10 engineers to accelerate product development
-2. **Product**: Launch AI code review feature by end of Q2
-3. **Sales**: Expand into European market
-4. **Fundraising**: Begin Series B conversations (target: $30M)
+## 현재 우선순위(2024년 Q2)
+1. **채용**: 제품 개발을 가속하기 위해 engineer 10명 추가
+2. **제품**: Q2 말까지 AI code review 기능 출시
+3. **영업**: 유럽 시장 진출
+4. **자금 조달**: Series B 논의 시작(목표: $30M)
 
-## Compensation Benchmarks
-- **Senior Engineer**: $180K - $220K + 0.1-0.3% equity
-- **Junior Engineer**: $100K - $130K + 0.05-0.1% equity
-- **Engineering Manager**: $200K - $250K + 0.3-0.5% equity
-- **VP Engineering**: $250K - $300K + 0.5-1% equity
+## 보상 기준
+- **Senior Engineer**: $180K - $220K + 지분 0.1-0.3%
+- **Junior Engineer**: $100K - $130K + 지분 0.05-0.1%
+- **Engineering Manager**: $200K - $250K + 지분 0.3-0.5%
+- **VP Engineering**: $250K - $300K + 지분 0.5-1%
 
-## Board Composition
-- **CEO**: Sarah Chen (Founder)
-- **Investor 1**: Mark Williams (Sequoia Capital)
-- **Investor 2**: Jennifer Park (Andreessen Horowitz)
-- **Independent**: Michael Torres (Former CTO of GitHub)
+## 이사회 구성
+- **CEO**: Sarah Chen(창업자)
+- **투자자 1**: Mark Williams(Sequoia Capital)
+- **투자자 2**: Jennifer Park(Andreessen Horowitz)
+- **독립 이사**: Michael Torres(전 GitHub CTO)
 
-## Competitive Landscape
-- **Main Competitors**: DevTools AI, CodeAssist Pro, SmartDev Inc
-- **Our Differentiation**: Superior AI accuracy, 10x faster processing
-- **Market Size**: $5B (growing 25% annually)
+## 경쟁 환경
+- **주요 경쟁사**: DevTools AI, CodeAssist Pro, SmartDev Inc
+- **차별점**: 우수한 AI 정확도, 10배 빠른 처리
+- **시장 규모**: $5B(연 25% 성장)
 
-## Recent Decisions
-- Approved hiring 3 senior backend engineers (March 2024)
-- Launched freemium tier (February 2024)
-- Opened European entity (January 2024)
-- Closed Series A funding (January 2024)
+## 최근 결정
+- Senior backend engineer 3명 채용 승인(2024년 3월)
+- Freemium tier 출시(2024년 2월)
+- 유럽 법인 설립(2024년 1월)
+- Series A 자금 조달 완료(2024년 1월)
 
-## Upcoming Decisions
-- Whether to acquire competitor SmartDev Inc ($8M asking price)
-- Hiring plan for Q3 (engineering vs. sales focus)
-- Office expansion vs. remote-first strategy
-- Stock option refresh for early employees
+## 예정된 결정
+- 경쟁사 SmartDev Inc 인수 여부(요구 가격 $8M)
+- Q3 채용 계획(engineering과 영업 중 어디에 집중할지)
+- 사무실 확장과 remote-first 전략 중 선택
+- 초기 직원의 stock option 갱신
 
-## Risk Factors
-- High dependency on AWS (70% of COGS)
-- Key engineer retention (3 critical team members)
-- Increasing competition from Big Tech
-- Potential economic downturn impact on enterprise sales
+## 위험 요인
+- 높은 AWS 의존도(COGS의 70%)
+- 핵심 engineer 유지(중요 팀원 3명)
+- Big Tech의 경쟁 심화
+- 경기 침체가 enterprise 영업에 미칠 잠재적 영향
 
-## Available Scripts
+## 사용 가능한 Script
 
 ### simple_calculation.py
-Quick financial metrics calculator for runway and burn rate analysis.
-Script located at `./scripts/simple_calculation.py`
+Runway 및 burn rate 분석을 위한 빠른 재무 metrics 계산기입니다.
+Script 위치: `./scripts/simple_calculation.py`
 
-**Usage:**
+**사용법:**
 ```bash
 python scripts/simple_calculation.py <total_runway> <monthly_burn>
 ```
 
-**Example:**
+**예제:**
 ```bash
 python scripts/simple_calculation.py 10000000 500000
 ```
 
-**Output:** JSON with monthly_burn, runway_months, total_runway_dollars, quarterly_burn, and burn_rate_daily
+**출력:** monthly_burn, runway_months, total_runway_dollars, quarterly_burn, burn_rate_daily를 포함하는 JSON
 
-Remember: As Chief of Staff, you have access to financial data in the financial_data/ directory and can delegate specialized analysis to your subagents (financial-analyst and recruiter).
+기억하세요: Chief of Staff로서 financial_data/ 디렉터리의 재무 data에 접근할 수 있으며 전문 분석을 subagent(financial-analyst 및 recruiter)에 위임할 수 있습니다.

@@ -1,20 +1,19 @@
-"""Synthetic research documents for the context-management cookbook.
+"""context-management cookbook을 위한 synthetic research 문서.
 
-Data plus one deterministic appendix generator. Externalized so the notebook
-isn't thousands of lines of filler text. Each document is ~110K chars (~40K
-tokens) of fictional review content: a short organism-specific narrative
-plus a large shared appendix of methodological notes and data tables.
+데이터와 하나의 deterministic 부록 generator. notebook이 수천 줄의
+분량을 채우는 텍스트로 가득 차지 않도록 외부로 분리. 각 문서는 약 110K
+문자(약 40K token)의 가상 review 내용으로, 생물별 짧은 설명과
+방법론 메모 및 데이터 표로 구성된 큰 공통 부록을 포함.
 
-Topic: comparative review of model organisms for longevity/aging research.
-The research task is to compare these on lifespan/throughput, genetic
-tractability, and translational relevance.
-"""
+주제: 장수/노화 연구를 위한 model organism의 비교 review.
+research 작업은 수명/throughput, genetic tractability,
+translational relevance를 기준으로 이들을 비교하는 것."""
 
-# A reusable methodological footer. Together with _EXTENDED_APPENDIX, sized
-# so the full corpus is ~320K tokens across 8 documents. The task reads them
-# in two batches of 4 (high-throughput organisms, then low-throughput), so
-# each batch adds ~160K to context: past the 150K compaction trigger on the
-# first batch, past the 200K reference line after both.
+# 재사용 가능한 방법론 footer. _EXTENDED_APPENDIX와 함께 전체 corpus가
+# 8개 문서에 걸쳐 약 320K token이 되도록 크기를 정함. 작업은
+# 4개씩 두 batch(high-throughput organism 후 low-throughput)로 읽으므로
+# 각 batch는 context에 약 160K를 더함. 첫 batch에서 150K compaction
+# trigger를 넘고, 두 batch 후에는 200K 참조선을 넘음.
 _METHODS_FOOTER = """
 
 ## Methodological considerations (standardized across this review series)
@@ -595,16 +594,15 @@ between DR/mTOR and near-independence of IIS.
 
 
 def _appendix_tables_b_c() -> str:
-    """Generate appendix Tables B1-B5 and C1-C4.
-
-    Deterministic (seeded hash, no imports), so repeat kernel runs are
-    identical and COMPACTION_PROBES stay pinned. These are the B- and
-    C-series tables referenced by the research task prompt; the A-series
-    and Case D1-D5 studies live in _METHODS_FOOTER above.
-
-    Sized so _METHODS_FOOTER + _EXTENDED_APPENDIX adds ~105K chars to each
-    document, bringing the full 8-document corpus to ~320K tokens.
-    """
+    """부록의 Table B1-B5와 C1-C4 생성.
+    
+    Deterministic(seeded hash, import 없음)이므로 반복 kernel 실행이
+    동일하고 COMPACTION_PROBES가 고정된 상태를 유지. 이는 research 작업
+    prompt에서 참조하는 B-와 C-series 표이며, A-series와 Case D1-D5
+    연구는 위의 _METHODS_FOOTER에 있음.
+    
+    _METHODS_FOOTER + _EXTENDED_APPENDIX가 각 문서에 약 105K 문자를
+    더하여 전체 8개 문서 corpus가 약 320K token이 되도록 크기를 정함."""
     interventions = [
         "DR-caloric",
         "DR-protein",
@@ -625,7 +623,7 @@ def _appendix_tables_b_c() -> str:
     ages = ["young", "early-mid", "mid", "late-mid", "late"]
 
     def _h(*parts) -> int:
-        # Small deterministic integer hash so table cells are stable run-to-run.
+        # 표 cell이 실행마다 안정적으로 유지되도록 작은 deterministic integer hash 사용.
         v = 0x811C9DC5
         for p in parts:
             for b in str(p).encode():
@@ -1423,13 +1421,13 @@ design, not to screen.
 }
 
 
-# Probe questions for testing what survives compaction.
+# compaction 후 무엇이 살아남는지 시험하는 probe 질문.
 #
-# These are deliberately mixed: some target high-level facts the agent is
-# likely to note and the summarizer is likely to preserve; others target
-# obscure specifics buried deep in the appendix tables that almost
-# certainly won't survive. The goal is to show compaction's lossiness as
-# a spectrum, not a binary.
+# 의도적으로 섞어 둠. 일부는 agent가 기록하고 summarizer가
+# 보존할 가능성이 높은 상위 수준의 사실을 대상으로 하고, 나머지는
+# 부록 표 깊숙이 묻혀 거의 확실히 살아남지 못할 눈에 잘 띄지 않는
+# 구체적 정보를 대상으로 함. 목적은 compaction의 lossiness를 이분법이
+# 아니라 spectrum으로 보여주는 것.
 
 CANARY_QUESTION = "What is the typical manual-vs-automated lifespan scoring bias in C. elegans?"
 CANARY_ANSWER = (
@@ -1438,8 +1436,8 @@ CANARY_ANSWER = (
 
 COMPACTION_PROBES = [
     # (question, answer_substring, expected_to_survive)
-    # High-level facts — likely to survive: the agent notes these, and the
-    # summarizer preserves them because they're central to the task.
+    # 상위 수준의 사실 — 살아남을 가능성 높음: agent가 이를 기록하고
+    # 작업의 중심이 되므로 summarizer가 보존.
     ("What is the approximate median lifespan of C. elegans at 20°C?", "18", True),
     (
         "Which model organism is the shortest-lived vertebrate used in aging research?",
@@ -1447,8 +1445,8 @@ COMPACTION_PROBES = [
         True,
     ),
     ("Roughly what percentage of human disease genes have Drosophila orthologs?", "60", True),
-    # Obscure specifics — unlikely to survive: buried in appendix tables,
-    # not central to the comparative task, unlikely to be noted or summarized.
+    # 눈에 잘 띄지 않는 구체적 정보 — 살아남을 가능성 낮음: 부록 표에 묻혀 있고
+    # 비교 작업의 중심이 아니므로 기록되거나 요약될 가능성이 낮음.
     (
         "In the appendix Table A5, what is the I-squared heterogeneity value for the NAD+ precursor intervention?",
         "61",

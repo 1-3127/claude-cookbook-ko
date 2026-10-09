@@ -1,29 +1,29 @@
 #!/usr/bin/env python3
-"""Validate notebook structure and content."""
+"""Notebook 구조와 내용을 검증합니다."""
 
 import json
 import sys
 from pathlib import Path
 
-# Ensure UTF-8 output on Windows
+# Windows에서 UTF-8 출력 보장
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
 
 
 def validate_notebook(path: Path) -> list:
-    """Validate a single notebook."""
+    """단일 Notebook을 검증합니다."""
     issues = []
 
     with open(path, encoding="utf-8") as f:
         nb = json.load(f)
 
-    # Check for empty cells
+    # 빈 셀 확인
     for i, cell in enumerate(nb["cells"]):
         if not cell.get("source"):
             issues.append(f"Cell {i}: Empty cell found")
 
-    # Check for error outputs
+    # 오류 출력 확인
     for i, cell in enumerate(nb["cells"]):
         if cell["cell_type"] == "code":
             for output in cell.get("outputs", []):
@@ -34,10 +34,10 @@ def validate_notebook(path: Path) -> list:
 
 
 def main():
-    """Check notebooks passed as arguments."""
+    """인수로 전달된 Notebook을 검사합니다."""
     has_issues = False
 
-    # Get notebook paths from command line arguments
+    # 명령줄 인수에서 Notebook 경로 가져오기
     notebooks = [Path(arg) for arg in sys.argv[1:] if arg.endswith(".ipynb")]
 
     if not notebooks:
@@ -57,7 +57,7 @@ def main():
     else:
         print("\n❌ Found issues that must be fixed before committing")
 
-    # Exit with error if issues found in changed files
+    # 변경 파일에서 문제가 발견되면 오류로 종료
     sys.exit(1 if has_issues else 0)
 
 

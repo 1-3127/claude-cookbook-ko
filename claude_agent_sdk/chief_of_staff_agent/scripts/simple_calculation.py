@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Simple script to demonstrate Bash tool usage from an agent.
-Calculates basic metrics that an AI Chief of Staff might need.
+Agent의 Bash tool 사용을 시연하는 단순 script입니다.
+AI Chief of Staff에게 필요할 수 있는 기본 metrics를 계산합니다.
 """
 
 import json
@@ -9,7 +9,7 @@ import sys
 
 
 def calculate_metrics(total_runway: float, monthly_burn: float) -> dict[str, float]:
-    """Calculate key financial metrics."""
+    """핵심 재무 metrics를 계산합니다."""
     runway_months = total_runway / monthly_burn
     quarterly_burn = monthly_burn * 3
 

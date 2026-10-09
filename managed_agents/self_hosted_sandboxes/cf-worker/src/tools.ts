@@ -1,10 +1,10 @@
 /**
- * In-isolate "fake sandbox" tools for the pure-Worker variant.
+ * Pure-Worker variant용 isolate 내 "fake sandbox" 도구입니다.
  *
- * Backed by a Map<string,string> held in the Durable Object — no real shell or
- * filesystem. Demonstrates passing custom tools to
- * client.beta.sessions.events.toolRunner (same shape as
- * client.beta.messages.toolRunner accepts).
+ * Durable Object에 보관한 Map<string,string>이 뒷받침하며 실제 shell이나
+ * filesystem은 없습니다. client.beta.sessions.events.toolRunner에 custom tool을
+ * 전달하는 것을 보여줍니다(client.beta.messages.toolRunner가
+ * 받는 것과 같은 형태).
  */
 import { betaZodTool } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";

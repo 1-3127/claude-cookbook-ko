@@ -25,12 +25,12 @@ jobs:
         env:
           BASE_REF: ${{ github.base_ref }}
         run: |
-          # Get list of changed files
+          # 변경 파일 목록 가져오기
           CHANGED_FILES=$(git diff --name-only "origin/$BASE_REF"...HEAD | grep -E '\.(md|ipynb)$' || true)
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
-          # Save changed files to output
+          # 변경 파일을 output에 저장
           if [ -z "$CHANGED_FILES" ]; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
           else
@@ -54,7 +54,7 @@ jobs:
           pip install jupyter nbconvert
           mkdir -p temp_md
 
-          # Convert only changed notebooks
+          # 변경된 Notebook만 변환
           echo "$CHANGED_FILES" | grep '\.ipynb$' | while read nb; do
             if [ -f "$nb" ]; then
               echo "Converting: $nb"
@@ -85,19 +85,19 @@ jobs:
         run: |
           FILES=""
 
-          # Add all changed markdown files (from any directory)
+          # 변경된 모든 Markdown 파일 추가(어느 디렉터리든)
           while IFS= read -r f; do
             if [ -n "$f" ] && [ -f "$f" ]; then
               FILES="$FILES $f"
             fi
           done < <(echo "$CHANGED_FILES" | grep '\.md$')
 
-          # Add converted notebooks
+          # 변환된 Notebook 추가
           if [ -d "temp_md" ] && [ -n "$(ls -A temp_md/*.md 2>/dev/null)" ]; then
             FILES="$FILES temp_md/*.md"
           fi
 
-          # Remove leading/trailing whitespace
+          # 앞뒤 공백 제거
           FILES=$(echo $FILES | xargs)
 
           echo "Prepared files for lychee: $FILES"

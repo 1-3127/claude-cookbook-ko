@@ -1,4 +1,4 @@
-"""Memory cookbook demo package."""
+"""Memory cookbook demo용 package."""
 
 from .demo_helpers import (
     execute_tool,

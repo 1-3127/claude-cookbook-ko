@@ -1,93 +1,59 @@
-# Upgrading "Running a self-hosted worker"
+# "Self-hosted worker 실행하기" 업그레이드
 
-This guide takes the **previous** version of the doc — the one whose library
-examples use `anthropic.lib.runner`, `tool_dispatcher` / `toolDispatcher`,
-`default_tools` / `defaultTools`, a per-work-item `secret` / `sessions_token`,
-and `ant worker poll` / `ant worker dispatch` — to the **released** SDK builds.
-Work top to bottom; each step is independent.
+이 가이드는 문서의 **이전** 버전 — library 예제에서 `anthropic.lib.runner`, `tool_dispatcher` / `toolDispatcher`, `default_tools` / `defaultTools`, work item별 `secret` / `sessions_token`, `ant worker poll` / `ant worker dispatch`를 사용하는 버전 — 을 **출시된** SDK build로 옮깁니다. 위에서 아래로 진행하세요. 각 단계는 독립적입니다.
 
-| Component | Old | New (released) |
+| 구성 요소 | 이전 | 이후(출시됨) |
 |---|---|---|
-| Python SDK | `f05960786cb8cc64687c412a854c12a74e8d7d14` (`0.101.0`, prerelease build) | [`anthropic` `0.103.0`](https://pypi.org/project/anthropic/) on PyPI |
-| TypeScript SDK | `95eb73baf081255be96ba0e81b6adbed997a8cd0` (prerelease build) | [`@anthropic-ai/sdk` `0.97.0`](https://www.npmjs.com/package/@anthropic-ai/sdk) on npm |
-| `ant` CLI | `ab077f895de18a8d09d6bcd3d65e269333f6870c` (prerelease build) | GitHub release [`v1.9.0`](https://github.com/anthropics/anthropic-cli/releases/tag/v1.9.0) |
+| Python SDK | `f05960786cb8cc64687c412a854c12a74e8d7d14` (`0.101.0`, Prerelease build) | [`anthropic` `0.103.0`](https://pypi.org/project/anthropic/) (PyPI) |
+| TypeScript SDK | `95eb73baf081255be96ba0e81b6adbed997a8cd0` (Prerelease build) | [`@anthropic-ai/sdk` `0.97.0`](https://www.npmjs.com/package/@anthropic-ai/sdk) (npm) |
+| `ant` CLI | `ab077f895de18a8d09d6bcd3d65e269333f6870c` (Prerelease build) | GitHub release [`v1.9.0`](https://github.com/anthropics/anthropic-cli/releases/tag/v1.9.0) |
 
-There are **three** kinds of change: a new auth model, a renamed CLI command,
-and a reshaped library. They're independent — do them in any order.
+변경은 **세** 종류입니다. 새로운 auth model, 이름이 바뀐 CLI 명령, 형태가 바뀐 library입니다. 서로 독립적이므로 어떤 순서로 진행해도 됩니다.
 
 ---
 
-## Change 1 — One credential, the environment key
+## 변경 1 — 하나의 credential, environment key
 
-The doc's whole auth story collapses to a single credential.
+문서의 전체 auth 방식이 단일 credential로 통합됩니다.
 
-**Before:** a "service key" authorized `work.poll` *only*, and each claimed work
-item carried a `secret` you decoded into a per-work-item `sessions_token` that
-authenticated everything session-scoped (event stream, heartbeat, force-stop,
-skill download).
+**이전:** "Service key"는 `work.poll`*만* 승인했으며, claim한 각 work item에는 `secret`이 담겼습니다. 이를 work item별 `sessions_token`으로 decode하여 session 범위의 모든 작업(event stream, heartbeat, force-stop, skill 다운로드)을 인증했습니다.
 
-**After:** a single **environment key** authenticates *all* of it. There is no
-per-work secret in the worker flow — construct the SDK client with the
-environment key and it flows everywhere. `decodeWorkSecret` is not exported;
-`sessions_token` is gone.
+**이후:** 단일 **environment key**가 그 *모든 것*을 인증합니다. Worker 흐름에는 work별 secret이 없습니다. Environment key로 SDK client를 구성하면 모든 곳으로 전달됩니다. `decodeWorkSecret`은 export되지 않으며, `sessions_token`은 없어졌습니다.
 
-| Old | New |
+| 이전 | 이후 |
 |---|---|
 | `ENVIRONMENT_SERVICE_KEY` / `ANTHROPIC_ENV_KEY` | `ANTHROPIC_ENVIRONMENT_KEY` |
 | `service_key=` / `serviceKey:` (SDK) | `environment_key=` / `environmentKey:` |
-| `secret` / `sessions_token` / `decodeWorkSecret` | *(removed from the worker flow)* |
+| `secret` / `sessions_token` / `decodeWorkSecret` | *(Worker 흐름에서 제거됨)* |
 | Console: "Generate **service key**" | "Generate **environment key**" |
 
-Doc edits: §1 "Generate an environment service key" → "Generate the environment
-key", `ENVIRONMENT_SERVICE_KEY` → `ANTHROPIC_ENVIRONMENT_KEY`, and "authorizes
-`work.poll`" → "authenticates the whole worker flow — poll, ack, stop,
-heartbeat, the session event stream, skill download". §2 `ANTHROPIC_ENV_KEY` →
-`ANTHROPIC_ENVIRONMENT_KEY`.
+문서 수정: §1 "Environment service key 생성" → "Environment key 생성", `ENVIRONMENT_SERVICE_KEY` → `ANTHROPIC_ENVIRONMENT_KEY`, "`work.poll` 승인" → "전체 worker 흐름 — poll, ack, stop, heartbeat, session event stream, skill 다운로드 — 인증". §2 `ANTHROPIC_ENV_KEY` → `ANTHROPIC_ENVIRONMENT_KEY`.
 
-## Change 2 — The `ant` CLI: `worker` → `beta:worker`, `dispatch` → `run`
+## 변경 2 — `ant` CLI: `worker` → `beta:worker`, `dispatch` → `run`
 
-This is new in the released CLI and the previous doc gets it wrong everywhere.
+이는 출시된 CLI의 새로운 내용이며 이전 문서는 모든 곳에서 잘못 설명합니다.
 
-| Old | New |
+| 이전 | 이후 |
 |---|---|
 | `ant worker poll` | `ant beta:worker poll` |
 | `ant worker dispatch` | `ant beta:worker run` |
 | `--service-key` / `ANTHROPIC_ENV_KEY` | `--environment-key` / `ANTHROPIC_ENVIRONMENT_KEY` |
-| `--session-token` flag | *(removed — `run` uses `--environment-key`)* |
+| `--session-token` flag | *(제거됨 — `run`은 `--environment-key` 사용)* |
 | `--allow-absolute-paths` | `--unrestricted-paths` |
-| `ANTHROPIC_SESSION_TOKEN` env var | `ANTHROPIC_ENVIRONMENT_KEY` |
+| `ANTHROPIC_SESSION_TOKEN` 환경 변수 | `ANTHROPIC_ENVIRONMENT_KEY` |
 
-Why: in the released CLI the `beta:`-prefixed entries are the API-resource
-commands (`beta:environments:work`, `beta:sessions`, …); the self-hosted worker
-moved under the same prefix as `beta:worker`, and its container-entrypoint
-subcommand was renamed `dispatch` → `run`. The `run` env contract is
-`ANTHROPIC_{SESSION_ID,ENVIRONMENT_KEY,WORK_ID,ENVIRONMENT_ID,BASE_URL}`.
+이유: 출시된 CLI에서 `beta:` 접두사 항목은 API-resource 명령(`beta:environments:work`, `beta:sessions`, …)입니다. Self-hosted worker는 같은 접두사 아래의 `beta:worker`로 이동했고, container-entrypoint subcommand는 `dispatch` → `run`으로 이름이 바뀌었습니다. `run` 환경 변수 contract는 `ANTHROPIC_{SESSION_ID,ENVIRONMENT_KEY,WORK_ID,ENVIRONMENT_ID,BASE_URL}`입니다.
 
-Doc edits:
-- **§3 "Start the worker":** `ant worker poll` → `ant beta:worker poll`; the
-  zero-flag example's `ANTHROPIC_ENV_KEY=…` → `ANTHROPIC_ENVIRONMENT_KEY=…`.
-- **§ "Spawning your own process per work item":** the `--on-work` env list and
-  the `docker run -e …` example — drop `ANTHROPIC_SESSION_TOKEN`, add
-  `ANTHROPIC_ENVIRONMENT_KEY`; `ant worker dispatch` → `ant beta:worker run`.
-- **§ "Running the dispatcher as a container entrypoint":** the Dockerfile
-  `ENTRYPOINT ["ant", "worker", "dispatch"]` → `["ant", "beta:worker", "run"]`;
-  switch `ARG ANT_SHA` (Stainless `dist.zip`) to `ARG ANT_VERSION=1.9.0` with
-  the GitHub-release `.tar.gz`; drop `ANTHROPIC_SESSION_TOKEN` from the
-  "Pass … as container env vars" line, add `ANTHROPIC_ENVIRONMENT_KEY`.
-- **§ "Alternative: run the dispatcher directly":** `ant worker dispatch` →
-  `ant beta:worker run`; `--session-token "$SESSION_TOKEN"` →
-  `--environment-key "$ANTHROPIC_ENVIRONMENT_KEY"`; in the env-vars-only form,
-  `ANTHROPIC_SESSION_TOKEN` → `ANTHROPIC_ENVIRONMENT_KEY`.
-- **§ "Flags" table:**
-  - `--service-key | ANTHROPIC_ENV_KEY | required for poll` →
-    `--environment-key | ANTHROPIC_ENVIRONMENT_KEY | required`
+문서 수정:
+- **§3 "Worker 시작하기":** `ant worker poll` → `ant beta:worker poll`; flag 없는 예제의 `ANTHROPIC_ENV_KEY=…` → `ANTHROPIC_ENVIRONMENT_KEY=…`.
+- **§ "Work item별 자체 process 생성하기":** `--on-work` 환경 변수 목록과 `docker run -e …` 예제 — `ANTHROPIC_SESSION_TOKEN`을 제거하고 `ANTHROPIC_ENVIRONMENT_KEY`를 추가; `ant worker dispatch` → `ant beta:worker run`.
+- **§ "Container entrypoint로 dispatcher 실행하기":** Dockerfile의 `ENTRYPOINT ["ant", "worker", "dispatch"]` → `["ant", "beta:worker", "run"]`; `ARG ANT_SHA`(Stainless `dist.zip`)를 GitHub release `.tar.gz`를 사용하는 `ARG ANT_VERSION=1.9.0`으로 전환; "…를 container 환경 변수로 전달" 줄에서 `ANTHROPIC_SESSION_TOKEN`을 제거하고 `ANTHROPIC_ENVIRONMENT_KEY`를 추가.
+- **§ "대안: Dispatcher 직접 실행하기":** `ant worker dispatch` → `ant beta:worker run`; `--session-token "$SESSION_TOKEN"` → `--environment-key "$ANTHROPIC_ENVIRONMENT_KEY"`; 환경 변수만 사용하는 형태에서 `ANTHROPIC_SESSION_TOKEN` → `ANTHROPIC_ENVIRONMENT_KEY`.
+- **§ "Flag" 표:**
+  - `--service-key | ANTHROPIC_ENV_KEY | required for poll` → `--environment-key | ANTHROPIC_ENVIRONMENT_KEY | required`
   - `--allow-absolute-paths` → `--unrestricted-paths`
-  - Everything else (`--environment-id`, `--on-work`, `--worker-id`,
-    `--workdir`, `--max-idle`, `--log-format`, `--base-url`) is unchanged.
-- **§0 / install snippets:** drop the prerelease Stainless URLs entirely —
-  install the published packages: `pip install anthropic` / `npm i
-  @anthropic-ai/sdk` for the SDKs, and the `ant` CLI from the GitHub release
-  `v1.9.0` `.tar.gz` (the versions in the table above).
+  - 나머지 모든 것(`--environment-id`, `--on-work`, `--worker-id`, `--workdir`, `--max-idle`, `--log-format`, `--base-url`)은 변경되지 않습니다.
+- **§0 / 설치 스니펫:** Prerelease Stainless URL을 완전히 제거하고 공개된 package를 설치하세요. SDK에는 `pip install anthropic` / `npm i @anthropic-ai/sdk`, `ant` CLI에는 GitHub release `v1.9.0` `.tar.gz`를 사용합니다(위 표의 버전).
 
 ```diff
 - ant worker dispatch \
@@ -101,79 +67,52 @@ Doc edits:
 +   --workdir "/workspace" --unrestricted-paths
 ```
 
-## Change 3 — The "Library usage" section
+## 변경 3 — "Library 사용" 섹션
 
-`anthropic.lib.runner` (Python) and `@anthropic-ai/sdk/helpers/beta/runner` (TS)
-**no longer exist.** Three things changed: modules moved, symbols were renamed,
-and the dispatcher was split in two.
+`anthropic.lib.runner`(Python)와 `@anthropic-ai/sdk/helpers/beta/runner`(TS)는 **더 이상 존재하지 않습니다.** 세 가지가 바뀌었습니다. Module이 이동했고, symbol 이름이 바뀌었으며, dispatcher가 둘로 나뉘었습니다.
 
-### 3a. Module paths
+### 3a. Module 경로
 
-| What | Python | TypeScript |
+| 내용 | Python | TypeScript |
 |---|---|---|
-| The worker composition / poller / runner | `anthropic.lib.environments` | `@anthropic-ai/sdk/helpers/beta/environments` |
-| Tool implementations + skill download | `anthropic.lib.tools.agent_toolset` | `@anthropic-ai/sdk/tools/agent-toolset/node` |
+| Worker 조합 / poller / runner | `anthropic.lib.environments` | `@anthropic-ai/sdk/helpers/beta/environments` |
+| Tool 구현 + skill 다운로드 | `anthropic.lib.tools.agent_toolset` | `@anthropic-ai/sdk/tools/agent-toolset/node` |
 
-### 3b. Symbol renames
+### 3b. Symbol 이름 변경
 
-| Old | New (Python) | New (TypeScript) |
+| 이전 | 이후(Python) | 이후(TypeScript) |
 |---|---|---|
 | `ToolEnv` | `AgentToolContext` | `AgentToolContext` |
 | `default_tools` / `defaultTools` | `beta_agent_toolset_20260401` | `betaAgentToolset20260401` |
 | `bash_tool`, `read_tool`, … | `beta_bash_tool`, `beta_read_tool`, … | `betaBashTool`, `betaReadTool`, … |
 | `tool_dispatcher` / `toolDispatcher` | `tool_runner` | `toolRunner` |
-| `decodeWorkSecret` | *(removed)* | *(removed)* |
+| `decodeWorkSecret` | *(제거됨)* | *(제거됨)* |
 | `service_key=` / `serviceKey:` | `environment_key=` | `environmentKey:` |
 
-Also new in the released TS SDK: **`toolRunner` / `SessionToolRunner` take
-`sessionId` positionally** — `toolRunner({ sessionId, tools })` →
-`toolRunner(sessionId, { tools })`. And the per-call tool `run(args, context)`
-context object (`BetaToolRunContext`) renamed its `toolUseBlock` field to
-`toolUse` (`toolUseBlock` kept as a deprecated alias).
+출시된 TS SDK의 또 다른 새로운 내용: **`toolRunner` / `SessionToolRunner`는 `sessionId`를 positional 인수로 받습니다** — `toolRunner({ sessionId, tools })` → `toolRunner(sessionId, { tools })`. 호출별 tool `run(args, context)`의 context object(`BetaToolRunContext`)도 `toolUseBlock` field를 `toolUse`로 이름을 바꿨습니다(`toolUseBlock`은 deprecated alias로 유지).
 
-### 3c. The dispatcher split — `tool_dispatcher` → `SessionToolRunner` + `EnvironmentWorker`
+### 3c. Dispatcher 분리 — `tool_dispatcher` → `SessionToolRunner` + `EnvironmentWorker`
 
-The old `tool_dispatcher` / `toolDispatcher` took `work_id` + `environment_id` +
-`session_token` and **owned the whole work-item lifecycle** — heartbeat,
-reconcile, event stream, result posting, *and* the force-stop on exit.
+이전 `tool_dispatcher` / `toolDispatcher`는 `work_id` + `environment_id` + `session_token`을 받아 **전체 work item lifecycle을 담당했습니다** — heartbeat, reconcile, event stream, 결과 게시, *그리고* 종료 시 force-stop.
 
-That's now split:
+이제 다음과 같이 나뉩니다.
 
-- **`SessionToolRunner`** (`client.beta.sessions.events.tool_runner(...)` /
-  `.toolRunner(...)`) is **dispatch-only**: event stream + tool execution +
-  result posting. It takes `session_id` + `tools` (Python also accepts an
-  optional `environment_key`; the TS `toolRunner` reads auth from the client) —
-  **no `work_id`, no `environment_id`**. It does *not* heartbeat or force-stop.
-- **`EnvironmentWorker`** is the full composition: poll → set up the workdir +
-  download skills → run a `SessionToolRunner` while heartbeating the lease →
-  force-stop on exit → loop. Build it with the factory
-  **`client.beta.environments.work.worker(...)`** (now in **both** the Python
-  and TS SDKs) or `EnvironmentWorker(...)` / `new EnvironmentWorker({...})`
-  directly.
+- **`SessionToolRunner`** (`client.beta.sessions.events.tool_runner(...)` / `.toolRunner(...)`)는 **dispatch 전용**입니다: event stream + 도구 실행 + 결과 게시. `session_id` + `tools`를 받습니다(Python은 선택적인 `environment_key`도 받으며, TS `toolRunner`는 client에서 auth를 읽음). **`work_id`도 `environment_id`도 없습니다**. Heartbeat나 force-stop은 수행하지 *않습니다*.
+- **`EnvironmentWorker`**는 전체 조합입니다: poll → workdir 설정 + skill 다운로드 → lease heartbeat를 보내며 `SessionToolRunner` 실행 → 종료 시 force-stop → loop. Factory **`client.beta.environments.work.worker(...)`**(이제 Python과 TS SDK **모두**에 있음)로 구성하거나 `EnvironmentWorker(...)` / `new EnvironmentWorker({...})`로 직접 구성하세요.
 
-**For almost every reader, the upgrade is: replace the manual
-`poller` + `tool_dispatcher` loop with `client.beta.environments.work.worker(...)`.**
+**거의 모든 독자에게 업그레이드는 다음과 같습니다. 수동 `poller` + `tool_dispatcher` loop를 `client.beta.environments.work.worker(...)`로 교체하세요.**
 
-### 3d. Rewrite the "Library usage" bullet list
+### 3d. "Library 사용" bullet 목록 다시 작성
 
-- **`EnvironmentWorker`** (`client.beta.environments.work.worker(...)`) — the
-  full composition: poll → workdir + skills → `SessionToolRunner` + heartbeat →
-  force-stop → loop. `.run()` is the long-lived poll loop; `.handle_item()` /
-  `.handleItem()` is the per-item flow (a webhook handler, `ant beta:worker poll
-  --on-work`) — with no arguments it reads the `ANTHROPIC_*` env vars.
-- **`client.beta.environments.work.poller(...)`** — control-plane only:
-  long-polls, acks each item, yields the work item (`BetaSelfHostedWork`). No
-  more `(work, secret)` / `{ work, secret }`. Argument `service_key` →
-  `environment_key` / `environmentKey`.
-- **`client.beta.sessions.events.tool_runner(...)` / `.toolRunner(...)`** —
-  dispatch only; the work-item lifecycle (heartbeat, force-stop) is the
-  caller's. TS: `toolRunner(sessionId, opts)` (positional `sessionId`).
-- **`client.beta.webhooks.unwrap(...)`** — unchanged.
+- **`EnvironmentWorker`** (`client.beta.environments.work.worker(...)`) — 전체 조합: poll → workdir + skills → `SessionToolRunner` + heartbeat → force-stop → loop. `.run()`은 장기간 실행되는 poll loop이고, `.handle_item()` / `.handleItem()`은 item별 흐름(webhook handler, `ant beta:worker poll --on-work`)입니다. 인수가 없으면 `ANTHROPIC_*` 환경 변수를 읽습니다.
+- **`client.beta.environments.work.poller(...)`** — control-plane 전용: long-poll하고, 각 item을 ack하며, work item(`BetaSelfHostedWork`)을 yield합니다. 더 이상 `(work, secret)` / `{ work, secret }`가 아닙니다. 인수 `service_key` → `environment_key` / `environmentKey`.
+- **`client.beta.sessions.events.tool_runner(...)` / `.toolRunner(...)`** — dispatch 전용이며, work item lifecycle(heartbeat, force-stop)은 호출자 담당입니다. TS: `toolRunner(sessionId, opts)`(positional `sessionId`).
+- **`client.beta.webhooks.unwrap(...)`** — 변경 없음.
 
-### 3e. Python example — before / after
+### 3e. Python 예제 — 이전 / 이후
 
 ```python
-# BEFORE
+# 이전
 import anyio, os
 from anthropic import AsyncAnthropic
 from anthropic.lib.runner import ToolEnv, default_tools
@@ -201,8 +140,8 @@ anyio.run(main)
 ```
 
 ```python
-# AFTER — the factory is the whole poll → skills → dispatch → heartbeat
-# → force-stop → loop. The environment key is the only credential.
+# 이후 — factory는 전체 poll → skills → dispatch → heartbeat
+# → force-stop → loop입니다. Environment key가 유일한 credential입니다.
 import asyncio, os
 from anthropic import AsyncAnthropic
 
@@ -218,14 +157,12 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-If you genuinely need the lower-level dispatch loop, `tool_dispatcher` →
-`tool_runner`, but it is now dispatch-only — you must heartbeat `work.id` while
-it runs and `client.beta.environments.work.stop(..., force=True)` after.
+더 낮은 수준의 dispatch loop가 꼭 필요하다면 `tool_dispatcher` → `tool_runner`로 옮기세요. 다만 이제 dispatch 전용이므로 실행 중 `work.id`에 heartbeat를 보내고, 이후 `client.beta.environments.work.stop(..., force=True)`를 수행해야 합니다.
 
-### 3f. Python webhook example — before / after
+### 3f. Python webhook 예제 — 이전 / 이후
 
 ```python
-# BEFORE
+# 이전
 client = anthropic.AsyncAnthropic(auth_token=os.environ["ANTHROPIC_ENV_KEY"])
 async for work, secret in client.beta.environments.work.poller(
     environment_id=os.environ["ANTHROPIC_ENVIRONMENT_ID"],
@@ -242,7 +179,7 @@ async for work, secret in client.beta.environments.work.poller(
 ```
 
 ```python
-# AFTER — one credential, poller yields just `work`
+# 이후 — 하나의 credential, poller는 `work`만 yield
 environment_key = os.environ["ANTHROPIC_ENVIRONMENT_KEY"]
 client = anthropic.AsyncAnthropic(auth_token=environment_key)
 async for work in client.beta.environments.work.poller(
@@ -255,14 +192,14 @@ async for work in client.beta.environments.work.poller(
     spawned.append(spawn_sandbox(
         session_id=work.data.id, work_id=work.id,
         environment_id=work.environment_id,
-        environment_key=environment_key,          # was sessions_token=secret.sessions_token
+        environment_key=environment_key,          # 이전에는 sessions_token=secret.sessions_token
     ))
 ```
 
-### 3g. TypeScript example — before / after
+### 3g. TypeScript 예제 — 이전 / 이후
 
 ```ts
-// BEFORE
+// 이전
 import { defaultTools } from '@anthropic-ai/sdk/helpers/beta/runner';
 for await (const { work, secret } of client.beta.environments.work.poller({
   environmentId: process.env.ANTHROPIC_ENVIRONMENT_ID!,
@@ -281,7 +218,7 @@ for await (const { work, secret } of client.beta.environments.work.poller({
 ```
 
 ```ts
-// AFTER — the factory composes the whole loop
+// 이후 — factory가 전체 loop를 조합
 import Anthropic from '@anthropic-ai/sdk';
 
 const environmentKey = process.env.ANTHROPIC_ENVIRONMENT_KEY!;
@@ -299,17 +236,14 @@ await client.beta.environments.work
   .run();
 ```
 
-If you keep the lower-level `toolRunner`, note the **positional `sessionId`**:
-`toolRunner(work.data.id, { tools, signal })`.
+더 낮은 수준의 `toolRunner`를 유지한다면 **positional `sessionId`**에 유의하세요: `toolRunner(work.data.id, { tools, signal })`.
 
-### 3h. TypeScript webhook example — before / after
+### 3h. TypeScript webhook 예제 — 이전 / 이후
 
-The manual `poll` → `ack` drain loop loses `decodeWorkSecret`, the `!work.secret`
-guard, the per-call `Authorization` header, and the bogus
-`x-environment-runner-version` poll param:
+수동 `poll` → `ack` drain loop에서는 `decodeWorkSecret`, `!work.secret` guard, 호출별 `Authorization` header, 잘못된 `x-environment-runner-version` poll parameter가 제거됩니다.
 
 ```ts
-// BEFORE
+// 이전
 import { decodeWorkSecret } from '@anthropic-ai/sdk/helpers/beta/runner';
 const anthropic = new Anthropic({ authToken: env.ENVIRONMENT_SERVICE_KEY, ... });
 const work = await anthropic.beta.environments.work.poll(env.ENVIRONMENT_ID, {
@@ -326,39 +260,30 @@ spawned.push(await spawnSandbox({ ..., sessionsToken: secret.sessions_token }));
 ```
 
 ```ts
-// AFTER
+// 이후
 const anthropic = new Anthropic({ authToken: env.ANTHROPIC_ENVIRONMENT_KEY, ... });
 const work = await anthropic.beta.environments.work.poll(env.ANTHROPIC_ENVIRONMENT_ID, {
   reclaim_older_than_ms: 2000,
 });
 if (!work) break;
-if (work.data.type !== 'session') continue;       // data is now Session | HealthCheck
-// client is authed with the environment key — ack needs no per-call header
+if (work.data.type !== 'session') continue;       // 이제 data는 Session | HealthCheck
+// Client는 environment key로 인증됨 — ack에 호출별 header 필요 없음
 await anthropic.beta.environments.work.ack(work.id, {
   environment_id: env.ANTHROPIC_ENVIRONMENT_ID,
 });
 spawned.push(await spawnSandbox({ ..., environmentKey: env.ANTHROPIC_ENVIRONMENT_KEY }));
 ```
 
-### 3i. Skills & custom tools
+### 3i. Skill과 custom tool
 
-`ToolEnv` → `AgentToolContext`; `default_tools` → `beta_agent_toolset_20260401`
-(Python) / `betaAgentToolset20260401` (TS); per-tool factories gain the `beta_` /
-`beta` prefix; imports move to `anthropic.lib.tools.agent_toolset` /
-`@anthropic-ai/sdk/tools/agent-toolset/node`. `EnvironmentWorker` downloads the
-session's skills automatically, so the manual `AgentToolContext(client=…,
-session_id=…)` pattern is only needed when you compose the runner by hand. In the skills
-section, "authenticates with … `sessions_token`" → "authenticates with the
-environment key"; the endpoint
-(`GET /v1/skills/{id}/versions/{version}/content`) is unchanged.
+`ToolEnv` → `AgentToolContext`; `default_tools` → `beta_agent_toolset_20260401`(Python) / `betaAgentToolset20260401`(TS); 도구별 factory에는 `beta_` / `beta` 접두사가 추가되며, import는 `anthropic.lib.tools.agent_toolset` / `@anthropic-ai/sdk/tools/agent-toolset/node`로 이동합니다. `EnvironmentWorker`는 session의 skill을 자동으로 다운로드하므로 수동 `AgentToolContext(client=…, session_id=…)` 패턴은 runner를 직접 조합할 때만 필요합니다. Skill 섹션에서 "… `sessions_token`으로 인증" → "environment key로 인증"; endpoint(`GET /v1/skills/{id}/versions/{version}/content`)는 변경되지 않습니다.
 
 ---
 
-## Unchanged — leave these alone
+## 변경 없음 — 그대로 두세요
 
-- The `anthropic-version` / `anthropic-beta: managed-agents-2026-04-01`
-  prerequisite, and "the SDK helpers add the header automatically."
-- `client.beta.environments.create(...)` (§1) — same signature.
-- The idle-policy description (`--max-idle`, 60s after `end_turn` idle).
+- `anthropic-version` / `anthropic-beta: managed-agents-2026-04-01` 사전 준비와 "SDK helper가 header를 자동으로 추가합니다."
+- `client.beta.environments.create(...)` (§1) — 같은 signature.
+- Idle-policy 설명(`--max-idle`, `end_turn` idle 이후 60초).
 - `reclaim_older_than_ms`, `block_ms`, `drain`, `auto_stop` poller semantics.
 - `client.beta.webhooks.unwrap(...)`.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Mock gh CLI — simulates issues, PRs, CI checks, and review comments.
-# State persists in .gh-state/ across calls within a session.
+# 모의 gh CLI — issue, PR, CI check, review comment를 흉내 냅니다.
+# 상태는 세션 내 호출 사이에 .gh-state/에 보존됩니다.
 set -e
 STATE=.gh-state
 mkdir -p $STATE
@@ -27,7 +27,7 @@ PY
     ;;
 
   "pr checks")
-    # CI runs the actual test suite and updates the check status
+    # CI는 실제 test suite를 실행하고 check 상태를 update합니다
     python3 - <<'PY'
 import json, subprocess, sys
 pr = json.load(open(".gh-state/pr_101.json"))
@@ -50,7 +50,7 @@ PY
     ;;
 
   "pr review")
-    # Mock reviewer: nitpicks if slugify() lacks a docstring
+    # 모의 reviewer: slugify()에 docstring이 없으면 지적합니다
     python3 - <<'PY'
 import json
 pr = json.load(open(".gh-state/pr_101.json"))

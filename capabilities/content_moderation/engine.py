@@ -1,11 +1,10 @@
-"""
-Deterministic rule engine used by guide.ipynb.
+"""guide.ipynb가 사용하는 deterministic rule engine.
 
-Compiled artifact (what the compiler emits)
+Compiled artifact(compiler가 생성하는 것)
 -------------------------------------------
 {
-  "derived_fields": {                      # LLM-judged booleans the compiler needed; merged into
-    "<name>": {"type": ["boolean","null"], # the extraction schema at runtime (still ONE Claude call)
+  "derived_fields": {                      # compiler에 필요한 LLM-judged boolean; runtime에
+    "<name>": {"type": ["boolean","null"], # extraction schema로 병합(여전히 Claude 호출은 한 번)
                "judge": "<instruction>", "source_policy": "1.1"}
   },
   "rules": [
@@ -14,33 +13,32 @@ Compiled artifact (what the compiler emits)
       "policy_ref": "5.1",
       "policy_text": "In New Jersey, gambling creatives must display the 1-800-GAMBLER helpline.",
       "action": "block" | "flag",
-      "scope": <condition>,                # optional. WHERE the rule applies. Evaluated against
-                                           # context ∪ fields (context wins on name collision).
-                                           # Absent scope = applies everywhere.
-      "when": <condition>                  # the VIOLATION. Evaluated against extracted fields
-                                           # (incl. derived). Rule fires => policy breached.
+      "scope": <condition>,                # 선택 사항. rule 적용 대상. context ∪ fields에
+                                           # 대해 평가(이름 충돌 시 context 우선).
+                                           # scope 없음 = 모든 곳에 적용.
+      "when": <condition>                  # 위반. 추출된 field(derived 포함)에 대해 평가.
+                                           # rule 발동 => 정책 위반.
     }
   ],
-  "uncompilable": [                        # clauses that map to NEITHER schema fields NOR an
-    {"policy_ref": "...", "policy_text": "...", "reason": "..."}   # LLM judgment (e.g. need external data)
+  "uncompilable": [                        # schema field와 LLM judgment 어느 쪽에도
+    {"policy_ref": "...", "policy_text": "...", "reason": "..."}   # 대응하지 않는 조항(예: 외부 데이터 필요)
   ]
 }
 
-<condition> grammar (same for scope and when):
+<condition> grammar(scope와 when에 동일):
   {"all": [...]} | {"any": [...]} | {"not": <condition>}
   {"field": "<name>", "op": "<operator>", "value": <literal>}
 
-Operators: eq, neq, gt, gte, lt, lte, in, not_in, contains, not_contains, regex, exists
+Operator: eq, neq, gt, gte, lt, lte, in, not_in, contains, not_contains, regex, exists
 
 Three-valued logic
 ------------------
-Extraction may return null ("couldn't tell from the image") and context may omit keys.
-Assertions on a missing/null value evaluate to UNKNOWN (None) and propagate Kleene-style.
-  scope=False        -> out_of_scope (skipped, but logged)
+Extraction은 null("이미지에서 알 수 없음")을 반환할 수 있고 context는 key를 생략할 수 있음.
+누락/null 값에 대한 assertion은 UNKNOWN(None)으로 평가되어 Kleene 방식으로 전파됨.
+  scope=False        -> out_of_scope(건너뛰지만 log에는 기록)
   scope=True/absent  -> when: True->fired, False->clear, None->unknown
-  scope=None         -> when: False->clear, else->unknown   (fail-safe, not fail-open)
-Any unknown that would matter yields decision "needs_review" rather than a confident verdict.
-"""
+  scope=None         -> when: False->clear, else->unknown   (fail-safe, fail-open 아님)
+결과에 영향을 줄 수 있는 unknown은 확신에 찬 판정 대신 "needs_review" 결정을 만듦."""
 
 from __future__ import annotations
 
@@ -62,13 +60,13 @@ OPS = {
         (v.lower() not in a.lower()) if isinstance(a, str) else (v not in a)
     ),
     "regex": lambda a, v: re.search(v, str(a), re.IGNORECASE) is not None,
-    "exists": lambda a, v: True,  # handled specially below; only reached when a is not None
+    "exists": lambda a, v: True,  # 아래에서 별도 처리; a가 None이 아닐 때만 도달
 }
 
 
 @dataclass
 class Step:
-    """One line of the audit trail: a leaf assertion, or an all/any/not connective."""
+    """audit trail의 한 줄: leaf assertion 또는 all/any/not connective."""
 
     field: str
     op: str
@@ -76,7 +74,7 @@ class Step:
     actual: Any
     result: bool | None
     depth: int = 0
-    group: bool = False  # True = this line is an all/any/not connective, not a leaf
+    group: bool = False  # True = 이 줄은 leaf가 아닌 all/any/not connective
 
 
 @dataclass
@@ -86,7 +84,7 @@ class RuleResult:
     outcome: str  # "fired" | "clear" | "unknown" | "out_of_scope"
     scope_trace: list[Step] = field(default_factory=list)
     trace: list[Step] = field(default_factory=list)
-    scope_result: bool | None = True  # True = in scope / no scope clause
+    scope_result: bool | None = True  # True = scope 안 / scope 조항 없음
 
 
 @dataclass
@@ -175,14 +173,14 @@ def evaluate_rule(rule: dict, fields: dict, context: dict | None = None) -> Rule
     rr = RuleResult(rule["id"], rule.get("action", "flag"), "clear")
 
     if "scope" in rule:
-        # context wins on collision; scope may also key off extracted fields (e.g. ad_category)
+        # 충돌 시 context 우선; scope는 추출 field(예: ad_category)를 기준으로 삼을 수도 있음
         rr.scope_result = _eval(rule["scope"], {**fields, **context}, rr.scope_trace)
         if rr.scope_result is False:
             rr.outcome = "out_of_scope"
             return rr
 
     w = _eval(rule["when"], fields, rr.trace)
-    if rr.scope_result is None:  # can't confirm applicability: only a definite pass is safe
+    if rr.scope_result is None:  # 적용 여부를 확인할 수 없음: 확실한 통과만 안전함
         rr.outcome = "clear" if w is False else "unknown"
     else:
         rr.outcome = "fired" if w is True else "clear" if w is False else "unknown"
@@ -207,10 +205,10 @@ def evaluate(rules: list[dict], fields: dict, context: dict | None = None) -> Ve
 
 
 # ---------------------------------------------------------------------------
-# Static validation of a compiled document. Catches the compiler referencing
-# a field that doesn't exist, scoping on an undeclared context key, comparing
-# an enum to a value outside its set, etc., BEFORE anything runs. This is what
-# the compiler's retry loop feeds back to Claude.
+# compiled document의 static validation. 실행 전에 compiler가 존재하지 않는
+# field를 참조하거나, 선언하지 않은 context key로 scope를 정하거나, enum을
+# 집합 밖의 값과 비교하는 등의 문제를 잡아냄. compiler의 retry loop는
+# 이를 Claude에 다시 전달.
 # ---------------------------------------------------------------------------
 
 NUMERIC_OPS = {"gt", "gte", "lt", "lte"}
@@ -269,12 +267,11 @@ def _check_condition(cond: Any, props: dict, path: str, problems: list[str]) -> 
 def validate_document(
     doc: dict, schema: dict, context_schema: dict | None = None
 ) -> dict[str, list[str]]:
-    """Validate a full compiled artifact {derived_fields, rules, uncompilable}.
-
-    Returns {rule_id_or_section: [problems]}; empty dict means well-formed.
-    - 'when' may reference schema fields + derived fields.
-    - 'scope' may reference context keys + schema fields + derived fields.
-    """
+    """전체 compiled artifact {derived_fields, rules, uncompilable} 검증.
+    
+    {rule_id_or_section: [problems]} 반환; 빈 dict는 형식이 올바름을 뜻함.
+    - 'when'은 schema field + derived field를 참조할 수 있음.
+    - 'scope'는 context key + schema field + derived field를 참조할 수 있음."""
     out: dict[str, list[str]] = {}
     derived = doc.get("derived_fields", {})
 

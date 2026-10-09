@@ -1,21 +1,17 @@
-"""Shared helpers for the cookbook notebooks.
+"""cookbook notebook의 공유 helper.
 
-Notebook 00 introduces two ways to consume a session's output:
-polling `events.list` after the fact, and streaming events live
-through `events.stream`. Both loops are written out inline in 00 so
-readers see the literal API shapes the first time they meet them.
+Notebook 00은 세션 출력을 소비하는 두 방법을 소개합니다.
+사후 `events.list` polling과 `events.stream`의 실시간 event streaming입니다.
+처음 접할 때 실제 API 형태를 볼 수 있도록 두 루프 모두 00 안에 작성되어 있습니다.
 
-Once that introduction is done, every other notebook imports
-`stream_until_end_turn` from this module instead of repeating the
-loop. The helper is a direct lift of the streaming pattern shown in
-notebook 00, printing `agent.message` text, marking each
-`agent.tool_use`, and exiting when `session.status_idle` arrives
-with `stop_reason.type == "end_turn"`.
+소개가 끝나면 다른 모든 notebook은 루프를 반복하지 않고 이 module에서
+`stream_until_end_turn`을 import합니다. helper는 notebook 00의 streaming 패턴을
+그대로 가져와 `agent.message` text를 출력하고 각 `agent.tool_use`를 표시하며,
+`stop_reason.type == "end_turn"`인 `session.status_idle`이 도착하면 종료합니다.
 
-The helper deliberately does not handle `requires_action`. Custom
-tool notebooks (01 Part A and 05) drive the stream directly because
-they need to respond to tool calls mid-turn, and their loops stay
-inline.
+helper는 의도적으로 `requires_action`을 처리하지 않습니다. custom tool notebook
+(01 Part A와 05)은 turn 도중 tool 호출에 응답해야 하므로 stream을 직접 진행하며
+루프를 내부에 유지합니다.
 """
 
 import io
@@ -27,15 +23,14 @@ from anthropic import Anthropic
 
 
 def wait_for_idle_status(client: Anthropic, session_id: str, max_wait: float = 5.0) -> None:
-    """Poll until the session's server-side status field is `idle`.
+    """세션의 서버 측 status 필드가 `idle`이 될 때까지 polling합니다.
 
-    The `session.status_idle` event in the SSE stream can arrive
-    slightly before `sessions.retrieve` reports `status == "idle"`,
-    which causes an `archive()` call issued immediately after the
-    stream exits to 400 with "cannot be archived while its status
-    is running." This helper absorbs that race with a short poll.
-    Call it after `stream_until_end_turn` (or after breaking out of
-    an inline stream loop) and before `archive()`.
+    SSE stream의 `session.status_idle` event는 `sessions.retrieve`가
+    `status == "idle"`을 보고하기 조금 전에 도착할 수 있어, stream 종료 직후
+    `archive()` 호출이 "cannot be archived while its status is running."과 함께
+    400을 반환할 수 있습니다. 이 helper는 짧은 polling으로 race를 처리합니다.
+    `stream_until_end_turn` 후(또는 내부 stream 루프 종료 후),
+    `archive()` 전에 호출하세요.
     """
     deadline = time.monotonic() + max_wait
     while time.monotonic() < deadline:
@@ -45,17 +40,15 @@ def wait_for_idle_status(client: Anthropic, session_id: str, max_wait: float = 5
 
 
 def stream_until_end_turn(client: Anthropic, session_id: str) -> None:
-    """Stream a session's events and print until the agent finishes its turn.
+    """세션 event를 streaming하고 agent가 turn을 완료할 때까지 출력합니다.
 
-    This is the streaming pattern from notebook 00, lifted into a
-    helper so the later notebooks don't repeat it. The session emits
-    `session.status_idle` any time it's waiting for input, both at
-    end of turn and when a custom tool call needs a response, so we
-    disambiguate with `stop_reason.type` and only exit on `end_turn`.
+    Notebook 00의 streaming 패턴을 helper로 분리하여 이후 notebook에서
+    반복하지 않게 합니다. 세션은 turn 종료 및 custom tool 응답이 필요할 때
+    모두 입력을 기다리는 동안 `session.status_idle`을 내보내므로
+    `stop_reason.type`으로 구분하여 `end_turn`에서만 종료합니다.
 
-    After the stream exits we also wait for the server-side status
-    to settle so an immediate `archive()` call doesn't race the
-    state machine.
+    stream이 종료한 뒤에도 서버 측 status가 안정될 때까지 기다려
+    즉시 `archive()`를 호출해도 state machine과 race가 발생하지 않게 합니다.
     """
     with client.beta.sessions.events.stream(session_id) as stream:
         for ev in stream:
@@ -73,20 +66,19 @@ def stream_until_end_turn(client: Anthropic, session_id: str) -> None:
     wait_for_idle_status(client, session_id)
 
 
-# Notebook 04 builds its repo fixture in-memory with the helper
-# below rather than checking files into `example_data/`; the repo
-# is small enough that the helper is more readable than a directory
-# of stub files.
+# Notebook 04는 `example_data/`에 파일을 commit하는 대신
+# 아래 helper로 repo fixture를 메모리에 만듭니다.
+# repo가 충분히 작아 helper가 stub 파일 디렉터리보다
+# 읽기 쉽습니다.
 
 
 def make_unfamiliar_repo_zip() -> io.BytesIO:
-    """Build an in-memory ZIP of a small repository with a stale doc.
+    """오래된 문서가 있는 작은 repository의 ZIP을 메모리에 만듭니다.
 
-    The repo is about 37 files laid out as microservices under
-    `services/`, but `ARCHITECTURE.md` still describes the older
-    monolithic layout. The grounding notebook uses this to show how
-    an agent that trusts documentation without verifying it against
-    the actual code will produce confidently wrong answers.
+    repo에는 `services/` 아래 microservices로 배치된 약 37개 파일이 있지만
+    `ARCHITECTURE.md`는 여전히 이전 monolithic 구조를 설명합니다.
+    grounding notebook은 실제 코드와 대조하지 않고 문서를 믿는 agent가
+    확신에 찬 틀린 답을 만드는 것을 보여 주는 데 사용합니다.
     """
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w") as zf:

@@ -1,273 +1,274 @@
 ---
 name: cookbook-audit
-description: Audit an Anthropic Cookbook notebook based on a rubric. Use whenever a notebook review or audit is requested.
+description: Rubric을 기준으로 Anthropic Cookbook Notebook 감사를 수행합니다. Notebook 검토 또는 감사가 요청될 때마다 사용하세요.
 ---
 
-# Cookbook Audit
+# Cookbook 감사
 
-## Instructions
+## 지침
 
-Review the requested Cookbook notebook using the guidelines and rubrics in `style_guide.md`. Provide a score based on scoring guidelines and recommendations on improving the cookbook.
+`style_guide.md`의 가이드라인과 rubric을 사용하여 요청된 Cookbook Notebook을 검토하세요. 채점 가이드라인에 따라 점수를 제공하고 cookbook 개선에 관한 권고를 제시하세요.
 
-The style guide provides detailed templates and examples for:
-- Problem-focused introductions with Terminal Learning Objectives (TLOs) and Enabling Learning Objectives (ELOs)
-- Prerequisites and setup patterns
-- Core content structure
-- Conclusions that map back to learning objectives
+스타일 가이드는 다음에 대한 상세 template과 예시를 제공합니다.
+- Terminal Learning Objective (TLO)와 Enabling Learning Objective (ELO)가 포함된 문제 중심 도입부
+- 사전 준비와 설정 패턴
+- 핵심 콘텐츠 구조
+- 학습 목표에 다시 연결되는 결론
 
-**IMPORTANT**: Always read `style_guide.md` first before conducting an audit. The style guide contains the canonical templates and good/bad examples to reference.
+**중요**: 감사를 수행하기 전에 항상 `style_guide.md`를 먼저 읽으세요. 스타일 가이드에는 참조할 표준 template과 좋은/나쁜 예시가 포함되어 있습니다.
 
 ## Workflow
 
-Follow these steps for a comprehensive audit:
+종합적인 감사를 위해 다음 단계를 따르세요.
 
-1. **Read the style guide**: First review `style_guide.md` to understand current best practices
-2. **Identify the notebook**: Ask user for path if not provided
-3. **Run automated checks**: Use `python3 validate_notebook.py <path>` to catch technical issues and generate markdown
-   - The script automatically runs detect-secrets to scan for hardcoded API keys and credentials
-   - Uses custom patterns defined in `scripts/detect-secrets/plugins.py`
-   - Checks against baseline at `scripts/detect-secrets/.secrets.baseline`
-4. **Review markdown output**: The script generates a markdown file in the `tmp/` folder for easier review (saves context vs raw .ipynb)
-   - The tmp/ folder is gitignored to avoid committing review artifacts
-   - Markdown includes code cells but excludes outputs for cleaner review
-5. **Manual review**: Read through the markdown version evaluating against style guide and rubric
-6. **Score each dimension**: Apply scoring guidelines objectively
-7. **Generate report**: Follow the audit report format below
-8. **Provide specific examples**: Show concrete improvements with line references using the style guide templates
+1. **스타일 가이드 읽기**: 먼저 `style_guide.md`를 검토하여 현재 모범 사례를 이해하세요.
+2. **Notebook 확인**: 경로가 제공되지 않았다면 사용자에게 물어보세요.
+3. **자동 검사 실행**: `python3 validate_notebook.py <path>`를 사용하여 기술적 문제를 찾고 Markdown을 생성하세요.
+   - 스크립트는 detect-secrets를 자동으로 실행하여 hardcoded API key와 credential을 검사합니다.
+   - `scripts/detect-secrets/plugins.py`에 정의된 custom pattern을 사용합니다.
+   - `scripts/detect-secrets/.secrets.baseline`의 baseline을 기준으로 검사합니다.
+4. **Markdown 출력 검토**: 검토가 용이하도록 스크립트가 `tmp/` 폴더에 Markdown 파일을 생성합니다(원시 .ipynb에 비해 context 절약).
+   - 검토 산출물이 commit되지 않도록 tmp/ 폴더는 gitignore에 포함되어 있습니다.
+   - 더 깔끔한 검토를 위해 Markdown에는 코드 셀을 포함하고 출력은 제외합니다.
+5. **수동 검토**: Markdown 버전을 읽으며 스타일 가이드와 rubric을 기준으로 평가하세요.
+6. **각 차원 채점**: 채점 가이드라인을 객관적으로 적용하세요.
+7. **보고서 생성**: 아래 감사 보고서 형식을 따르세요.
+8. **구체적인 예시 제공**: 스타일 가이드 template을 사용하여 줄 참조와 함께 구체적인 개선 내용을 보여주세요.
 
-## Audit Report Format
+## 감사 보고서 형식
 
-Present your audit using this structure:
+다음 구조로 감사 결과를 제시하세요.
 
-### Executive Summary
-- **Overall Score**: X/20
-- **Key Strengths** (2-3 bullet points)
-- **Critical Issues** (2-3 bullet points)
+### 핵심 요약
+- **전체 점수**: X/20
+- **주요 강점**(2~3개 bullet point)
+- **중대한 문제**(2~3개 bullet point)
 
-### Detailed Scoring
+### 상세 채점
 
-#### 1. Narrative Quality: X/5
-[Brief justification with specific examples]
+#### 1. 서술 품질: X/5
+[구체적인 예시가 포함된 간단한 근거]
 
-#### 2. Code Quality: X/5
-[Brief justification with specific examples]
+#### 2. 코드 품질: X/5
+[구체적인 예시가 포함된 간단한 근거]
 
-#### 3. Technical Accuracy: X/5
-[Brief justification with specific examples]
+#### 3. 기술적 정확성: X/5
+[구체적인 예시가 포함된 간단한 근거]
 
-#### 4. Actionability & Understanding: X/5
-[Brief justification with specific examples]
+#### 4. 실행 가능성과 이해: X/5
+[구체적인 예시가 포함된 간단한 근거]
 
-### Specific Recommendations
+### 구체적인 권고
 
-[Prioritized, actionable list of improvements with references to specific sections]
+[특정 섹션 참조가 포함된, 우선순위에 따른 실행 가능한 개선 목록]
 
-### Examples & Suggestions
+### 예시와 제안
 
-[Show specific excerpts from the notebook with concrete suggestions for improvement]
+[Notebook의 구체적인 발췌문과 개선을 위한 구체적인 제안 제시]
 
-## Quick Reference Checklist
+## 빠른 참조 체크리스트
 
-Use this to ensure comprehensive coverage:
+빠짐없이 다루었는지 확인하는 데 사용하세요.
 
-**Introduction** (See style_guide.md Section 1)
-- [ ] Hooks with the problem being solved (1-2 sentences)
-- [ ] Explains why it matters (1-2 sentences)
-- [ ] Lists learning objectives as bullet points (2-4 TLOs/ELOs)
-- [ ] Focuses on value delivered, not machinery built
-- [ ] Optional: mentions broader applications (1 sentence)
+**도입부**(style_guide.md 1절 참고)
+- [ ] 해결하려는 문제로 관심을 끕니다(1~2문장).
+- [ ] 왜 중요한지 설명합니다(1~2문장).
+- [ ] 학습 목표를 bullet point로 나열합니다(TLO/ELO 2~4개).
+- [ ] 구축하는 장치가 아니라 제공하는 가치에 초점을 맞춥니다.
+- [ ] 선택 사항: 더 넓은 활용 가능성을 언급합니다(1문장).
 
-**Prerequisites & Setup** (See style_guide.md Section 2)
-- [ ] Lists required knowledge clearly
-- [ ] Lists required tools (Python version, API keys)
-- [ ] Mentions recommended background if applicable
-- [ ] Uses %%capture for pip install to suppress output
-- [ ] Uses dotenv.load_dotenv() not os.environ
-- [ ] Defines MODEL constant at top
-- [ ] Groups related installs in single command
+**사전 준비와 설정**(style_guide.md 2절 참고)
+- [ ] 필요한 지식을 명확하게 나열합니다.
+- [ ] 필요한 도구를 나열합니다(Python 버전, API key).
+- [ ] 해당하는 경우 권장 배경지식을 언급합니다.
+- [ ] 출력을 억제하도록 pip install에 %%capture를 사용합니다.
+- [ ] os.environ이 아닌 dotenv.load_dotenv()를 사용합니다.
+- [ ] 상단에 MODEL 상수를 정의합니다.
+- [ ] 관련 설치를 하나의 명령으로 묶습니다.
 
-**Structure & Organization**
-- [ ] Has logical section progression
-- [ ] Each section teaches through demonstration
-- [ ] Code blocks have explanatory text before them
-- [ ] Includes what we learned after code blocks
-- [ ] Uses headers to break up sections
+**구조와 구성**
+- [ ] 섹션이 논리적으로 진행됩니다.
+- [ ] 각 섹션은 시연을 통해 가르칩니다.
+- [ ] 코드 블록 앞에 설명 텍스트가 있습니다.
+- [ ] 코드 블록 뒤에 배운 내용을 포함합니다.
+- [ ] Heading으로 섹션을 구분합니다.
 
-**Conclusion** (See style_guide.md Section 4)
-- [ ] Maps back to learning objectives
-- [ ] Summarizes what was accomplished
-- [ ] Suggests ways to apply lessons to user's context
-- [ ] Points to next steps or related resources
+**결론**(style_guide.md 4절 참고)
+- [ ] 학습 목표에 다시 연결됩니다.
+- [ ] 달성한 내용을 요약합니다.
+- [ ] 배운 내용을 사용자의 맥락에 적용하는 방법을 제안합니다.
+- [ ] 다음 단계 또는 관련 자료를 안내합니다.
 
-**Code Quality**
-- [ ] All code blocks have explanatory text before them
-- [ ] No hardcoded API keys (automatically checked by detect-secrets)
-- [ ] Meaningful variable names
-- [ ] Comments explain "why" not "what"
-- [ ] Follows language best practices
-- [ ] Model name defined as constant at top of notebook
+**코드 품질**
+- [ ] 모든 코드 블록 앞에 설명 텍스트가 있습니다.
+- [ ] Hardcoded API key가 없습니다(detect-secrets가 자동 검사).
+- [ ] 의미 있는 변수 이름을 사용합니다.
+- [ ] 주석은 "무엇"이 아니라 "왜"를 설명합니다.
+- [ ] 해당 언어의 모범 사례를 따릅니다.
+- [ ] Model 이름을 Notebook 상단에 상수로 정의합니다.
 
-**Output Management**
-- [ ] pip install logs suppressed with %%capture
-- [ ] No verbose debug output
-- [ ] Shows relevant API responses
-- [ ] Stack traces only when demonstrating error handling
+**출력 관리**
+- [ ] %%capture로 pip install log를 억제합니다.
+- [ ] 장황한 debug 출력이 없습니다.
+- [ ] 관련 API 응답을 보여줍니다.
+- [ ] 오류 처리를 시연할 때만 stack trace를 보여줍니다.
 
-**Content Quality**
-- [ ] Explains why approaches work
-- [ ] Discusses when to use this approach
-- [ ] Mentions limitations/considerations
-- [ ] Provides transferable knowledge
-- [ ] Appropriate model selection
+**콘텐츠 품질**
+- [ ] 접근 방식이 작동하는 이유를 설명합니다.
+- [ ] 이 접근 방식을 언제 사용할지 논의합니다.
+- [ ] 한계/고려사항을 언급합니다.
+- [ ] 다른 상황에도 적용 가능한 지식을 제공합니다.
+- [ ] 적절한 model을 선택합니다.
 
-**Technical Requirements**
-- [ ] Executable without modification (except API keys)
-- [ ] Uses non-deprecated API patterns
-- [ ] Uses valid model names (claude-sonnet-4-6, claude-haiku-4-5, claude-opus-4-6)
-- [ ] Uses non-dated model aliases (never dated IDs like claude-sonnet-4-6-20250514)
-- [ ] Model name defined as constant at top of notebook
-- [ ] Includes dependency specifications
-- [ ] Assigned to primary category
-- [ ] Has relevant tags
+**기술적 요구사항**
+- [ ] 수정 없이 실행할 수 있습니다(API key 제외).
+- [ ] Deprecated되지 않은 API 패턴을 사용합니다.
+- [ ] 유효한 model 이름을 사용합니다(claude-sonnet-4-6, claude-haiku-4-5, claude-opus-4-6).
+- [ ] 날짜 없는 model alias를 사용합니다(claude-sonnet-4-6-20250514처럼 날짜가 있는 ID는 절대 사용하지 않음).
+- [ ] Model 이름을 Notebook 상단에 상수로 정의합니다.
+- [ ] Dependency 사양을 포함합니다.
+- [ ] 주 category에 할당되어 있습니다.
+- [ ] 관련 tag가 있습니다.
 
-### Content Philosophy: Action + Understanding
+### 콘텐츠 철학: 실행 + 이해
 
-Cookbooks are primarily action-oriented but strategically incorporate understanding and informed by Diataxis framework.
+Cookbook은 주로 실행 지향적이지만, 전략적으로 이해를 포함하며 Diataxis framework의 영향을 받습니다.
 
-**Core Principles:**
-- **Practical focus**: Show users how to accomplish specific tasks with working code
-- **Problem-first framing**: Lead with the problem being solved and value delivered, not the machinery
-- **Builder's perspective**: Written from the user's point of view, solving real problems
-- **Agency-building**: Help users understand why approaches work, not just how
-- **Transferable knowledge**: Teach patterns and principles that apply beyond the specific example
-- **Critical thinking**: Encourage users to question outputs, recognize limitations, make informed choices
-- **Learning contracts**: State learning objectives upfront, then map back to them in conclusions
+**핵심 원칙:**
+- **실용적인 초점**: 작동하는 코드로 구체적인 작업을 수행하는 방법을 보여줍니다.
+- **문제 우선 구성**: 장치가 아니라 해결할 문제와 제공할 가치로 시작합니다.
+- **구축자의 관점**: 사용자의 관점에서 작성하여 실제 문제를 해결합니다.
+- **주도성 함양**: 방법뿐 아니라 접근 방식이 작동하는 이유를 이해하도록 돕습니다.
+- **다른 상황에도 적용 가능한 지식**: 특정 예제를 넘어 적용할 수 있는 패턴과 원칙을 가르칩니다.
+- **비판적 사고**: 사용자가 출력에 의문을 제기하고, 한계를 인식하고, 충분한 정보를 바탕으로 선택하도록 격려합니다.
+- **학습 계약**: 학습 목표를 처음에 제시한 뒤 결론에서 다시 연결합니다.
 
-### What Makes a Good Cookbook
+### 좋은 Cookbook의 조건
 
-A good cookbook doesn't just help users solve today's problem, it also helps them understand the underlying principles behind the solutions, encouraging them to recognize when and how to adapt approaches. Users will be able to make more informed decisions about AI system design, develop judgement about model outputs, and build skills that transfer to future AI systems.
+좋은 cookbook은 사용자가 오늘의 문제를 해결하도록 도울 뿐 아니라 해결책의 근본 원칙을 이해하도록 도와, 접근 방식을 언제 어떻게 조정할지 알아볼 수 있게 합니다. 사용자는 AI 시스템 설계에 대해 더 충분한 정보를 바탕으로 결정하고, model 출력에 대한 판단력을 기르며, 미래 AI 시스템에도 적용할 수 있는 역량을 쌓을 수 있습니다.
 
-### What Cookbooks Are NOT
+### Cookbook이 아닌 것
 
-Cookbooks are not pure tutorials: We assume users have basic technical skills and API familiarity. We clearly state prerequisites in our cookbooks, and direct users to the Academy to learn more on topics.
-They are not comprehensive explanations: We don't teach transformer architecture or probability theory. We need to understand that our users are following our cookbooks to solve problems they are facing today. They are busy, in the midst of learning or building, and want to be able to use what they learn to solve their immediate needs.
-Cookbooks are not reference docs: We don't exhaustively document every parameter, we link to appropriate resources in our documentation as needed.
-Cookbooks are not simple tips and tricks: We don't teach "hacks" that only work for the current model generation. We don't over-promise and under-deliver.
-Cookbooks are not production-ready code: They showcase use cases and capabilities, not production patterns. Excessive error handling is not required.
+Cookbook은 순수한 tutorial이 아닙니다. 사용자가 기본적인 기술 역량을 갖추고 API에 익숙하다고 가정합니다. Cookbook에 사전 준비를 명확히 제시하며, 해당 주제를 더 배우도록 Academy로 안내합니다.
+포괄적인 설명이 아닙니다. Transformer architecture나 확률 이론을 가르치지 않습니다. 사용자가 지금 겪는 문제를 해결하기 위해 cookbook을 따라간다는 사실을 이해해야 합니다. 사용자는 바쁘고, 배우거나 만드는 중이며, 배운 것을 당장의 필요를 해결하는 데 사용하고 싶어 합니다.
+Cookbook은 reference 문서가 아닙니다. 모든 parameter를 빠짐없이 문서화하지 않고, 필요에 따라 문서의 적절한 자료로 연결합니다.
+Cookbook은 단순한 팁과 요령이 아닙니다. 현재 model 세대에서만 작동하는 "hack"을 가르치지 않습니다. 과도하게 약속한 뒤 기대에 못 미치는 결과를 제공하지 않습니다.
+Cookbook은 production-ready 코드가 아닙니다. Production 패턴이 아니라 사용 사례와 기능을 보여줍니다. 과도한 오류 처리는 요구하지 않습니다.
 
-### Style Guidelines
+### 스타일 가이드라인
 
-#### Voice & Tone
-- Educational and agency-building
-- Professional but approachable
-- Respectful of user intelligence and time
-- Either second person ("you") or first person plural ("we") - be consistent within a notebook
+#### 문체와 어조
+- 교육적이며 주도성을 기르도록 작성
+- 전문적이면서 다가가기 쉽게 작성
+- 사용자의 지적 능력과 시간을 존중
+- 2인칭("여러분") 또는 1인칭 복수("우리") 사용 - Notebook 내에서 일관되게 유지
 
-#### Writing Quality
-- Clear, concise explanations
-- Active voice preferred
-- Short paragraphs (3-5 sentences)
-- Avoid jargon without definition
-- Use headers to break up sections
+#### 글의 품질
+- 명확하고 간결한 설명
+- 능동태 선호
+- 짧은 문단(3~5문장)
+- 정의 없이 전문용어 사용하지 않기
+- Heading으로 섹션 구분
 
-#### Code Presentation
-- **Always explain before showing**: Every code block should be preceded by explanatory text
-- **Explain after running**: Include what we learned after code blocks execute
-- **Comments explain why, not what**: Use meaningful variable names
-- **Use constants**: Define MODEL as a constant at the top
-- **Good habits**: Use `dotenv.load_dotenv()` instead of `os.environ`
+#### 코드 제시
+- **보여주기 전에 항상 설명**: 모든 코드 블록 앞에 설명 텍스트를 배치해야 합니다.
+- **실행 후 설명**: 코드 블록 실행 후 배운 내용을 포함합니다.
+- **주석은 무엇이 아니라 왜를 설명**: 의미 있는 변수 이름을 사용합니다.
+- **상수 사용**: 상단에 MODEL을 상수로 정의합니다.
+- **좋은 습관**: `os.environ` 대신 `dotenv.load_dotenv()`를 사용합니다.
 
-#### Output Handling
-**Remove extraneous output** with %%capture:
-- pip install logs (always suppress these)
-- Verbose debug statements
-- Lengthy stack traces (unless demonstrating error handling)
+#### 출력 처리
+%%capture로 **불필요한 출력 제거**:
+- Pip install log(항상 억제)
+- 장황한 debug 문
+- 긴 stack trace(오류 처리 시연 제외)
 
-**Show relevant output**:
-- API responses that demonstrate functionality
-- Examples of successful execution
+**관련 출력 표시**:
+- 기능을 보여주는 API 응답
+- 성공적인 실행 예시
 
-### Structural Requirements
+### 구조적 요구사항
 
-**See style_guide.md for detailed templates and examples**
+**상세 template과 예시는 style_guide.md 참고**
 
-#### 1. Introduction (Required)
-Must include:
-- **Problem hook** (1-2 sentences): What problem are we solving?
-- **Why it matters** (1-2 sentences): Why is this important?
-- **Learning objectives** (2-4 bullet points): "By the end of this cookbook, you'll be able to..."
-  - Use action verbs (Build, Implement, Deploy, etc.)
-  - Be specific about capabilities
-  - Include context/constraints
-- **Optional**: Broader applications (1 sentence)
+#### 1. 도입부(필수)
+반드시 포함할 내용:
+- **문제로 관심 끌기**(1~2문장): 어떤 문제를 해결하나요?
+- **중요한 이유**(1~2문장): 왜 중요한가요?
+- **학습 목표**(2~4개 bullet point): "이 cookbook을 마치면 다음을 할 수 있습니다..."
+  - 동작을 나타내는 동사 사용(구축, 구현, 배포 등)
+  - 기능을 구체적으로 설명
+  - 맥락/제약 포함
+- **선택 사항**: 더 넓은 활용 가능성(1문장)
 
-❌ **Avoid**: Leading with machinery ("We will build a research agent...")
-✅ **Do**: Lead with problem/value ("Your team spends hours triaging CI failures...")
+❌ **피하기**: 장치로 시작("Research agent를 만들겠습니다...")
+✅ **하기**: 문제/가치로 시작("팀은 CI 실패 triage에 몇 시간을 씁니다...")
 
-#### 2. Prerequisites & Setup (Required)
-Must include:
-- **Required Knowledge**: Technical skills needed
-- **Required Tools**: Python version, API keys with links
-- **Recommended**: Optional background that helps
-- **Setup**: Step-by-step with explanations
-  - Use `%%capture` for pip installs
-  - Use `dotenv.load_dotenv()` not `os.environ`
-  - Define `MODEL` constant at top
+#### 2. 사전 준비와 설정(필수)
+반드시 포함할 내용:
+- **필수 지식**: 필요한 기술 역량
+- **필수 도구**: Python 버전, API key와 링크
+- **권장 사항**: 도움이 되는 선택적 배경지식
+- **설정**: 설명이 있는 단계별 진행
+  - Pip install에 `%%capture` 사용
+  - `os.environ`이 아닌 `dotenv.load_dotenv()` 사용
+  - 상단에 `MODEL` 상수 정의
 
-#### 3. Main Content (Required)
-Organized by logical steps or phases, each with:
-- Clear section headers
-- **Explanatory text before code blocks** (what we're about to do)
-- Code examples
-- **Explanatory text after code blocks** (what we learned)
-- Expected outputs (where relevant)
-- Optional: Understanding callouts (why it works, when to use, limitations)
+#### 3. 본문(필수)
+논리적 단계 또는 phase로 구성하며, 각각 다음을 포함합니다.
+- 명확한 섹션 heading
+- **코드 블록 앞의 설명 텍스트**(이제 할 일)
+- 코드 예제
+- **코드 블록 뒤의 설명 텍스트**(배운 내용)
+- 예상 출력(관련 있는 경우)
+- 선택 사항: 이해를 돕는 설명(작동하는 이유, 사용 시점, 한계)
 
-#### 4. Conclusion (Recommended)
-Must include:
-- **Recap**: Map back to learning objectives
-- **What was accomplished**: Summary of key points
-- **Application guidance**: How to apply lessons to user's context
-- **Next steps**: Related resources or ideas to pursue
+#### 4. 결론(권장)
+반드시 포함할 내용:
+- **되짚기**: 학습 목표에 다시 연결
+- **달성한 내용**: 핵심 사항 요약
+- **적용 안내**: 배운 내용을 사용자의 맥락에 적용하는 방법
+- **다음 단계**: 관련 자료 또는 이어서 탐구할 아이디어
 
-❌ **Avoid**: Generic summaries ("We've demonstrated how the SDK enables...")
-✅ **Do**: Actionable guidance ("Consider applying this to X... Next, try Y...")
+❌ **피하기**: 일반적인 요약("SDK가 어떻게 가능하게 하는지 보여주었습니다...")
+✅ **하기**: 실행 가능한 안내("이를 X에 적용하는 것을 고려하세요... 다음으로 Y를 시도하세요...")
 
-#### Optional Sections
-- **How It Works**: Brief explanation of underlying mechanism
-- **When to Use This**: Appropriate use cases and contexts
-- **Limitations & Considerations**: Caveats, failure modes, constraints
-- **Troubleshooting**: Common issues and solutions
-- **Variations**: Alternative approaches or extensions
-- **Performance Notes**: Optimization considerations
-- **Further Reading**: Links to relevant docs, papers, or deeper explanations
+#### 선택적 섹션
+- **작동 원리**: 근본 mechanism에 대한 간단한 설명
+- **사용 시점**: 적절한 사용 사례와 맥락
+- **한계와 고려사항**: 유의점, failure mode, 제약
+- **문제 해결**: 흔한 문제와 해결책
+- **변형**: 대안 접근 방식 또는 확장
+- **성능 참고사항**: 최적화 고려사항
+- **더 읽을거리**: 관련 문서, 논문 또는 더 깊은 설명에 대한 링크
 
-### Common Anti-Patterns to Flag
+### 표시할 일반적인 Anti-pattern
 
-Refer to style_guide.md for detailed good/bad examples. Watch for these issues:
+상세한 좋은/나쁜 예시는 style_guide.md를 참조하세요. 다음 문제를 살펴보세요.
 
-#### Introduction Anti-Patterns
-❌ Leading with machinery: "We will build a research agent using the Claude SDK..."
-❌ Feature dumps: Listing SDK methods or tool capabilities
-❌ Vague learning objectives: "Learn about agents" or "Understand the API"
-✅ Problem-first framing with specific, actionable learning objectives
+#### 도입부 Anti-pattern
+❌ 장치로 시작: "Claude SDK를 사용하여 research agent를 만들겠습니다..."
+❌ 기능 나열: SDK method 또는 도구 기능 목록
+❌ 모호한 학습 목표: "Agent에 대해 배우기" 또는 "API 이해하기"
+✅ 구체적이고 실행 가능한 학습 목표가 있는 문제 우선 구성
 
-#### Setup Anti-Patterns
-❌ Noisy pip install output without `%%capture`
-❌ Multiple separate pip install commands
-❌ Using `os.environ["API_KEY"] = "your_key"` instead of dotenv
-❌ Hardcoding model names throughout instead of using a MODEL constant
-✅ Clean setup with grouped installs, dotenv, and constants
+#### 설정 Anti-pattern
+❌ `%%capture` 없이 장황한 pip install 출력
+❌ 여러 개의 별도 pip install 명령
+❌ Dotenv 대신 `os.environ["API_KEY"] = "your_key"` 사용
+❌ MODEL 상수 대신 곳곳에 model 이름을 hardcode
+✅ 설치를 묶고 dotenv와 상수를 사용하는 깔끔한 설정
 
-#### Code Presentation Anti-Patterns
-❌ Code blocks without explanatory text before them
-❌ No explanation of what we learned after running code
-❌ Comments that explain "what" the code does (code should be self-documenting)
-❌ Over-explaining obvious code
-✅ Context before code, insights after code, comments explain "why"
+#### 코드 제시 Anti-pattern
+❌ 앞에 설명 텍스트가 없는 코드 블록
+❌ 코드 실행 후 배운 내용 설명 없음
+❌ 코드가 "무엇"을 하는지 설명하는 주석(코드 자체로 의미가 드러나야 함)
+❌ 명백한 코드에 대한 과도한 설명
+✅ 코드 전 맥락, 코드 후 통찰, "왜"를 설명하는 주석
 
-#### Conclusion Anti-Patterns
-❌ Generic summaries: "We've demonstrated how the SDK enables..."
-❌ Simply restating what the notebook did without guidance
-❌ Not mapping back to the stated learning objectives
-✅ Actionable guidance on applying lessons to user's specific context
+#### 결론 Anti-pattern
+❌ 일반적인 요약: "SDK가 어떻게 가능하게 하는지 보여주었습니다..."
+❌ 안내 없이 Notebook이 한 일을 단순히 반복
+❌ 명시된 학습 목표에 다시 연결하지 않음
+✅ 배운 내용을 사용자의 구체적인 맥락에 적용하기 위한 실행 가능한 안내
+

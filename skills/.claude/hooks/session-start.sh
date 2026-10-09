@@ -1,24 +1,24 @@
 #!/bin/bash
-# SessionStart Hook - Skills Cookbook Environment Check
-# This hook runs at the start of each Claude Code session to verify environment setup
+# SessionStart Hook - Skills Cookbook 환경 검사
+# 이 hook은 각 Claude Code session 시작 시 환경 설정을 확인하기 위해 실행
 
 set -e
 
 echo "🔍 Skills Cookbook - Environment Check"
 echo "======================================"
 
-# Check if we're in a virtual environment
+# virtual environment에 있는지 확인
 if [[ -z "$VIRTUAL_ENV" ]]; then
     echo "⚠️  WARNING: No virtual environment detected!"
     echo "   Run: source venv/bin/activate"
     echo ""
 fi
 
-# Check if Anthropic SDK is installed and get version
+# Anthropic SDK 설치 여부 확인 및 version 가져오기
 if python -c "import anthropic" 2>/dev/null; then
     SDK_VERSION=$(python -c "import anthropic; print(anthropic.__version__)" 2>/dev/null || echo "unknown")
     echo "✅ Anthropic SDK: $SDK_VERSION"
-    # Check for minimum version for Skills support
+    # Skills 지원 최소 version 확인
     if [[ "$SDK_VERSION" < "0.71.0" ]]; then
         echo "⚠️  SDK version $SDK_VERSION may be too old (minimum 0.71.0 for Skills support)"
         echo "   Run: pip install anthropic>=0.71.0"
@@ -30,7 +30,7 @@ else
     echo ""
 fi
 
-# Check for API key
+# API key 확인
 if [[ -f ".env" ]]; then
     if grep -q "^ANTHROPIC_API_KEY=sk-" .env 2>/dev/null; then
         echo "✅ API key configured in .env"
@@ -46,7 +46,7 @@ else
     echo ""
 fi
 
-# Check outputs directory
+# outputs directory 확인
 if [[ -d "outputs" ]]; then
     FILE_COUNT=$(find outputs -type f 2>/dev/null | wc -l | tr -d ' ')
     echo "✅ outputs/ directory exists ($FILE_COUNT files)"
@@ -55,7 +55,7 @@ else
     mkdir -p outputs
 fi
 
-# Show current status from plan
+# plan의 현재 상태 표시
 if [[ -f "docs/skills_cookbook_plan.md" ]]; then
     echo ""
     echo "📊 Current Status:"

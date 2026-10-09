@@ -1,7 +1,7 @@
-"""Helpers for the agentic-search benchmark reproduction cookbook.
+"""agentic-search benchmark 재현 cookbook을 위한 helper입니다.
 
-Dataset samples, grader prompts, and a lightweight transcript renderer.
-The agentic loop itself lives in the notebook so it stays editable.
+dataset sample, grader 프롬프트, 가벼운 transcript renderer.
+agentic loop 자체는 계속 편집할 수 있도록 notebook에 있습니다.
 """
 
 import re
@@ -10,11 +10,11 @@ from typing import Any
 import anthropic
 
 # ---------------------------------------------------------------------------
-# Sample questions
+# 샘플 질문
 #
-# Three illustrative questions written for this cookbook to span single-fact,
-# set-answer, and multi-item shapes. They are NOT drawn from DeepSearchQA-900;
-# see the Datasets section of the notebook for the real benchmark.
+# 단일 사실, 집합 답변, 여러 항목 형식을 다루기 위해 이 cookbook용으로
+# 작성한 설명용 질문 세 개입니다. DeepSearchQA-900에서 가져온 것이 아닙니다.
+# 실제 benchmark는 notebook의 Dataset 섹션을 참조하세요.
 # ---------------------------------------------------------------------------
 
 SAMPLE_QUESTIONS: list[dict[str, str]] = [
@@ -53,7 +53,7 @@ SAMPLE_QUESTIONS: list[dict[str, str]] = [
 
 
 # ---------------------------------------------------------------------------
-# Prompt templates
+# 프롬프트 template
 # ---------------------------------------------------------------------------
 
 USER_PROMPT_TEMPLATE = """\
@@ -100,18 +100,18 @@ _RESULT_TAG_RE = re.compile(r"<result>(.*?)</result>", re.DOTALL | re.IGNORECASE
 
 
 def extract_result_tag(text: str) -> str | None:
-    """Return the contents of the last <result>...</result> in `text`, or None."""
+    """`text`의 마지막 <result>...</result> 내용을 반환하며, 없으면 None입니다."""
     matches = _RESULT_TAG_RE.findall(text)
     return matches[-1].strip() if matches else None
 
 
 def _first_text(msg: anthropic.types.Message) -> str:
-    """Return the first text block's content (skips thinking/tool blocks)."""
+    """첫 text block의 내용을 반환합니다(thinking/tool block은 건너뜀)."""
     return next(b.text for b in msg.content if isinstance(b, anthropic.types.TextBlock))
 
 
 # ---------------------------------------------------------------------------
-# Grading
+# 평가
 # ---------------------------------------------------------------------------
 
 
@@ -121,7 +121,7 @@ def grade_response(
     question: dict[str, str],
     response_text: str,
 ) -> dict[str, Any]:
-    """Score a single response with the F1 grader. Returns precision/recall/F1."""
+    """단일 응답을 F1 grader로 평가합니다. precision/recall/F1을 반환합니다."""
     extracted = extract_result_tag(response_text) or response_text
     prompt = GRADER_PROMPT_TEMPLATE.format(
         question=question["problem"],
@@ -164,7 +164,7 @@ def grade_response(
 
 
 # ---------------------------------------------------------------------------
-# BrowseComp grading (single-answer match: A=correct, B=wrong, C=abstain)
+# BrowseComp 평가(단일 답변 일치: A=정답, B=오답, C=판정 유보)
 # ---------------------------------------------------------------------------
 
 BROWSECOMP_GRADER_PROMPT = """\
@@ -190,7 +190,7 @@ def grade_browsecomp(
     question: dict[str, str],
     response_text: str,
 ) -> dict[str, Any]:
-    """Score a BrowseComp response: accuracy = 1 iff the grader returns 'A'."""
+    """BrowseComp 응답 평가: grader가 'A'를 반환하는 경우에만 accuracy = 1입니다."""
     extracted = extract_result_tag(response_text) or response_text
     msg = client.messages.create(
         model=grader_model,
@@ -217,12 +217,12 @@ def grade_browsecomp(
 
 
 # ---------------------------------------------------------------------------
-# Transcript rendering
+# Transcript 렌더링
 # ---------------------------------------------------------------------------
 
 
 def summarize_response(response: anthropic.types.Message) -> str:
-    """One-line-per-block summary of a Messages API response, for transcript display."""
+    """transcript 표시를 위한 Messages API 응답의 block별 한 줄 요약."""
     lines: list[str] = []
     for block in response.content:
         btype = getattr(block, "type", "?")

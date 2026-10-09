@@ -35,7 +35,7 @@ def get_assert(output: str, context) -> bool | float | dict[str, Any]:
         if f1 < 0.3:
             overall_score = False
         return {
-            "pass": overall_score,  # if f1 > 0.3 we will pass, otherwise fail
+            "pass": overall_score,  # f1 > 0.3이면 통과, 그렇지 않으면 실패
             "score": f1,
             "reason": f"Precision: {precision} \n Recall: {recall} \n F1 Score: {f1} \n MRR: {mrr}",
             "componentResults": [
@@ -62,7 +62,7 @@ def get_assert(output: str, context) -> bool | float | dict[str, Any]:
         }
     except Exception as e:
         return {
-            "pass": False,  # if f1 > 0.3 we will pass, otherwise fail
+            "pass": False,  # f1 > 0.3이면 통과, 그렇지 않으면 실패
             "score": f1,
             "reason": f"Unexpected error: {str(e)}",
             "componentResults": [

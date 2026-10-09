@@ -1,14 +1,14 @@
 """
-HTML rendering utilities for Jupyter notebook display.
+Jupyter Notebook 표시용 HTML rendering utility.
 
-This module provides styled HTML card rendering for various content types,
-designed for use in Jupyter notebooks with the Claude Agent SDK.
+이 module은 다양한 content type을 위한 style이 적용된 HTML card rendering을
+제공하며, Claude Agent SDK를 사용하는 Jupyter Notebook용으로 설계되었습니다.
 
-Content types supported:
-- Images (file paths converted to base64)
-- Pandas DataFrames and Series
-- Agent message lists (extracts final assistant response)
-- Generic Python objects (dicts, lists, strings)
+지원하는 content type:
+- Image(파일 경로에서 base64로 변환)
+- Pandas DataFrame 및 Series
+- Agent message 목록(최종 assistant 응답 추출)
+- 일반 Python 객체(dict, list, string)
 """
 
 import base64
@@ -16,7 +16,7 @@ import html
 import pprint
 from typing import Any
 
-# Optional dependencies with graceful fallback
+# 원활한 fallback이 있는 선택적 dependency
 HTML: Any = None
 display: Any = None
 pd: Any = None
@@ -32,11 +32,11 @@ try:
 except ImportError:
 
     def display(obj: Any) -> None:
-        """Fallback display for non-Jupyter environments."""
+        """Jupyter 이외 환경의 fallback 표시."""
         print(obj.data if hasattr(obj, "data") else obj)
 
     class _HTML:
-        """Fallback HTML wrapper for non-Jupyter environments."""
+        """Jupyter 이외 환경의 fallback HTML wrapper."""
 
         def __init__(self, data: Any):
             self.data = data
@@ -52,7 +52,7 @@ except ImportError:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CSS Constants
+# CSS 상수
 # ─────────────────────────────────────────────────────────────────────────────
 
 CARD_CSS = """
@@ -134,22 +134,22 @@ CARD_CSS = """
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Content Type Detection
+# Content Type 감지
 # ─────────────────────────────────────────────────────────────────────────────
 
 
 def _is_message_list(content: Any) -> bool:
     """
-    Check if content is a list of SDK message objects.
+    Content가 SDK message 객체 목록인지 확인합니다.
 
-    Uses duck-typing to check for message-like objects rather than
-    relying on fragile class name string matching.
+    취약한 class 이름 문자열 match에 의존하는 대신 duck-typing으로
+    message 형태의 객체를 확인합니다.
     """
     if not isinstance(content, list) or not content:
         return False
 
-    # Check if any item looks like a message (has content attribute and message-like class)
-    for item in content[-3:]:  # Check last few items for efficiency
+    # Message 형태의 항목이 있는지 확인(content attribute 및 message형 class)
+    for item in content[-3:]:  # 효율을 위해 마지막 몇 항목 확인
         class_name = getattr(item, "__class__", type(None)).__name__
         if "Message" in class_name and hasattr(item, "content"):
             return True
@@ -157,35 +157,35 @@ def _is_message_list(content: Any) -> bool:
 
 
 def _is_dataframe(content: Any) -> bool:
-    """Check if content is a pandas DataFrame."""
+    """Content가 pandas DataFrame인지 확인합니다."""
     return pd is not None and isinstance(content, pd.DataFrame)
 
 
 def _is_series(content: Any) -> bool:
-    """Check if content is a pandas Series."""
+    """Content가 pandas Series인지 확인합니다."""
     return pd is not None and isinstance(content, pd.Series)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Content Renderers
+# Content Renderer
 # ─────────────────────────────────────────────────────────────────────────────
 
 
 def _image_to_base64(image_path: str) -> str:
-    """Convert an image file to base64 encoded string."""
+    """Image 파일을 base64-encoded 문자열로 변환합니다."""
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode("utf-8")
 
 
 def _render_image(image_path: str) -> str:
     """
-    Render an image path as an HTML img tag with base64 encoding.
+    Image 경로를 base64 encoding된 HTML img tag로 rendering합니다.
 
     Args:
-        image_path: Path to the image file
+        image_path: Image 파일 경로
 
     Returns:
-        HTML string with embedded base64 image
+        Base64 image를 내장한 HTML 문자열
     """
     b64 = _image_to_base64(image_path)
     return (
@@ -196,13 +196,13 @@ def _render_image(image_path: str) -> str:
 
 def _render_dataframe(df: Any) -> str:
     """
-    Render a pandas DataFrame as an HTML table.
+    Pandas DataFrame을 HTML table로 rendering합니다.
 
     Args:
         df: pandas DataFrame
 
     Returns:
-        HTML table string
+        HTML table 문자열
     """
     result: str = df.to_html(classes="pretty-table", index=False, border=0, escape=True)
     return result
@@ -210,13 +210,13 @@ def _render_dataframe(df: Any) -> str:
 
 def _render_series(series: Any) -> str:
     """
-    Render a pandas Series as an HTML table.
+    Pandas Series를 HTML table로 rendering합니다.
 
     Args:
         series: pandas Series
 
     Returns:
-        HTML table string
+        HTML table 문자열
     """
     result: str = series.to_frame().to_html(classes="pretty-table", border=0, escape=True)
     return result
@@ -224,16 +224,16 @@ def _render_series(series: Any) -> str:
 
 def _render_message_list(messages: list[Any]) -> str:
     """
-    Extract and render the final assistant text from a message list.
+    Message 목록에서 최종 assistant text를 추출하고 rendering합니다.
 
-    Searches backwards through messages to find the last AssistantMessage
-    with text content, then renders it (with markdown if available).
+    Message를 뒤에서부터 검색하여 text 콘텐츠가 있는 마지막 AssistantMessage를
+    찾은 뒤 rendering합니다(가능하면 Markdown 사용).
 
     Args:
-        messages: List of SDK message objects
+        messages: SDK message 객체 목록
 
     Returns:
-        Rendered HTML string
+        Rendering한 HTML 문자열
     """
     final_text = None
 
@@ -250,21 +250,21 @@ def _render_message_list(messages: list[Any]) -> str:
     if final_text:
         return _render_markdown_text(final_text)
 
-    # Fallback: format the entire list
+    # Fallback: 전체 목록 formatting
     return _render_code_block(pprint.pformat(messages))
 
 
 def _render_markdown_text(text: str) -> str:
     """
-    Render text as markdown HTML if the markdown library is available.
+    Markdown library가 있으면 text를 Markdown HTML로 rendering합니다.
 
-    Enables extensions for tables, fenced code blocks, and other common markdown features.
+    Table, fenced code block 및 일반적인 Markdown 기능의 extension을 활성화합니다.
 
     Args:
-        text: Plain text, potentially containing markdown
+        text: Markdown을 포함할 수 있는 일반 text
 
     Returns:
-        HTML string
+        HTML 문자열
     """
     if markdown is not None:
         result: str = markdown.markdown(
@@ -272,32 +272,32 @@ def _render_markdown_text(text: str) -> str:
             extensions=["tables", "fenced_code", "nl2br", "sane_lists"],
         )
         return result
-    # Fallback: preserve whitespace and escape HTML
+    # Fallback: 공백 유지 및 HTML escape
     return f"<pre style='white-space: pre-wrap;'>{html.escape(text)}</pre>"
 
 
 def _render_code_block(content: str) -> str:
     """
-    Render content as a code block.
+    Content를 code block으로 rendering합니다.
 
     Args:
-        content: String to display in code block
+        content: Code block에 표시할 문자열
 
     Returns:
-        HTML pre/code block string
+        HTML pre/code block 문자열
     """
     return f"<pre><code>{html.escape(content)}</code></pre>"
 
 
 def _render_generic(content: Any) -> str:
     """
-    Render generic content (dicts, lists, strings, other objects).
+    일반 content(dict, list, string, 기타 객체)를 rendering합니다.
 
     Args:
-        content: Any Python object
+        content: 임의의 Python 객체
 
     Returns:
-        HTML string representation
+        HTML 문자열 표현
     """
     if isinstance(content, (list, dict)):
         return _render_code_block(pprint.pformat(content))
@@ -314,19 +314,19 @@ def _render_generic(content: Any) -> str:
 
 def render_content(content: Any, is_image: bool = False) -> str:
     """
-    Detect content type and render to HTML.
+    Content type을 감지하여 HTML로 rendering합니다.
 
-    This is the main content routing function that dispatches to
-    the appropriate renderer based on content type.
+    Content type에 따라 적절한 renderer로 전달하는 주 content routing
+    function입니다.
 
     Args:
-        content: Content to render (image path, DataFrame, messages, etc.)
-        is_image: If True, treat string content as an image path
+        content: Rendering할 content(image 경로, DataFrame, message 등)
+        is_image: True이면 string content를 image 경로로 처리
 
     Returns:
-        Rendered HTML string
+        Rendering한 HTML 문자열
     """
-    # Image rendering (explicit flag)
+    # Image rendering(명시적 flag)
     if is_image and isinstance(content, str):
         return _render_image(content)
 
@@ -338,21 +338,21 @@ def render_content(content: Any, is_image: bool = False) -> str:
     if _is_series(content):
         return _render_series(content)
 
-    # SDK message list
+    # SDK message 목록
     if _is_message_list(content):
         return _render_message_list(content)
 
-    # Generic fallback
+    # 일반 fallback
     return _render_generic(content)
 
 
 def display_card(content: str, title: str | None = None) -> None:
     """
-    Display rendered HTML content inside a styled card.
+    Rendering한 HTML content를 style이 적용된 card 안에 표시합니다.
 
     Args:
-        content: Pre-rendered HTML content
-        title: Optional title for the card
+        content: 미리 rendering한 HTML content
+        title: Card의 선택적 title
     """
     title_html = f'<div class="pretty-title">{html.escape(title)}</div>' if title else ""
     card_html = f'<div class="pretty-card">{title_html}{content}</div>'
@@ -361,16 +361,16 @@ def display_card(content: str, title: str | None = None) -> None:
 
 def display_agent_response(messages: list[Any], title: str = "Agent Response") -> None:
     """
-    Display the final assistant response from a conversation in a styled card.
+    대화의 최종 assistant 응답을 style이 적용된 card에 표시합니다.
 
-    Extracts the last text response from an agent's message history and
-    renders it with markdown formatting in a visually appealing card.
+    Agent의 message 기록에서 마지막 text 응답을 추출하고
+    Markdown formatting을 적용하여 시각적으로 보기 좋은 card에 rendering합니다.
 
     Args:
-        messages: List of SDK message objects from agent conversation
-        title: Card title (default: "Agent Response")
+        messages: Agent 대화의 SDK message 객체 목록
+        title: Card title(기본값: "Agent Response")
 
-    Example:
+    예제:
         >>> async for msg in query(prompt="Research AI trends", ...):
         ...     messages.append(msg)
         >>> display_agent_response(messages)
@@ -385,7 +385,7 @@ def display_agent_response(messages: list[Any], title: str = "Agent Response") -
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Conversation Timeline (HTML)
+# 대화 Timeline(HTML)
 # ─────────────────────────────────────────────────────────────────────────────
 
 TIMELINE_CSS = """
@@ -471,7 +471,7 @@ TIMELINE_CSS = """
 
 
 def _extract_model_from_messages(messages: list[Any]) -> str | None:
-    """Extract model identifier from messages."""
+    """Message에서 model identifier를 추출합니다."""
     for msg in messages:
         msg_type = msg.__class__.__name__
         if msg_type == "SystemMessage":
@@ -485,7 +485,7 @@ def _extract_model_from_messages(messages: list[Any]) -> str | None:
 
 
 def _format_tool_badge(tool_name: str, tool_input: dict | None = None) -> str:
-    """Format a tool call as an HTML badge."""
+    """Tool 호출을 HTML badge로 formatting합니다."""
     info = tool_name
     if tool_input:
         if tool_name == "WebSearch" and "query" in tool_input:
@@ -498,13 +498,13 @@ def _format_tool_badge(tool_name: str, tool_input: dict | None = None) -> str:
 
 def visualize_conversation_html(messages: list[Any]) -> None:
     """
-    Render the full conversation as a styled HTML timeline.
+    전체 대화를 style이 적용된 HTML timeline으로 rendering합니다.
 
-    Displays system init, tool calls, assistant responses, and subagent delegations
-    in a visually appealing format for Jupyter notebooks.
+    System 초기화, tool 호출, assistant 응답, subagent 위임을
+    Jupyter Notebook용으로 시각적으로 보기 좋은 형식으로 표시합니다.
 
     Args:
-        messages: List of SDK message objects
+        messages: SDK message 객체 목록
     """
     if not messages:
         return
@@ -576,7 +576,7 @@ def visualize_conversation_html(messages: list[Any]) -> None:
         elif msg_type == "ResultMessage":
             flush_tools()
 
-            # Build stats
+            # 통계 구성
             stats_html = ""
             stats = []
             if hasattr(msg, "num_turns") and msg.num_turns:
@@ -607,7 +607,7 @@ def visualize_conversation_html(messages: list[Any]) -> None:
                 f"</div>"
             )
 
-    # Assemble timeline
+    # Timeline 조립
     model_text = f" • {model}" if model else ""
     timeline_html = f"""
     {TIMELINE_CSS}

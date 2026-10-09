@@ -1,11 +1,11 @@
-"""MongoDB Atlas setup helpers + shared document builders.
+"""MongoDB Atlas 설정 helper + 공유 문서 builder.
 
-Setup boilerplate the cookbook notebook imports rather than teaches: seed the collection,
-create the vector + Atlas Search indexes and wait until they are queryable *and* synced, and a
-preflight check. Also the small ID/timestamp and decision/audit document shapers shared by the
-notebook's `record_decision` handler and the AP2 module. The retrieval pipeline builders and the
-custom-tool handlers themselves now live inline in the notebook (that is the teaching content);
-`pymongo` still only ever runs on your side of the boundary.
+notebook이 가르치는 대신 import하는 설정 boilerplate입니다. collection에 초기 데이터를
+넣고, vector + Atlas Search index를 만들어 query 가능하고 동기화될 때까지 기다리며,
+사전 확인을 수행합니다. notebook의 `record_decision` handler와 AP2 module이 공유하는
+작은 ID/timestamp 및 decision/audit 문서 구성 함수도 있습니다. retrieval pipeline builder와
+custom tool handler 자체는 이제 notebook 안에 있습니다(학습 내용). `pymongo`는 여전히
+경계의 당신 측에서만 실행됩니다.
 """
 
 from __future__ import annotations
@@ -91,10 +91,11 @@ def missing_required_env(env=None) -> list[str]:
 
 
 def has_anthropic_auth(env=None) -> bool:
-    """True if any Anthropic auth signal is present (API key, auth token, or profile).
+    """Anthropic 인증 신호(API key, auth token, profile)가 있으면 True입니다.
 
-    Non-API-key auth (e.g. `ant` CLI workload-identity federation) is valid, so this is a soft
-    check: a False result should warn, not block — the SDK still resolves credentials itself.
+    API key가 아닌 인증(예: `ant` CLI workload-identity federation)도 유효하므로
+    유연한 확인입니다. False면 차단하지 말고 경고해야 합니다. SDK는 여전히 credential을
+    스스로 결정합니다.
     """
     import os
 
@@ -144,8 +145,8 @@ def ensure_indexes(
             pending = [n for n in names if status.get(n, {}).get("queryable") is not True]
             raise IndexTimeout(f"indexes not queryable within {timeout_s}s: {pending}")
         sleep(poll_interval)
-    # `queryable` flips true before a freshly-seeded write is ingested, so a query here can
-    # silently return nothing. Block until both indexes actually reflect the seeded docs.
+    # 새로 넣은 write를 수집하기 전에 `queryable`이 true가 되어 여기서 query하면
+    # 조용히 빈 결과를 반환할 수 있습니다. 두 index가 초기 문서를 실제로 반영할 때까지 기다립니다.
     wait_for_index_sync(
         coll, deadline=deadline, poll_interval=poll_interval, sleep=sleep, monotonic=monotonic
     )
@@ -154,13 +155,13 @@ def ensure_indexes(
 def wait_for_index_sync(
     coll, *, deadline=None, timeout_s=180.0, poll_interval=2.0, sleep=None, monotonic=None
 ) -> None:
-    """Block until the Atlas Search indexes reflect the current documents.
+    """Atlas Search index가 현재 문서를 반영할 때까지 기다립니다.
 
-    Atlas Search and Vector Search are eventually consistent: an index reports ``queryable``
-    as soon as its definition is built, which can be *before* it has ingested the most recent
-    writes. Querying in that window returns empty results even though the data is present.
-    This polls a vector probe and a lexical ``exists`` probe until both return a hit (or the
-    collection is genuinely empty), so callers never query a lagging index.
+    Atlas Search와 Vector Search는 eventually consistent입니다. index는 정의가
+    만들어지면 바로 ``queryable``을 보고하지만 최신 write를 수집하기 *전*일 수 있습니다.
+    그 사이에 query하면 데이터가 있어도 빈 결과를 반환합니다. vector probe와
+    lexical ``exists`` probe를 둘 다 hit를 반환할 때까지(또는 collection이 실제로 비어
+    있을 때까지) polling하여 caller가 지연된 index를 query하지 않게 합니다.
     """
     sleep = sleep or time.sleep
     monotonic = monotonic or time.monotonic
@@ -168,7 +169,7 @@ def wait_for_index_sync(
         deadline = monotonic() + timeout_s
     probe = coll.find_one({}, {"embedding": 1})
     if probe is None:
-        return  # nothing seeded; nothing to wait for
+        return  # 초기 데이터 없음; 기다릴 것 없음
     qvec = probe["embedding"]
     vector_probe = [
         {

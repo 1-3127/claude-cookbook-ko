@@ -1,27 +1,27 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Registry Schema",
-  "description": "Schema for registry.yaml - cookbook metadata",
+  "description": "registry.yaml용 Schema - cookbook metadata",
   "type": "array",
   "items": {
     "type": "object",
     "properties": {
       "title": {
         "type": "string",
-        "description": "Title of the cookbook"
+        "description": "Cookbook 제목"
       },
       "description": {
         "type": "string",
-        "description": "Brief description of the cookbook"
+        "description": "Cookbook의 간단한 설명"
       },
       "path": {
         "type": "string",
-        "description": "Path to the notebook file"
+        "description": "Notebook 파일 경로"
       },
       "slug": {
         "type": "string",
         "pattern": "^[a-z0-9-]+$",
-        "description": "URL-friendly slug for the cookbook"
+        "description": "Cookbook의 URL에 적합한 slug"
       },
       "categories": {
         "type": "array",
@@ -45,50 +45,50 @@
           ]
         },
         "minItems": 1,
-        "description": "Categories of the cookbook"
+        "description": "Cookbook category"
       },
       "github_url": {
         "type": "string",
         "format": "uri",
-        "description": "GitHub URL to the notebook"
+        "description": "Notebook의 GitHub URL"
       },
       "authors": {
         "type": "array",
         "items": {
           "type": "string",
-          "description": "GitHub username (must match keys in authors.yml)"
+          "description": "GitHub username(authors.yml의 key와 일치해야 함)"
         },
         "minItems": 1,
-        "description": "List of author GitHub usernames"
+        "description": "작성자 GitHub username 목록"
       },
       "date": {
         "type": "string",
         "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-        "description": "Publication date in YYYY-MM-DD format"
+        "description": "YYYY-MM-DD 형식의 게시 날짜"
       },
       "tags": {
         "type": "array",
         "items": {
           "type": "string"
         },
-        "description": "Tags for the cookbook"
+        "description": "Cookbook tag"
       },
       "difficulty": {
         "type": "string",
         "enum": ["beginner", "intermediate", "advanced", ""],
-        "description": "Difficulty level (optional)"
+        "description": "난이도(선택 사항)"
       },
       "use_case": {
         "type": "string",
-        "description": "Use case category (optional)"
+        "description": "사용 사례 category(선택 사항)"
       },
       "thumbnail": {
         "type": "string",
-        "description": "Thumbnail image URL (optional)"
+        "description": "Thumbnail 이미지 URL(선택 사항)"
       },
       "archived": {
         "type": "boolean",
-        "description": "Whether the cookbook is archived (optional, defaults to false)"
+        "description": "Cookbook archive 여부(선택 사항, 기본값 false)"
       }
     },
     "required": ["title", "path", "categories", "authors", "date"],

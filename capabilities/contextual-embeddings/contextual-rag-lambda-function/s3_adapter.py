@@ -6,29 +6,29 @@ from botocore.exceptions import ClientError
 
 class S3Adapter:
     def __init__(self):
-        # Create an S3 client
+        # S3 client 생성
         self.s3_client = boto3.client("s3")
 
     def write_output_to_s3(self, bucket_name, file_name, json_data):
         """
-        Write a JSON object to an S3 bucket
+        S3 bucket에 JSON object를 기록합니다
 
-        :param bucket_name: Name of the S3 bucket
-        :param file_name: Name of the file to be created in the bucket
-        :param json_data: JSON object to be written
-        :return: True if file was uploaded, else False
+        :param bucket_name: S3 bucket 이름
+        :param file_name: Bucket에 생성할 파일 이름
+        :param json_data: 기록할 JSON object
+        :return: 파일이 업로드되면 True, 그렇지 않으면 False
         """
 
         try:
-            # Convert JSON object to string
+            # JSON object를 문자열로 변환
             json_string = json.dumps(json_data)
 
-            # Upload the file
+            # 파일 업로드
             response = self.s3_client.put_object(
                 Bucket=bucket_name, Key=file_name, Body=json_string, ContentType="application/json"
             )
 
-            # Check if the upload was successful
+            # 업로드 성공 여부 확인
             if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
                 print(f"Successfully uploaded {file_name} to {bucket_name}")
                 return True
@@ -42,27 +42,27 @@ class S3Adapter:
 
     def read_from_s3(self, bucket_name, file_name):
         """
-        Write a JSON object to an S3 bucket
+        S3 bucket에 JSON object를 기록합니다
 
-        :param bucket_name: Name of the S3 bucket
-        :param file_name: Name of the file to be created in the bucket
-        :return: True if file was uploaded, else False
+        :param bucket_name: S3 bucket 이름
+        :param file_name: Bucket에 생성할 파일 이름
+        :return: 파일이 업로드되면 True, 그렇지 않으면 False
         """
         try:
-            # Get the object from S3
+            # S3에서 object 조회
             response = self.s3_client.get_object(Bucket=bucket_name, Key=file_name)
 
-            # Read the content of the file
+            # 파일 내용 읽기
             return json.loads(response["Body"].read().decode("utf-8"))
 
         except ClientError as e:
             print(f"Error reading file from S3: {str(e)}")
 
     def parse_s3_path(self, s3_path):
-        # Remove 's3://' prefix if present
+        # 's3://' prefix가 있으면 제거
         s3_path = s3_path.replace("s3://", "")
 
-        # Split the path into bucket and key
+        # 경로를 bucket 및 key로 분리
         parts = s3_path.split("/", 1)
 
         if len(parts) != 2:

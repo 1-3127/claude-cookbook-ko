@@ -1,12 +1,12 @@
-"""AP2 (Agent Payments Protocol) mandate verification — the deterministic gate.
+"""AP2(Agent Payments Protocol) mandate 검증 — 결정적 gate.
 
-AP2 is an open protocol for verifying agent-initiated payments; this module encapsulates its
-details so the cookbook can simply call `tool_verify_mandates(...)` and act on the verdict.
-It signs and verifies the ES256 Checkout/Payment Mandate JWTs, checks constraints (amount,
-type, expiry), and detects double-spend against stored receipts. The notebook never needs to
-read this file to follow the story — `tool_verify_mandates(...)` returns a plain verdict dict.
+AP2는 agent가 시작한 결제를 검증하는 open protocol입니다. 이 module은 세부 사항을
+encapsulate하여 cookbook이 `tool_verify_mandates(...)`만 호출하고 판정에 따라 행동하게 합니다.
+ES256 Checkout/Payment Mandate JWT를 서명하고 검증하며 제약(amount, type, expiry)을
+확인하고 저장된 receipt로 double-spend를 감지합니다. notebook 흐름을 따르기 위해
+이 파일을 읽을 필요는 없습니다. `tool_verify_mandates(...)`가 일반 판정 dict를 반환합니다.
 
-See the AP2 protocol: https://github.com/google-agentic-commerce/AP2
+AP2 protocol 참고: https://github.com/google-agentic-commerce/AP2
 """
 
 from __future__ import annotations

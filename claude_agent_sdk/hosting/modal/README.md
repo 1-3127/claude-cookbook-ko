@@ -1,32 +1,32 @@
-# Tier 2 — Modal
+# 2단계 — Modal
 
-Runs the **same** `hosting/Dockerfile` image on [Modal](https://modal.com) via
-`modal.Sandbox`. You get a public HTTPS URL, scale-to-zero, and no
-infrastructure to manage.
+`modal.Sandbox`를 통해 [Modal](https://modal.com)에서 **동일한**
+`hosting/Dockerfile` image를 실행합니다. Public HTTPS URL과 scale-to-zero를 제공하며,
+관리할 infrastructure가 없습니다.
 
-## Prerequisites
+## 사전 요구사항
 
 ```bash
 pip install modal
-modal setup            # opens a browser to authenticate
+modal setup            # 인증을 위해 browser를 엽니다
 modal secret create anthropic ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY"
 ```
 
-## Deploy
+## 배포
 
 ```bash
 cd claude_agent_sdk/
 python hosting/modal/modal_app.py
 ```
 
-This builds the Dockerfile remotely on Modal (build context = `claude_agent_sdk/`,
-same as local), starts a sandbox running `serve`, and prints a tunnel URL.
+Modal에서 Dockerfile을 원격 build하고(build context = `claude_agent_sdk/`,
+로컬과 동일), `serve`를 실행하는 sandbox를 시작한 뒤 tunnel URL을 출력합니다.
 
-## Talk to it
+## 요청 보내기
 
-The deploy script prints a `url:` and a `token:` line. The tunnel URL is public,
-so the server requires the bearer token on the messages endpoint (only
-`/health` is open):
+배포 script가 `url:` 줄과 `token:` 줄을 출력합니다. Tunnel URL은 public이므로
+server는 messages endpoint에서 bearer token을 요구합니다(공개된 것은
+`/health`뿐입니다):
 
 ```bash
 curl -N -X POST "$MODAL_URL/sessions/demo-1/messages" \
@@ -35,29 +35,29 @@ curl -N -X POST "$MODAL_URL/sessions/demo-1/messages" \
   -d '{"prompt":"What are the latest AI agent trends?"}'
 ```
 
-## Persistence
+## 영속성
 
-By default `modal_app.py` mounts a `modal.Volume` at `/data` — the same
-`CLAUDE_CONFIG_DIR` trick as tier 1. Session transcripts survive sandbox
-restarts.
+기본적으로 `modal_app.py`는 `modal.Volume`을 `/data`에 mount합니다. 이는
+1단계와 같은 `CLAUDE_CONFIG_DIR` 활용 방식입니다. Sandbox를 재시작해도
+session transcript가 유지됩니다.
 
-> **Note:** `modal.Volume` has explicit commit semantics. If your workload has
-> many sandboxes writing many sessions concurrently and you see lost writes,
-> switch to a [`SessionStore`](https://code.claude.com/docs/en/agent-sdk/session-storage)
-> backed by Modal `Dict` or an external store — that's also what tier 3 uses.
+> **참고:** `modal.Volume`에는 명시적인 commit semantics가 있습니다. Workload에서
+> 많은 sandbox가 여러 session에 동시에 쓰고, 쓰기 내용이 유실된다면
+> Modal `Dict`나 외부 store를 기반으로 하는
+> [`SessionStore`](https://code.claude.com/docs/en/agent-sdk/session-storage)로 전환하세요. 3단계에서도 이를 사용합니다.
 
 ## Liveness
 
-Modal keeps the sandbox running until the `timeout=` passed to `Sandbox.create`
-expires; it does not probe `GET /health`. If the server inside dies, the sandbox
-stays up and requests fail until the timeout reaps it. For anything longer-lived
-than a demo, point your own monitoring at `/health` and recreate the sandbox
-when it stops answering.
+Modal은 `Sandbox.create`에 전달한 `timeout=`이 만료될 때까지 sandbox를
+실행하며, `GET /health`를 probe하지 않습니다. 내부 server가 종료되면 timeout으로
+sandbox가 정리될 때까지 sandbox는 계속 실행되고 요청은 실패합니다. Demo보다
+오래 사용하는 경우 자체 모니터링을 `/health`로 지정하고 응답이 중단되면
+sandbox를 다시 생성하세요.
 
-## Teardown
+## 정리
 
 ```bash
 python hosting/modal/teardown.py
 ```
 
-Stops sandboxes and removes the volume so you're not billed for idle resources.
+Sandbox를 중지하고 volume을 삭제하여 idle resource에 과금되지 않도록 합니다.

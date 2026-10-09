@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-SRE MCP Server - Subprocess-based MCP server for incident investigation.
+SRE MCP Server - incident 조사용 subprocess 기반 MCP server.
 
-This server runs as a separate process and communicates via stdio using
-the MCP JSON-RPC protocol. This avoids the SDK MCP race condition bug.
+이 server는 별도 process로 실행되며 MCP JSON-RPC protocol을 사용하여
+stdio로 통신합니다. SDK MCP race condition 버그를 피합니다.
 
-Usage:
+사용법:
     python sre_mcp_server.py
 
-The server implements:
-- query_metrics: Run PromQL queries against Prometheus
-- list_metrics: List available metric names
-- get_service_health: Get a comprehensive health summary
+구현한 기능:
+- query_metrics: Prometheus에 PromQL query 실행
+- list_metrics: 사용 가능한 metric 이름 나열
+- get_service_health: 종합 health 요약 가져오기
 """
 
 import asyncio
@@ -28,7 +28,7 @@ from typing import Any
 
 import httpx
 
-# Load environment variables
+# environment variable 불러오기
 try:
     from dotenv import load_dotenv
 
@@ -38,23 +38,23 @@ except ImportError:
 
 PROMETHEUS_URL = "http://localhost:9090"
 
-# PagerDuty configuration
+# PagerDuty 설정
 PAGERDUTY_API_KEY = os.getenv("PAGERDUTY_API_KEY")
 PAGERDUTY_SERVICE_ID = os.getenv("PAGERDUTY_SERVICE_ID")
 PAGERDUTY_FROM_EMAIL = os.getenv("PAGERDUTY_FROM_EMAIL")
 PAGERDUTY_BASE_URL = "https://api.pagerduty.com"
 
-# Confluence configuration
+# Confluence 설정
 CONFLUENCE_BASE_URL = os.getenv("CONFLUENCE_BASE_URL")
 CONFLUENCE_API_TOKEN = os.getenv("CONFLUENCE_API_TOKEN")
 CONFLUENCE_USER_EMAIL = os.getenv("CONFLUENCE_USER_EMAIL")
 CONFLUENCE_SPACE_KEY = os.getenv("CONFLUENCE_SPACE_KEY", "SRE")
 CONFLUENCE_PARENT_PAGE_ID = os.getenv("CONFLUENCE_PARENT_PAGE_ID")
 
-# Track when the server started (for incident simulation timing)
+# server 시작 시각 추적(incident 모의 시간용)
 START_TIME = time.time()
 
-# Tool definitions for MCP
+# MCP tool 정의
 TOOLS = [
     {
         "name": "query_metrics",
@@ -370,7 +370,7 @@ The report is saved as a markdown file with a timestamp-based filename.""",
     },
 ]
 
-# PagerDuty tools — only registered when PAGERDUTY_API_KEY is set
+# PagerDuty tool — PAGERDUTY_API_KEY 설정 시에만 등록
 if PAGERDUTY_API_KEY:
     TOOLS.extend(
         [
@@ -490,8 +490,8 @@ if PAGERDUTY_API_KEY:
         ]
     )
 
-# Confluence tools — only registered when
-# CONFLUENCE_BASE_URL and CONFLUENCE_API_TOKEN are set
+# Confluence tool — CONFLUENCE_BASE_URL과
+# CONFLUENCE_API_TOKEN 설정 시에만 등록
 if CONFLUENCE_BASE_URL and CONFLUENCE_API_TOKEN:
     TOOLS.extend(
         [
@@ -622,12 +622,12 @@ if CONFLUENCE_BASE_URL and CONFLUENCE_API_TOKEN:
         ]
     )
 
-# Project root directory (for config file operations)
+# 프로젝트 루트 디렉터리(config 파일 작업용)
 PROJECT_ROOT = Path(__file__).resolve().parent
 
 
 async def query_metrics(promql: str) -> dict[str, Any]:
-    """Query Prometheus with a PromQL expression."""
+    """PromQL 식으로 Prometheus를 query합니다."""
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -668,7 +668,7 @@ async def query_metrics(promql: str) -> dict[str, Any]:
                 ]
             }
 
-        # Format results for readability
+        # 읽기 쉽게 결과 formatting
         formatted_lines = [f"Query: {promql}", f"Results ({len(results)} series):", ""]
 
         for r in results:
@@ -717,7 +717,7 @@ async def query_metrics(promql: str) -> dict[str, Any]:
 
 
 async def list_metrics() -> dict[str, Any]:
-    """List available metrics in Prometheus."""
+    """Prometheus의 사용 가능한 metric을 나열합니다."""
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -728,7 +728,7 @@ async def list_metrics() -> dict[str, Any]:
 
         metrics = data.get("data", [])
 
-        # Group metrics by prefix for easier reading
+        # 읽기 쉽도록 prefix별 metric 묶기
         grouped = {
             "http": [m for m in metrics if m.startswith("http_")],
             "db": [m for m in metrics if m.startswith("db_")],
@@ -770,12 +770,12 @@ async def list_metrics() -> dict[str, Any]:
 
 
 async def get_service_health() -> dict[str, Any]:
-    """Get a comprehensive health summary across all services."""
+    """모든 서비스의 종합 health 요약을 가져옵니다."""
     health_lines = ["=== Service Health Summary ===", ""]
     issues = []
 
     async with httpx.AsyncClient() as client:
-        # Check error rates
+        # 오류율 확인
         try:
             response = await client.get(
                 f"{PROMETHEUS_URL}/api/v1/query",
@@ -812,7 +812,7 @@ async def get_service_health() -> dict[str, Any]:
             health_lines.append(f"ERROR RATES: unable to query ({e})")
             health_lines.append("")
 
-        # Check latency
+        # latency 확인
         try:
             response = await client.get(
                 f"{PROMETHEUS_URL}/api/v1/query",
@@ -847,7 +847,7 @@ async def get_service_health() -> dict[str, Any]:
             health_lines.append(f"LATENCY P99: unable to query ({e})")
             health_lines.append("")
 
-        # Check DB connections
+        # DB connection 확인
         try:
             response = await client.get(
                 f"{PROMETHEUS_URL}/api/v1/query",
@@ -876,7 +876,7 @@ async def get_service_health() -> dict[str, Any]:
             health_lines.append(f"DATABASE CONNECTIONS: unable to query ({e})")
             health_lines.append("")
 
-        # Check service up status
+        # 서비스 up 상태 확인
         try:
             response = await client.get(
                 f"{PROMETHEUS_URL}/api/v1/query",
@@ -901,7 +901,7 @@ async def get_service_health() -> dict[str, Any]:
             health_lines.append(f"SERVICE STATUS: unable to query ({e})")
             health_lines.append("")
 
-    # Add summary
+    # 요약 추가
     health_lines.append("=== SUMMARY ===")
     if issues:
         health_lines.append("ISSUES DETECTED:")
@@ -914,15 +914,15 @@ async def get_service_health() -> dict[str, Any]:
 
 
 async def get_logs(service: str, level: str = "all", lines: int = 20) -> dict[str, Any]:
-    """Fetch real logs from Docker containers."""
-    lines = min(lines, 100)  # Cap at 100
+    """Docker container의 실제 log를 가져옵니다."""
+    lines = min(lines, 100)  # 최대 100으로 제한
 
-    # Map service names to container names
+    # 서비스 이름을 container 이름에 mapping
     service_to_container = {
         "api-server": "api-server",
-        "user-svc": "api-server",  # user-svc runs in api-server container
-        "payment-svc": "api-server",  # payment-svc runs in api-server container
-        "auth-svc": "api-server",  # auth-svc runs in api-server container
+        "user-svc": "api-server",  # user-svc는 api-server container에서 실행
+        "payment-svc": "api-server",  # payment-svc는 api-server container에서 실행
+        "auth-svc": "api-server",  # auth-svc는 api-server container에서 실행
         "postgres": "postgres",
     }
 
@@ -942,12 +942,12 @@ async def get_logs(service: str, level: str = "all", lines: int = 20) -> dict[st
             "isError": True,
         }
 
-    # Use get_container_logs to fetch real logs
+    # get_container_logs로 실제 log 가져오기
     return await get_container_logs(container, lines)
 
 
 async def get_alerts() -> dict[str, Any]:
-    """Get currently firing alerts. Simulated — no AlertManager running in demo."""
+    """현재 발생 중인 alert를 가져옵니다. 모의 동작이며 demo에 실행 중인 AlertManager는 없습니다."""
     elapsed = time.time() - START_TIME
     incident_active = elapsed > 15
 
@@ -990,7 +990,7 @@ async def get_alerts() -> dict[str, Any]:
             },
         ]
     else:
-        # Healthy - no alerts or just resolved ones
+        # 정상 — alert가 없거나 해결된 것만 있음
         alerts = [
             {
                 "status": "RESOLVED",
@@ -1043,20 +1043,20 @@ async def get_alerts() -> dict[str, Any]:
 
 
 async def get_recent_deployments(service: str | None = None) -> dict[str, Any]:
-    """Get recent deployments. Simulated — no deployment tracker running in demo."""
+    """최근 deployment를 가져옵니다. 모의 동작이며 demo에 실행 중인 deployment tracker는 없습니다."""
     elapsed = time.time() - START_TIME
 
-    # Generate fake deployment times relative to now
+    # 현재 기준 모의 deployment 시각 생성
     now = time.time()
 
-    # The key deployment: api-server deployed ~62 seconds before incident
-    # This correlates with the incident start time
+    # 핵심 deployment: incident 약 62초 전에 api-server deploy
+    # incident 시작 시각과 상관관계가 있습니다
     deployments = [
         {
             "service": "api-server",
             "timestamp": now
             - elapsed
-            - 2,  # ~2 seconds before server started (so ~62s before incident)
+            - 2,  # server 시작 약 2초 전(따라서 incident 약 62초 전)
             "commit": "a7f3d2e",
             "author": "alice",
             "message": "Reduce DB connection pool size for staging parity",
@@ -1064,7 +1064,7 @@ async def get_recent_deployments(service: str | None = None) -> dict[str, Any]:
         },
         {
             "service": "api-server",
-            "timestamp": now - 3600 * 2,  # 2 hours ago
+            "timestamp": now - 3600 * 2,  # 2시간 전
             "commit": "b8c4a1f",
             "author": "bob",
             "message": "Add retry logic for transient DB errors",
@@ -1072,7 +1072,7 @@ async def get_recent_deployments(service: str | None = None) -> dict[str, Any]:
         },
         {
             "service": "payment-svc",
-            "timestamp": now - 3600 * 5,  # 5 hours ago
+            "timestamp": now - 3600 * 5,  # 5시간 전
             "commit": "c2d9e8f",
             "author": "charlie",
             "message": "Update Stripe SDK to v12.3.0",
@@ -1080,7 +1080,7 @@ async def get_recent_deployments(service: str | None = None) -> dict[str, Any]:
         },
         {
             "service": "auth-svc",
-            "timestamp": now - 3600 * 24,  # 1 day ago
+            "timestamp": now - 3600 * 24,  # 1일 전
             "commit": "d4e5f6a",
             "author": "diana",
             "message": "Add rate limiting for token refresh endpoint",
@@ -1088,7 +1088,7 @@ async def get_recent_deployments(service: str | None = None) -> dict[str, Any]:
         },
         {
             "service": "postgres",
-            "timestamp": now - 3600 * 24 * 3,  # 3 days ago
+            "timestamp": now - 3600 * 24 * 3,  # 3일 전
             "commit": "e5f6a7b",
             "author": "evan",
             "message": "Upgrade to PostgreSQL 15.2, tune connection settings",
@@ -1096,7 +1096,7 @@ async def get_recent_deployments(service: str | None = None) -> dict[str, Any]:
         },
     ]
 
-    # Filter by service if specified
+    # 지정되면 서비스별 filtering
     if service:
         deployments = [d for d in deployments if d["service"] == service]
         if not deployments:
@@ -1112,7 +1112,7 @@ async def get_recent_deployments(service: str | None = None) -> dict[str, Any]:
     lines = ["=== Recent Deployments ===", ""]
 
     for deploy in deployments:
-        # Calculate relative time
+        # 상대 시간 계산
         age_seconds = now - deploy["timestamp"]
         if age_seconds < 60:
             age_str = f"{int(age_seconds)}s ago"
@@ -1137,7 +1137,7 @@ async def get_recent_deployments(service: str | None = None) -> dict[str, Any]:
     return {"content": [{"type": "text", "text": "\n".join(lines)}]}
 
 
-# Runbook definitions based on CLAUDE.md
+# CLAUDE.md 기반 runbook 정의
 RUNBOOKS = {
     "database_connection_exhaustion": {
         "name": "Database Connection Exhaustion",
@@ -1456,7 +1456,7 @@ RUNBOOKS = {
 
 
 async def execute_runbook(runbook: str, phase: str) -> dict[str, Any]:
-    """Execute a documented runbook for incident response."""
+    """incident 대응용 문서화된 runbook을 실행합니다."""
     if runbook not in RUNBOOKS:
         return {
             "content": [
@@ -1476,13 +1476,13 @@ async def execute_runbook(runbook: str, phase: str) -> dict[str, Any]:
     lines = [f"=== Runbook: {rb['name']} ===", ""]
 
     if phase == "investigate":
-        # Show symptoms to confirm this is the right runbook
+        # 올바른 runbook인지 확인하도록 증상 표시
         lines.append("SYMPTOMS (confirm these match your incident):")
         for symptom in rb["symptoms"]:
             lines.append(f"  • {symptom}")
         lines.append("")
 
-        # Show investigation steps
+        # 조사 단계 표시
         inv = rb["investigate"]
         lines.append(f"INVESTIGATION: {inv['description']}")
         lines.append("")
@@ -1518,7 +1518,7 @@ async def execute_runbook(runbook: str, phase: str) -> dict[str, Any]:
         lines.append(f"REMEDIATION: {rem['description']}")
         lines.append("")
 
-        # Show decision tree if present
+        # 있으면 decision tree 표시
         if "decision_tree" in rem:
             lines.append("DECISION TREE:")
             for decision in rem["decision_tree"]:
@@ -1528,7 +1528,7 @@ async def execute_runbook(runbook: str, phase: str) -> dict[str, Any]:
                     lines.append(f"       Command: {decision['command']}")
                 lines.append("")
 
-        # Show immediate actions
+        # 즉시 행동 표시
         if "immediate_actions" in rem:
             lines.append("IMMEDIATE ACTIONS:")
             for action in rem["immediate_actions"]:
@@ -1541,7 +1541,7 @@ async def execute_runbook(runbook: str, phase: str) -> dict[str, Any]:
                     lines.append(f"      Risk: {action['risk']}")
                 lines.append("")
 
-        # Show long-term fixes
+        # 장기 수정 표시
         if "long_term_fixes" in rem:
             lines.append("LONG-TERM FIXES (for post-incident):")
             for fix in rem["long_term_fixes"]:
@@ -1549,7 +1549,7 @@ async def execute_runbook(runbook: str, phase: str) -> dict[str, Any]:
                 lines.append(f"    {fix['details']}")
             lines.append("")
 
-        # Show escalation info
+        # escalation 정보 표시
         if "escalation" in rem:
             esc = rem["escalation"]
             lines.append("ESCALATION:")
@@ -1567,14 +1567,14 @@ async def execute_runbook(runbook: str, phase: str) -> dict[str, Any]:
 
 
 # ============================================================================
-# PagerDuty Integration Handlers
+# PagerDuty integration handler
 # ============================================================================
 
 
 async def pagerduty_create_incident(
     title: str, description: str, urgency: str = "high", service_id: str | None = None
 ) -> dict[str, Any]:
-    """Create a PagerDuty incident."""
+    """PagerDuty incident를 생성합니다."""
     if not PAGERDUTY_API_KEY:
         return {
             "content": [
@@ -1661,7 +1661,7 @@ async def pagerduty_create_incident(
 async def pagerduty_update_incident(
     incident_id: str, status: str, resolution_note: str | None = None
 ) -> dict[str, Any]:
-    """Update a PagerDuty incident status."""
+    """PagerDuty incident status를 update합니다."""
     if not PAGERDUTY_API_KEY:
         return {
             "content": [{"type": "text", "text": "PagerDuty not configured"}],
@@ -1691,7 +1691,7 @@ async def pagerduty_update_incident(
             response.raise_for_status()
             incident = response.json()["incident"]
 
-            # Add resolution note if provided
+            # 제공되면 해결 메모 추가
             if resolution_note and status == "resolved":
                 await client.post(
                     f"{PAGERDUTY_BASE_URL}/incidents/{incident_id}/notes",
@@ -1732,7 +1732,7 @@ async def pagerduty_update_incident(
 
 
 async def pagerduty_get_incident(incident_id: str) -> dict[str, Any]:
-    """Get PagerDuty incident details."""
+    """PagerDuty incident 세부 정보를 가져옵니다."""
     if not PAGERDUTY_API_KEY:
         return {
             "content": [{"type": "text", "text": "PagerDuty not configured"}],
@@ -1788,7 +1788,7 @@ async def pagerduty_get_incident(incident_id: str) -> dict[str, Any]:
 async def pagerduty_list_incidents(
     status: str = "all", service_id: str | None = None
 ) -> dict[str, Any]:
-    """List PagerDuty incidents."""
+    """PagerDuty incident를 나열합니다."""
     if not PAGERDUTY_API_KEY:
         return {
             "content": [{"type": "text", "text": "PagerDuty not configured"}],
@@ -1856,12 +1856,12 @@ async def pagerduty_list_incidents(
 
 
 # ============================================================================
-# Confluence Integration Handlers
+# Confluence integration handler
 # ============================================================================
 
 
 def get_confluence_auth_header() -> str:
-    """Generate Basic auth header for Confluence API."""
+    """Confluence API의 Basic auth header를 생성합니다."""
     credentials = f"{CONFLUENCE_USER_EMAIL}:{CONFLUENCE_API_TOKEN}"
     encoded = base64.b64encode(credentials.encode()).decode()
     return f"Basic {encoded}"
@@ -1876,10 +1876,10 @@ def generate_postmortem_content(
     action_items: list[dict],
     pagerduty_incident_id: str | None = None,
 ) -> str:
-    """Generate Confluence Storage Format (XHTML) for post-mortem."""
+    """post-mortem의 Confluence Storage Format(XHTML)을 생성합니다."""
     esc = html.escape
 
-    # Build timeline section
+    # timeline 절 구성
     timeline_html = ""
     if timeline:
         timeline_html = (
@@ -1888,7 +1888,7 @@ def generate_postmortem_content(
     else:
         timeline_html = "<p><em>Timeline to be added</em></p>"
 
-    # Build remediation section
+    # 복구 절 구성
     remediation_html = ""
     if remediation_steps:
         remediation_html = (
@@ -1899,7 +1899,7 @@ def generate_postmortem_content(
     else:
         remediation_html = "<p><em>Remediation steps to be added</em></p>"
 
-    # Build action items table
+    # action item 표 구성
     action_items_html = """
     <table>
         <thead><tr><th>Task</th><th>Owner</th>
@@ -1922,7 +1922,7 @@ def generate_postmortem_content(
         )
     action_items_html += "</tbody></table>"
 
-    # PagerDuty link if provided
+    # 제공되면 PagerDuty link
     pd_link = ""
     if pagerduty_incident_id:
         pd_link = (
@@ -1965,7 +1965,7 @@ async def confluence_create_postmortem(
     action_items: list[dict] | None = None,
     pagerduty_incident_id: str | None = None,
 ) -> dict[str, Any]:
-    """Create a post-mortem page in Confluence."""
+    """Confluence에 post-mortem 페이지를 생성합니다."""
     if not CONFLUENCE_API_TOKEN or not CONFLUENCE_BASE_URL:
         return {
             "content": [
@@ -2054,7 +2054,7 @@ async def confluence_create_postmortem(
 async def confluence_get_page(
     page_id: str | None = None, title: str | None = None
 ) -> dict[str, Any]:
-    """Get a Confluence page by ID or title."""
+    """ID나 제목으로 Confluence 페이지를 가져옵니다."""
     if not CONFLUENCE_API_TOKEN:
         return {
             "content": [{"type": "text", "text": "Confluence not configured"}],
@@ -2143,7 +2143,7 @@ async def confluence_get_page(
 async def confluence_list_postmortems(
     days: int = 30, search_term: str | None = None
 ) -> dict[str, Any]:
-    """List recent post-mortem pages."""
+    """최근 post-mortem 페이지를 나열합니다."""
     if not CONFLUENCE_API_TOKEN:
         return {
             "content": [{"type": "text", "text": "Confluence not configured"}],
@@ -2151,7 +2151,7 @@ async def confluence_list_postmortems(
         }
 
     try:
-        # Use CQL (Confluence Query Language) to search
+        # CQL(Confluence Query Language)로 검색
         cql = f'space = "{CONFLUENCE_SPACE_KEY}" AND title ~ "Post-Mortem"'
         cql += f' AND created >= now("-{days}d")'
         if search_term:
@@ -2208,13 +2208,13 @@ async def confluence_list_postmortems(
         }
 
 
-# ========== Config File Tools ==========
+# ========== config 파일 tool ==========
 
 
 async def read_config_file(path: str) -> dict[str, Any]:
-    """Read a configuration file from the project directory."""
+    """프로젝트 디렉터리에서 config 파일을 읽습니다."""
     try:
-        # Security: Only allow reading from config directory
+        # Security: config 디렉터리에서만 읽기 허용
         full_path = (PROJECT_ROOT / path).resolve()
         allowed_root = (PROJECT_ROOT / "config").resolve()
         if not full_path.is_relative_to(allowed_root):
@@ -2250,9 +2250,9 @@ async def read_config_file(path: str) -> dict[str, Any]:
 
 
 async def edit_config_file(path: str, old_value: str, new_value: str) -> dict[str, Any]:
-    """Edit a configuration file by replacing a value."""
+    """값을 교체하여 config 파일을 편집합니다."""
     try:
-        # Security: Only allow editing config directory
+        # Security: config 디렉터리만 편집 허용
         full_path = (PROJECT_ROOT / path).resolve()
         allowed_root = (PROJECT_ROOT / "config").resolve()
         if not full_path.is_relative_to(allowed_root):
@@ -2319,9 +2319,9 @@ async def edit_config_file(path: str, old_value: str, new_value: str) -> dict[st
 
 
 async def run_shell_command(command: str) -> dict[str, Any]:
-    """Run a shell command in the project directory."""
+    """프로젝트 디렉터리에서 shell 명령을 실행합니다."""
     try:
-        # Parse command into tokens safely (rejects unbalanced quotes)
+        # command를 안전하게 token으로 parsing(짝이 맞지 않는 따옴표 거부)
         try:
             args = shlex.split(command)
         except ValueError as e:
@@ -2338,9 +2338,9 @@ async def run_shell_command(command: str) -> dict[str, Any]:
                 "isError": True,
             }
 
-        # Security: Validate the executable and subcommand against an allowlist.
-        # "docker-compose" is a single binary; "docker compose/ps/logs" are
-        # subcommands of the "docker" binary.
+        # Security: allowlist로 실행 파일과 subcommand 검증.
+        # "docker-compose"는 단일 binary이고 "docker compose/ps/logs"는
+        # "docker" binary의 subcommand입니다.
         allowed_commands = {
             "docker-compose": {"up", "down", "ps", "logs", "restart", "build"},
             "docker": {"compose", "ps", "logs"},
@@ -2381,7 +2381,7 @@ async def run_shell_command(command: str) -> dict[str, Any]:
                     "isError": True,
                 }
 
-        # Run using exec (no shell) to prevent injection via metacharacters
+        # metacharacter injection을 막기 위해 shell 없이 exec로 실행
         process = await asyncio.create_subprocess_exec(
             *args,
             stdout=asyncio.subprocess.PIPE,
@@ -2423,9 +2423,9 @@ async def run_shell_command(command: str) -> dict[str, Any]:
 
 
 async def get_container_logs(container: str, lines: int = 50) -> dict[str, Any]:
-    """Get logs from a Docker container."""
+    """Docker container의 log를 가져옵니다."""
     try:
-        # Validate container name
+        # container 이름 검증
         valid_containers = [
             "api-server",
             "postgres",
@@ -2448,10 +2448,10 @@ async def get_container_logs(container: str, lines: int = 50) -> dict[str, Any]:
                 "isError": True,
             }
 
-        # Limit lines
+        # 줄 수 제한
         lines = min(max(1, lines), 200)
 
-        # Get logs using docker-compose
+        # docker-compose로 log 가져오기
         args = [
             "docker-compose",
             "-f",
@@ -2515,7 +2515,7 @@ async def write_postmortem(
     remediation: str = "",
     action_items: str = "",
 ) -> dict[str, Any]:
-    """Write a post-mortem report to the postmortems/ directory."""
+    """postmortems/ 디렉터리에 post-mortem 보고서를 씁니다."""
 
     postmortems_dir = PROJECT_ROOT / "postmortems"
     postmortems_dir.mkdir(exist_ok=True)
@@ -2545,7 +2545,7 @@ async def write_postmortem(
 
 
 async def handle_tool_call(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
-    """Route tool calls to the appropriate handler."""
+    """tool 호출을 적절한 handler로 보냅니다."""
     if name == "query_metrics":
         return await query_metrics(arguments.get("promql", ""))
     elif name == "list_metrics":
@@ -2576,7 +2576,7 @@ async def handle_tool_call(name: str, arguments: dict[str, Any]) -> dict[str, An
             remediation=arguments.get("remediation", ""),
             action_items=arguments.get("action_items", ""),
         )
-    # PagerDuty tools
+    # PagerDuty tool
     elif name == "pagerduty_create_incident":
         return await pagerduty_create_incident(
             title=arguments.get("title", ""),
@@ -2599,7 +2599,7 @@ async def handle_tool_call(name: str, arguments: dict[str, Any]) -> dict[str, An
             status=arguments.get("status", "all"),
             service_id=arguments.get("service_id"),
         )
-    # Confluence tools
+    # Confluence tool
     elif name == "confluence_create_postmortem":
         return await confluence_create_postmortem(
             title=arguments.get("title", ""),
@@ -2619,7 +2619,7 @@ async def handle_tool_call(name: str, arguments: dict[str, Any]) -> dict[str, An
         return await confluence_list_postmortems(
             days=arguments.get("days", 30), search_term=arguments.get("search_term")
         )
-    # Config and infrastructure tools
+    # config와 infrastructure tool
     elif name == "read_config_file":
         return await read_config_file(path=arguments.get("path", ""))
     elif name == "edit_config_file":
@@ -2642,27 +2642,27 @@ async def handle_tool_call(name: str, arguments: dict[str, Any]) -> dict[str, An
 
 
 def send_response(response: dict[str, Any]) -> None:
-    """Send a JSON-RPC response to stdout."""
+    """stdout에 JSON-RPC 응답을 보냅니다."""
     json_str = json.dumps(response)
     sys.stdout.write(json_str + "\n")
     sys.stdout.flush()
 
 
 def send_error(id: Any, code: int, message: str) -> None:
-    """Send a JSON-RPC error response."""
+    """JSON-RPC 오류 응답을 보냅니다."""
     send_response(
         {"jsonrpc": "2.0", "id": id, "error": {"code": code, "message": message}}
     )
 
 
 async def handle_request(request: dict[str, Any]) -> None:
-    """Handle an incoming JSON-RPC request."""
+    """수신 JSON-RPC 요청을 처리합니다."""
     method = request.get("method", "")
     req_id = request.get("id")
     params = request.get("params", {})
 
     if method == "initialize":
-        # MCP initialization
+        # MCP 초기화
         send_response(
             {
                 "jsonrpc": "2.0",
@@ -2675,7 +2675,7 @@ async def handle_request(request: dict[str, Any]) -> None:
             }
         )
     elif method == "notifications/initialized":
-        # No response needed for notifications
+        # notification에는 응답 불필요
         pass
     elif method == "tools/list":
         send_response({"jsonrpc": "2.0", "id": req_id, "result": {"tools": TOOLS}})
@@ -2689,8 +2689,8 @@ async def handle_request(request: dict[str, Any]) -> None:
 
 
 async def main():
-    """Main event loop - read JSON-RPC requests from stdin."""
-    # Disable buffering for stdin
+    """main event 루프 - stdin에서 JSON-RPC 요청을 읽습니다."""
+    # stdin buffering 비활성화
     loop = asyncio.get_running_loop()
     reader = asyncio.StreamReader()
     protocol = asyncio.StreamReaderProtocol(reader)
@@ -2713,7 +2713,7 @@ async def main():
                 send_error(None, -32700, f"Parse error: {e}")
 
         except Exception as e:
-            # Log to stderr so it doesn't interfere with JSON-RPC
+            # JSON-RPC를 방해하지 않도록 stderr에 log 기록
             print(f"Error: {e}", file=sys.stderr)
             break
 

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Authors Schema",
-  "description": "Schema for authors.yml - maps GitHub usernames to author details",
+  "title": "작성자 Schema",
+  "description": "authors.yml용 Schema - GitHub username을 작성자 세부 정보에 매핑",
   "type": "object",
   "patternProperties": {
     "^[a-zA-Z0-9_-]+$": {
@@ -9,17 +9,17 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "Full display name of the author"
+          "description": "작성자의 전체 표시 이름"
         },
         "website": {
           "type": "string",
           "format": "uri",
-          "description": "Author's website URL (optional)"
+          "description": "작성자 웹사이트 URL(선택 사항)"
         },
         "avatar": {
           "type": "string",
           "format": "uri",
-          "description": "Avatar image URL (optional, defaults to https://github.com/username.png)"
+          "description": "Avatar 이미지 URL(선택 사항, 기본값 https://github.com/username.png)"
         }
       },
       "required": ["name"],

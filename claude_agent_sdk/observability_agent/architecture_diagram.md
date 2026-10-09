@@ -2,12 +2,12 @@
 
 ```mermaid
 graph TD
-    User[User] --> Agent[Observability Agent]
+    User[사용자] --> Agent[Observability Agent]
     Agent --> GitHub[GitHub MCP Server]
 
-    Agent --> Tools[Tools]
+    Agent --> Tools[Tool]
     Tools --> WebSearch[WebSearch]
-    Tools --> Read[Read Files]
+    Tools --> Read[파일 읽기]
 
     GitHub --> Docker[Docker Container]
     Docker --> API[GitHub API]
@@ -17,20 +17,20 @@ graph TD
 ```
 
 
-# Communication Flow Diagram
+# 소통 흐름 Diagram
 
 ```mermaid
 sequenceDiagram
-    participant User
+    participant User as 사용자
     participant Agent
     participant MCP as GitHub MCP
     participant API as GitHub API
 
-    User->>Agent: Query about repo
-    Agent->>MCP: Connect via Docker
-    Agent->>MCP: Request data
-    MCP->>API: Fetch info
-    API-->>MCP: Return data
-    MCP-->>Agent: Process results
-    Agent-->>User: Display answer
+    User->>Agent: Repo에 대한 query
+    Agent->>MCP: Docker로 연결
+    Agent->>MCP: Data 요청
+    MCP->>API: 정보 가져오기
+    API-->>MCP: Data 반환
+    MCP-->>Agent: 결과 처리
+    Agent-->>User: 답변 표시
 ```

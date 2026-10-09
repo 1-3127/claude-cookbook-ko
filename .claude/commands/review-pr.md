@@ -1,119 +1,119 @@
 ---
 allowed-tools: Bash(gh pr checkout:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh pr review:*), Bash(git diff:*), Bash(git log:*), Task, Read, Glob, Grep, AskUserQuestion
-description: Review an open pull request and optionally post the review to GitHub
+description: 열린 pull request를 검토하고 선택적으로 GitHub에 검토 결과 게시
 ---
 
-## Arguments
+## 인수
 
-- `$ARGUMENTS`: The PR number or URL to review
+- `$ARGUMENTS`: 검토할 PR 번호 또는 URL
 
-## Your task
+## 수행할 작업
 
-Review the specified pull request and provide feedback.
+지정된 pull request를 검토하고 피드백을 제공하세요.
 
-### Step 1: Checkout the PR
+### 1단계: PR checkout
 
-First, checkout the PR using:
+먼저 다음을 사용하여 PR을 checkout하세요.
 ```
 gh pr checkout $ARGUMENTS
 ```
 
-### Step 2: Gather PR context
+### 2단계: PR 맥락 수집
 
-Get the PR details:
+PR 세부 정보를 가져오세요.
 ```
 gh pr view $ARGUMENTS
 gh pr diff $ARGUMENTS
 ```
 
-### Step 3: Review the code changes
+### 3단계: 코드 변경 검토
 
-Use the Task tool with `subagent_type: "code-reviewer"` to perform a thorough code review of the changes. Pass the diff and changed files to the agent for analysis.
+`subagent_type: "code-reviewer"`로 Task 도구를 사용하여 변경 사항에 대한 철저한 코드 검토를 수행하세요. 분석을 위해 diff와 변경 파일을 agent에 전달하세요.
 
-The code-reviewer agent will analyze:
-- Code quality and best practices
-- Potential bugs or issues
-- Security concerns
-- Performance considerations
-- Documentation and comments
+Code-reviewer agent는 다음을 분석합니다.
+- 코드 품질과 모범 사례
+- 잠재적인 버그 또는 문제
+- 보안 우려 사항
+- 성능 고려사항
+- 문서와 주석
 
-### Step 4: Present the review
+### 4단계: 검토 결과 제시
 
-After the code review is complete, present the review to the user using this format:
+코드 검토가 완료되면 다음 형식으로 사용자에게 검토 결과를 제시하세요.
 
 ```
-## PR Review
+## PR 검토
 
-**Recommendation**: APPROVE | REQUEST_CHANGES | COMMENT
+**권고**: APPROVE | REQUEST_CHANGES | COMMENT
 
-### Summary
-[1-2 sentence overview of what this PR does]
+### 요약
+[이 PR이 하는 일에 대한 1~2문장 개요]
 
-### Actionable Feedback (N items)
-- [ ] `file.py:42` - Description of issue or required change
-- [ ] `notebook.ipynb` (in cell with `some_code = ...`) - Description
+### 실행 가능한 피드백(N개 항목)
+- [ ] `file.py:42` - 문제 또는 필요한 변경 설명
+- [ ] `notebook.ipynb` (`some_code = ...`가 있는 셀) - 설명
 
-### Detailed Review
+### 상세 검토
 
-#### Code Quality
-[Analysis of code patterns, readability, maintainability]
+#### 코드 품질
+[코드 패턴, 가독성, 유지보수성 분석]
 
-#### Security
-[Any security considerations]
+#### 보안
+[보안 고려사항]
 
-#### Suggestions
-[Optional improvements]
+#### 제안
+[선택적 개선 사항]
 
-#### Positive Notes
-[What was done well]
+#### 긍정적인 점
+[잘한 점]
 ```
 
-**Guidelines:**
-- Use checkboxes for actionable items so authors can track progress
-- For Jupyter notebooks, reference code snippets instead of cell numbers
-- Be specific with file:line references where possible
+**가이드라인:**
+- 작성자가 진행 상황을 추적할 수 있도록 실행 가능한 항목에는 체크박스를 사용하세요.
+- Jupyter Notebook에서는 셀 번호 대신 코드 스니펫을 참조하세요.
+- 가능한 경우 file:line 참조로 구체적으로 작성하세요.
 
-### Step 5: Ask about posting the review
+### 5단계: 검토 결과 게시 여부 묻기
 
-Use the AskUserQuestion tool to ask the user:
-- Whether they want to post this review to GitHub
-- What review action to take: APPROVE, REQUEST_CHANGES, or COMMENT
+AskUserQuestion 도구를 사용하여 사용자에게 물어보세요.
+- 이 검토 결과를 GitHub에 게시할지 여부
+- 수행할 검토 조치: APPROVE, REQUEST_CHANGES 또는 COMMENT
 
-### Step 6: Post the review (if approved)
+### 6단계: 검토 결과 게시(승인된 경우)
 
-If the user confirms, post the review using:
+사용자가 확인하면 다음을 사용하여 검토 결과를 게시하세요.
 ```
 gh pr review $ARGUMENTS --body "YOUR_REVIEW_BODY" --approve|--request-changes|--comment
 ```
 
-When posting to GitHub, wrap the Detailed Review section in a collapsible `<details>` tag to reduce noise:
+GitHub에 게시할 때 불필요한 내용을 줄이기 위해 상세 검토 섹션을 접을 수 있는 `<details>` tag로 감싸세요.
 
 ```markdown
-## PR Review
+## PR 검토
 
-**Recommendation**: APPROVE | REQUEST_CHANGES | COMMENT
+**권고**: APPROVE | REQUEST_CHANGES | COMMENT
 
-### Summary
-[summary]
+### 요약
+[요약]
 
 <details>
-<summary>Actionable Feedback (N items)</summary>
+<summary>실행 가능한 피드백(N개 항목)</summary>
 
-- [ ] items...
+- [ ] 항목...
 
 </details>
 
 <details>
-<summary>Detailed Review</summary>
+<summary>상세 검토</summary>
 
-[full review content]
+[전체 검토 내용]
 
 </details>
 ```
 
-Use the appropriate flag based on the user's choice:
-- `--approve` for APPROVE
-- `--request-changes` for REQUEST_CHANGES
-- `--comment` for COMMENT only
+사용자의 선택에 따라 적절한 flag를 사용하세요.
+- APPROVE에는 `--approve`
+- REQUEST_CHANGES에는 `--request-changes`
+- COMMENT만 하는 경우 `--comment`
 
-**Important:** The `gh pr review` command produces no output on success. Only run this command once - do not retry if there is no output, as that indicates success.
+**중요:** `gh pr review` 명령은 성공 시 아무것도 출력하지 않습니다. 이 명령은 한 번만 실행하세요. 출력이 없다면 성공을 의미하므로 재시도하지 마세요.

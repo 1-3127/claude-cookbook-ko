@@ -1,14 +1,14 @@
 /**
- * Per-session Cloudflare Container that runs `ant beta:worker run`. The CLI
- * owns heartbeat, backlog reconcile, SSE stream, tool execution
- * (bash/read/write/edit/glob/grep), the work-item force-stop on exit, and the
- * idle policy — it exits `--max-idle` after `session.status_idle` with
- * `stop_reason: end_turn`, with any other event resetting the clock.
+ * `ant beta:worker run`을 실행하는 session별 Cloudflare Container입니다. CLI가
+ * heartbeat, backlog reconcile, SSE stream, 도구 실행(bash/read/write/edit/glob/grep),
+ * 종료 시 work item force-stop과 idle policy를 담당합니다.
+ * `stop_reason: end_turn`인 `session.status_idle` 이후 `--max-idle`에 종료하며,
+ * 다른 모든 event는 clock을 초기화합니다.
  *
- * The DO owns the *Cloudflare* container lifetime: a session-status watcher
- * renews `sleepAfter` on every event so CF doesn't reclaim the VM out from
- * under a live `ant beta:worker run`. When the CLI exits (idle, terminate,
- * lease lapse) the container process exits and CF stops the container.
+ * DO는 *Cloudflare* container lifetime을 담당합니다. Session-status watcher가
+ * 모든 event에서 `sleepAfter`를 갱신하여 실행 중인 `ant beta:worker run` 아래의 VM을
+ * CF가 회수하지 못하게 합니다. CLI가 종료하면(idle, terminate, lease 만료)
+ * container process가 종료되고 CF가 container를 중지합니다.
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { Container } from "@cloudflare/containers";
@@ -26,10 +26,10 @@ export interface DispatchOpts {
 }
 
 export class SandboxContainer extends Container<Env> {
-  // Backstop only — fires if lifecycleWatch's stream dies mid-session. The
-  // watch loop renews this on every session event; `ant beta:worker run`'s
-  // `--max-idle` is the real idle policy and exits the container long before
-  // this fires.
+  // 최후의 안전장치일 뿐입니다. lifecycleWatch stream이 session 중간에 끊어지면
+  // 발동합니다. Watch loop는 모든 session event에서 이를 갱신합니다.
+  // `ant beta:worker run`의 `--max-idle`이 실제 idle policy이며
+  // 이것이 발동하기 훨씬 전에 container를 종료합니다.
   sleepAfter = "5m";
   manualStart = true;
 
@@ -42,14 +42,13 @@ export class SandboxContainer extends Container<Env> {
   async dispatch(opts: DispatchOpts): Promise<void> {
     if (await this.isLive()) return;
     await this.start({
-      // Env contract for `ant beta:worker run`. ANTHROPIC_ENVIRONMENT_KEY
-      // authenticates the work-item calls (heartbeat / ack / force-stop) and the
-      // session event stream. ANTHROPIC_AUTH_TOKEN is the *same* value, set
-      // because the CLI's skill-download path builds a plain SDK client that
-      // resolves auth only from ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN — with
-      // just the environment key, skill setup fails "no Anthropic credentials
-      // found". (The Python/TS SDK runners thread the key into their client and
-      // don't need this; the Go CLI's skill path currently doesn't.)
+      // `ant beta:worker run`의 환경 변수 contract입니다. ANTHROPIC_ENVIRONMENT_KEY는
+      // work item 호출(heartbeat / ack / force-stop)과 session event stream을
+      // 인증합니다. ANTHROPIC_AUTH_TOKEN은 *같은* 값이며, CLI의 skill-download 경로가
+      // ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN에서만 auth를 해석하는 일반 SDK client를
+      // 구성하기 때문에 설정합니다. Environment key만 있으면 skill 설정이
+      // "no Anthropic credentials found"로 실패합니다(Python/TS SDK runner는 key를
+      // client에 전달하므로 이것이 필요하지 않지만 현재 Go CLI의 skill 경로는 그렇게 하지 않음).
       envVars: {
         ANTHROPIC_BASE_URL: opts.baseURL,
         ANTHROPIC_ENVIRONMENT_KEY: opts.environmentKey,
@@ -75,10 +74,10 @@ export class SandboxContainer extends Container<Env> {
   }
 
   /**
-   * Stream session status and renew the container's activity timeout on
-   * every event. The CLI inside the container owns dispatch + heartbeat +
-   * the work-item force-stop + the end_turn idle policy; this loop only
-   * keeps Cloudflare's `sleepAfter` from reclaiming the VM mid-session.
+   * Session status를 streaming하고 모든 event에서 container의 activity timeout을
+   * 갱신합니다. Container 내부 CLI는 dispatch + heartbeat + work item force-stop +
+   * end_turn idle policy를 담당합니다. 이 loop는 Cloudflare의 `sleepAfter`가
+   * session 중간에 VM을 회수하지 못하게 할 뿐입니다.
    */
   private async lifecycleWatch(opts: DispatchOpts, ctrl: AbortController): Promise<void> {
     const client = new Anthropic({ authToken: opts.environmentKey, baseURL: opts.baseURL });
@@ -97,7 +96,7 @@ export class SandboxContainer extends Container<Env> {
           }
         }
       } catch {
-        // network drop or abort — fall through to the backoff/abort check
+        // Network 단절 또는 abort — backoff/abort 검사로 진행
       }
       if (ctrl.signal.aborted || !(await this.isLive())) break;
       await new Promise((r) => setTimeout(r, backoff));

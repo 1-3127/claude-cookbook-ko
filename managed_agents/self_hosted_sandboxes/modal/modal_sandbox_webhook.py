@@ -1,33 +1,33 @@
-"""Modal app: Anthropic session webhook → drain environment work queue → spin up a Sandbox per item.
+"""Modal app: Anthropic session webhook → environment work queue 비우기 → item별 Sandbox 시작.
 
-The webhook is a wake-up signal only. Each delivery drains *all* pending work
-items (not just the one that triggered it), so a single arriving webhook
-recovers any earlier missed deliveries.
+Webhook은 깨우기 신호일 뿐입니다. 각 delivery는 대기 중인 work item을 *모두*
+비웁니다(trigger한 item만이 아님). 따라서 단 한 번 도착한 webhook으로 이전에
+놓친 모든 delivery를 복구합니다.
 
-Flow per webhook delivery:
-  1. Verify the Standard Webhooks signature via ``client.beta.webhooks.unwrap()``.
-  2. Only act on data.type == "session.status_run_started".
-  3. ``client.beta.environments.work.poller(drain=True, auto_stop=False)``
-     polls until empty; each yielded ``work`` item has already been ack'd.
-     Get-or-create a Modal Sandbox keyed on the work item's session_id running
-     sandbox_runner.py, passing the environment key — the single credential the
-     runner uses for everything. ``auto_stop=False`` because the sandbox owns
-     ``/stop``, not the webhook — see sandbox_runner.py.
+Webhook delivery별 흐름:
+  1. ``client.beta.webhooks.unwrap()``으로 Standard Webhooks signature 검증.
+  2. data.type == "session.status_run_started"일 때만 처리.
+  3. ``client.beta.environments.work.poller(drain=True, auto_stop=False)``가
+     비워질 때까지 poll하며, yield한 각 ``work`` item은 이미 ack된 상태입니다.
+     Work item의 session_id를 key로 sandbox_runner.py를 실행하는 Modal Sandbox를
+     가져오거나 생성하고, runner가 모든 작업에 사용하는 단일 credential인
+     environment key를 전달합니다. ``/stop``은 webhook이 아니라 sandbox 담당이므로
+     ``auto_stop=False``입니다. sandbox_runner.py를 참고하세요.
 
-Secrets (modal secret create cma-self-hosted-sandboxes-secrets ...):
-  ANTHROPIC_WEBHOOK_SECRET   - issued by Anthropic at webhook registration
-  ANTHROPIC_ENVIRONMENT_ID   - the self-hosted environment id
-  ANTHROPIC_ENVIRONMENT_KEY  - the environment key: Bearer auth for the work
-                               poll/ack/stop, and the runner's only credential
-  ANTHROPIC_BASE_URL         - optional, default https://api.anthropic.com
+Secret(modal secret create cma-self-hosted-sandboxes-secrets ...):
+  ANTHROPIC_WEBHOOK_SECRET   - Webhook 등록 시 Anthropic이 발급
+  ANTHROPIC_ENVIRONMENT_ID   - Self-hosted environment id
+  ANTHROPIC_ENVIRONMENT_KEY  - Environment key: work poll/ack/stop용 Bearer auth이며
+                               runner의 유일한 credential
+  ANTHROPIC_BASE_URL         - 선택 사항, 기본값 https://api.anthropic.com
 
-Deploy:
+배포:
   modal secret create cma-self-hosted-sandboxes-secrets \
       ANTHROPIC_WEBHOOK_SECRET=placeholder \
       ANTHROPIC_ENVIRONMENT_KEY=placeholder \
       ANTHROPIC_ENVIRONMENT_ID=env_01...
   modal deploy modal_sandbox_webhook.py
-  # register the printed URL with Anthropic, then re-create the secret with --force.
+  # 출력된 URL을 Anthropic에 등록한 뒤 --force로 secret을 다시 생성하세요.
 """
 
 import os
@@ -51,9 +51,9 @@ secrets = modal.Secret.from_name(SECRET_NAME)
 
 _runner_src = Path(__file__).parent / "sandbox_runner.py"
 
-# `standardwebhooks` backs `client.beta.webhooks.unwrap()` (the SDK's
-# `[webhooks]` extra). Only the webhook image needs it — sandbox_runner.py
-# never sees raw deliveries.
+# `standardwebhooks`는 `client.beta.webhooks.unwrap()`의 기반입니다(SDK의
+# `[webhooks]` extra). Webhook image에만 필요하며 sandbox_runner.py에는
+# raw delivery가 전달되지 않습니다.
 webhook_image = (
     modal.Image.debian_slim(python_version="3.12")
     .pip_install("fastapi[standard]", "standardwebhooks", SDK_PACKAGE)
@@ -69,10 +69,10 @@ sandbox_image = (
 
 @cache
 def _client() -> anthropic.AsyncAnthropic:
-    """Shared client for both webhook verification and the work poller.
+    """Webhook 검증과 work poller가 공유하는 client입니다.
 
-    Lazy because ``modal deploy`` imports this module locally, where the
-    secret env vars aren't set — constructing at module scope breaks deploy.
+    ``modal deploy``가 로컬에서 이 module을 import하는데 그곳에는 secret 환경 변수가
+    설정되지 않으므로 lazy입니다. Module 범위에서 구성하면 deploy가 깨집니다.
     """
     return anthropic.AsyncAnthropic(
         auth_token=os.environ["ANTHROPIC_ENVIRONMENT_KEY"],
@@ -83,20 +83,19 @@ def _client() -> anthropic.AsyncAnthropic:
 def _verify_webhook(
     client: anthropic.AsyncAnthropic, raw: bytes, headers: "Mapping[str, str]"
 ) -> UnwrapWebhookEvent:
-    """``unwrap()`` is synchronous even on the async client — do not ``await``
-    it. The ``whsec_`` secret is passed to ``webhook_key`` as-is: the SDK
-    decodes its URL-safe base64 internally."""
-    # `unwrap()` verifies via `standardwebhooks` and lets its
-    # `WebhookVerificationError` propagate unwrapped — import it the same lazy
-    # way the SDK does (it's the `anthropic[webhooks]` extra).
+    """``unwrap()``은 async client에서도 동기식이므로 ``await``하지 마세요.
+    ``whsec_`` secret은 ``webhook_key``에 그대로 전달합니다. SDK가 내부에서
+    URL-safe base64를 decode합니다."""
+    # `unwrap()`은 `standardwebhooks`로 검증하며 `WebhookVerificationError`를
+    # 감싸지 않고 전파합니다. SDK와 같은 lazy 방식으로 import하세요
+    # (`anthropic[webhooks]` extra입니다).
     from standardwebhooks import WebhookVerificationError
 
     try:
         return client.beta.webhooks.unwrap(raw.decode(), headers=headers)
     except (WebhookVerificationError, KeyError) as e:
-        # Messages are signature/config shaped, never the request body — safe
-        # to log. Other exceptions propagate (they indicate a bug, not a bad
-        # delivery).
+        # 메시지는 signature/config 형태이며 request body가 아니므로 log에 남겨도
+        # 안전합니다. 다른 exception은 전파합니다(잘못된 delivery가 아니라 버그를 나타냄).
         print(f"[webhook] signature reject: {type(e).__name__}: {e}", flush=True)
         raise HTTPException(
             status_code=401, detail="signature verification failed"
@@ -120,10 +119,10 @@ async def _create_sandbox(
     sandbox_timeout: int,
 ) -> modal.Sandbox:
     sb_app = await modal.App.lookup.aio(APP_NAME, create_if_missing=True)
-    # Persist the whole workdir, not just outputs/, so the agent's working
-    # tree and downloaded skills survive across sandbox lifetimes for the
-    # same session. Mounted at /workspace so {workdir}/skills/<name>/ matches
-    # what the agent's prompt and the other demos use.
+    # outputs/만이 아닌 전체 workdir를 영속적으로 저장하여 같은 session의 여러
+    # sandbox lifetime에 걸쳐 agent의 working tree와 다운로드한 skill이 유지되도록 합니다.
+    # Agent의 prompt와 다른 demo가 사용하는 경로와 {workdir}/skills/<name>/가 일치하도록
+    # /workspace에 mount합니다.
     session_vol = modal.Volume.from_name(
         f"cma-session-{session_id}", create_if_missing=True
     )
@@ -135,9 +134,9 @@ async def _create_sandbox(
         image=sandbox_image,
         timeout=sandbox_timeout,
         volumes={"/workspace": session_vol},
-        # Same env contract as `ant beta:worker poll --on-work`: sandbox_runner.py
-        # reads these to build the client and run EnvironmentWorker.handle_item().
-        # ANTHROPIC_ENVIRONMENT_KEY is the runner's single credential.
+        # `ant beta:worker poll --on-work`와 같은 환경 변수 contract: sandbox_runner.py가
+        # 이를 읽어 client를 구성하고 EnvironmentWorker.handle_item()을 실행합니다.
+        # ANTHROPIC_ENVIRONMENT_KEY는 runner의 단일 credential입니다.
         env={
             "ANTHROPIC_BASE_URL": os.environ.get(
                 "ANTHROPIC_BASE_URL", "https://api.anthropic.com"
@@ -155,10 +154,10 @@ async def _create_sandbox(
 async def _process_work_item(
     *, session_id: str, work_id: str, environment_id: str, environment_key: str
 ) -> dict:
-    """Get-or-create a Modal Sandbox for one already-ack'd work item.
+    """이미 ack된 하나의 work item에 대해 Modal Sandbox를 가져오거나 생성합니다.
 
-    The poller has already ack'd the item. Raises on Modal API errors — the
-    caller treats any raise as "skip this item and keep draining".
+    Poller가 이미 item을 ack했습니다. Modal API 오류를 발생시킵니다.
+    호출자는 모든 발생 오류를 "이 item을 건너뛰고 계속 queue 비우기"로 처리합니다.
     """
     existing = await _find_live_sandbox(session_id)
     if existing is not None:
@@ -195,14 +194,14 @@ async def _process_work_item(
 async def _drain_work(
     client: anthropic.AsyncAnthropic, environment_id: str
 ) -> list[dict]:
-    """Drain the queue via the SDK poller, spawning a sandbox per work item.
+    """SDK poller를 통해 queue를 비우고 work item마다 sandbox를 생성합니다.
 
-    ``drain=True`` returns when the queue is empty (the webhook handler must
-    respond, not loop forever). ``auto_stop=False`` because each item is
-    handed off to a detached Modal Sandbox that owns ``/stop`` — the poller
-    must not terminate the lease out from under it. Items the poller already
-    ack'd that then fail to spawn are logged and skipped; they reclaim on the
-    next webhook (``reclaim_older_than_ms``) once the lease lapses.
+    ``drain=True``는 queue가 비면 반환합니다(webhook handler는 끝없이 loop하지 않고
+    응답해야 함). ``auto_stop=False``는 각 item이 ``/stop``을 담당하는 detached
+    Modal Sandbox로 전달되기 때문입니다. Poller가 그 아래에서 lease를 종료해서는
+    안 됩니다. Poller가 이미 ack했지만 이후 생성에 실패한 item은 log에 남기고
+    건너뜁니다. Lease 만료 후 다음 webhook에서 다시 claim합니다
+    (``reclaim_older_than_ms``).
     """
     environment_key = os.environ["ANTHROPIC_ENVIRONMENT_KEY"]
     spawned: list[dict] = []
@@ -210,7 +209,7 @@ async def _drain_work(
     async for work in client.beta.environments.work.poller(
         environment_id=environment_id,
         environment_key=environment_key,
-        # None -> omit -> non-blocking. The API rejects block_ms=0.
+        # None -> 생략 -> non-blocking. API는 block_ms=0을 거부합니다.
         block_ms=None,
         reclaim_older_than_ms=2000,
         drain=True,
@@ -232,8 +231,8 @@ async def _drain_work(
                 )
             )
         except Exception as e:
-            # SDK/httpx/Modal exceptions can embed request context, so log
-            # type only — never the message.
+            # SDK/httpx/Modal exception에는 request context가 포함될 수 있으므로
+            # type만 log에 남기고 메시지는 절대로 남기지 않습니다.
             detail = type(e).__name__
             print(
                 f"[webhook] FAILED work={work.id} session={session_id}: {detail}",

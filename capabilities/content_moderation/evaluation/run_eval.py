@@ -1,18 +1,17 @@
-"""End-to-end evaluation across all domains.
+"""모든 domain에 걸친 end-to-end 평가.
 
-For each domain under ../data/:
-  1. Get rules. ad_creatives uses the hand-written golden ruleset; other domains are
-     compiled from their policies.md by Claude (cached in ./compiled/<domain>.json;
-     delete the cache to force a fresh compile).
-  2. Extract fields for every sample in samples.jsonl (one Claude call each; vision
-     when the sample has an image).
-  3. Evaluate deterministically and compare the decision to the sample's expected label.
+../data/ 아래 각 domain에 대해:
+  1. rule 가져오기. ad_creatives는 직접 작성한 golden ruleset 사용; 다른 domain은
+     Claude가 policies.md에서 compile(./compiled/<domain>.json에 cache;
+     새 compile을 강제하려면 cache 삭제).
+  2. samples.jsonl의 모든 sample에서 field 추출(각각 Claude 호출 한 번;
+     sample에 이미지가 있으면 vision 사용).
+  3. deterministic하게 평가하고 결정을 sample의 기대 label과 비교.
 
-Writes results.json and prints a per-domain table.
+results.json을 기록하고 domain별 표 출력.
 
-Run from capabilities/content_moderation/:   python evaluation/run_eval.py
-Requires an Anthropic API key in ANTHROPIC_API_KEY (a .env file next to this script works too).
-"""
+capabilities/content_moderation/에서 실행:   python evaluation/run_eval.py
+ANTHROPIC_API_KEY의 Anthropic API key 필요(이 script 옆의 .env 파일도 가능)."""
 
 import json
 import pathlib

@@ -2,7 +2,7 @@
 
 ```mermaid
 graph TD
-    User[User] --> Chief[Chief of Staff Agent]
+    User[사용자] --> Chief[Chief of Staff Agent]
     Chief --> Memory[CLAUDE.md]
     Chief --> FinData[financial_data/]
     Chief --> Tools
@@ -11,8 +11,8 @@ graph TD
     Chief --> Hooks[Hooks]
 
     Tools --> Task[Task Tool]
-    Task --> FA[Financial Analyst]
-    Task --> Recruiter[Recruiter]
+    Task --> FA[재무 분석가]
+    Task --> Recruiter[채용 담당자]
 
     FA --> Scripts1[Python Scripts]
     Recruiter --> Scripts2[Python Scripts]
@@ -23,27 +23,27 @@ graph TD
     style Recruiter fill:#bfb,stroke:#333,stroke-width:2px
 ```
 
-## Expected Agent Communication Flow
+## 예상 Agent 소통 흐름
 
 ```mermaid
 sequenceDiagram
-    participant User
+    participant User as 사용자
     participant Chief as Chief of Staff
     participant Task as Task Tool
-    participant FA as Financial Analyst
+    participant FA as 재무 분석가
     participant Scripts as Python Scripts
-    participant Hooks as Post-Write Hook
-    User->>Chief: /budget-impact hiring 5 engineers
-    Chief->>Chief: Expand slash command
-    Chief->>Task: Delegate financial analysis
-    Task->>FA: Analyze hiring impact
-    FA->>Scripts: Execute hiring_impact.py
-    Scripts-->>FA: Return analysis results
-    FA->>FA: Generate report
-    FA-->>Task: Return findings
-    Task-->>Chief: Subagent results
-    Chief->>Chief: Write report to disk
-    Chief->>Hooks: Trigger post-write hook
-    Hooks->>Hooks: Log to audit trail
-    Chief-->>User: Executive summary
+    participant Hooks as 쓰기 후 Hook
+    User->>Chief: /budget-impact engineer 5명 채용
+    Chief->>Chief: Slash command 확장
+    Chief->>Task: 재무 분석 위임
+    Task->>FA: 채용 영향 분석
+    FA->>Scripts: hiring_impact.py 실행
+    Scripts-->>FA: 분석 결과 반환
+    FA->>FA: 보고서 생성
+    FA-->>Task: 발견 사항 반환
+    Task-->>Chief: Subagent 결과
+    Chief->>Chief: Disk에 보고서 작성
+    Chief->>Hooks: 쓰기 후 hook 실행
+    Hooks->>Hooks: Audit trail 기록
+    Chief-->>User: 경영진용 요약
 ```

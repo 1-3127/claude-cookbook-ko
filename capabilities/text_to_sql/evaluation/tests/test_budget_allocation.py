@@ -9,7 +9,7 @@ def get_assert(output, context):
         execution_success = True
         result_valid = (
             len(results) > 0 and len(results[0]) >= 5
-        )  # department, budget %, top employees, their salary %, efficiency score
+        )  # 부서, 예산 %, 상위 직원, 해당 급여 %, 효율 score
         if result_valid:
             for row in results:
                 if not (

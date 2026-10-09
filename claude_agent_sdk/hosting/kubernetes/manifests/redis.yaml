@@ -1,13 +1,13 @@
-# Redis: An in-memory data store used here to hold the session-to-pod-IP mapping.
-# When a user starts a session, the gateway records which agent pod is handling it
-# in Redis. On subsequent requests, the gateway looks up the mapping so it knows
-# where to route traffic. The PersistentVolumeClaim ensures data survives pod
-# restarts.
+# Redis: Session-to-pod-IP mapping을 보유하는 in-memory data store.
+# 사용자가 session을 시작하면 gateway는 담당 agent pod를 Redis에
+# 기록합니다. 이후 요청에서 gateway는 mapping을 조회하여 traffic을
+# routing할 위치를 압니다. PersistentVolumeClaim은 pod 재시작 후에도
+# data가 유지되도록 보장합니다.
 #
-# A NetworkPolicy at the bottom of this file limits who can talk to Redis: only
-# the gateway. It runs without AUTH/TLS here because it only ever holds routing
-# metadata and is unreachable from anything except the gateway — enable AUTH if
-# you put anything more sensitive in it.
+# 이 파일 아래의 NetworkPolicy는 Redis와 통신할 수 있는 대상을 gateway로만
+# 제한합니다. Routing metadata만 보유하고 gateway 외에는 접근할 수
+# 없으므로 여기서는 AUTH/TLS 없이 실행합니다. 더 민감한 내용을
+# 넣는다면 AUTH를 활성화하세요.
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -63,10 +63,10 @@ spec:
         requests:
             storage: 1Gi
 ---
-# Only the gateway may connect to Redis. Agent pods are already blocked by
-# their own egress policy (network-policy.yaml), but without this rule any
-# *other* pod that lands in the namespace could read or rewrite the
-# session → pod-IP routing table.
+# Gateway만 Redis에 연결할 수 있습니다. Agent pod는 자체 egress policy
+# (network-policy.yaml)로 이미 차단되지만, 이 규칙이 없으면 namespace에
+# 배치된 다른 pod가 session → pod-IP routing table을 읽거나
+# 다시 쓸 수 있습니다.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

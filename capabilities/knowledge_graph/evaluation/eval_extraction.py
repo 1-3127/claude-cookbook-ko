@@ -1,7 +1,7 @@
-"""Precision/recall scoring for knowledge-graph extraction.
+"""Knowledge-graph 추출의 precision/recall scoring.
 
-Re-runs the extraction prompt from the guide on the two hand-labeled articles
-and reports entity and relation P/R/F1 against data/sample_triples.json.
+가이드의 extraction prompt를 수동 label이 붙은 기사 두 개에 다시 실행하고
+data/sample_triples.json 대비 entity 및 relation P/R/F1을 보고합니다.
 """
 
 import json
@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 MODEL = "claude-haiku-4-5"
 WIKI_API = "https://en.wikipedia.org/api/rest_v1/page/summary/"
-# Wikimedia policy rejects requests without an identifying User-Agent
+# Wikimedia policy는 식별 가능한 User-Agent가 없는 요청을 거부합니다
 HEADERS = {"User-Agent": "claude-cookbooks/1.0 (https://github.com/anthropics/claude-cookbooks)"}
 
 EntityType = Literal["PERSON", "ORGANIZATION", "LOCATION", "EVENT", "ARTIFACT"]
@@ -52,11 +52,11 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 
 
 def load_alias_map() -> dict[str, str]:
-    """Surface-form variants mapped to canonical gold names.
+    """표면 형태의 변형을 canonical gold 이름에 mapping합니다.
 
-    Without this a predicted "National Aeronautics and Space Administration"
-    never matches gold "NASA" and relation recall is artificially low. Shared
-    with the notebook so inline and standalone scoring stay in sync.
+    이것이 없으면 예측된 "National Aeronautics and Space Administration"은
+    gold "NASA"와 일치하지 않아 relation recall이 인위적으로 낮아집니다.
+    Notebook과 공유하여 inline 및 standalone scoring의 동기화를 유지합니다.
     """
     with open(DATA_DIR / "alias_map.json", encoding="utf-8") as f:
         return json.load(f)

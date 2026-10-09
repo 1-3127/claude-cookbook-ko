@@ -1,6 +1,6 @@
 description: 'Classification'
 
-# Prompts defined in the prompts.py file
+# prompts.py 파일에 정의된 prompt
 prompts: 
   - prompts.py:simple_classify
   - prompts.py:rag_classify
@@ -34,7 +34,7 @@ providers:
       temperature: 0.8
       
 
-# Read more about why we use defaultTest here: https://www.promptfoo.dev/docs/configuration/guide/#tools-and-functions:~:text=Use-,defaultTest,-apply%20a%20transform
+# defaultTest를 사용하는 이유에 대한 자세한 내용: https://www.promptfoo.dev/docs/configuration/guide/#tools-and-functions:~:text=Use-,defaultTest,-apply%20a%20transform
 defaultTest:
   options:
     transform: file://transform.py

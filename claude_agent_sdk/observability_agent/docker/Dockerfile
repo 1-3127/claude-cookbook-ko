@@ -2,7 +2,7 @@ FROM python:3.11
 
 WORKDIR /app
 
-# Install system dependencies including Docker CLI
+# Docker CLI를 포함한 system dependency 설치
 RUN apt-get update && apt-get install -y \
     curl \
     git \
