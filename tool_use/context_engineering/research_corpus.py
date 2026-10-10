@@ -595,12 +595,12 @@ between DR/mTOR and near-independence of IIS.
 
 def _appendix_tables_b_c() -> str:
     """부록의 Table B1-B5와 C1-C4 생성.
-    
+
     Deterministic(seeded hash, import 없음)이므로 반복 kernel 실행이
     동일하고 COMPACTION_PROBES가 고정된 상태를 유지. 이는 research 작업
     prompt에서 참조하는 B-와 C-series 표이며, A-series와 Case D1-D5
     연구는 위의 _METHODS_FOOTER에 있음.
-    
+
     _METHODS_FOOTER + _EXTENDED_APPENDIX가 각 문서에 약 105K 문자를
     더하여 전체 8개 문서 corpus가 약 320K token이 되도록 크기를 정함."""
     interventions = [

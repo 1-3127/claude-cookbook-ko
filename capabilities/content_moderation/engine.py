@@ -268,7 +268,7 @@ def validate_document(
     doc: dict, schema: dict, context_schema: dict | None = None
 ) -> dict[str, list[str]]:
     """전체 compiled artifact {derived_fields, rules, uncompilable} 검증.
-    
+
     {rule_id_or_section: [problems]} 반환; 빈 dict는 형식이 올바름을 뜻함.
     - 'when'은 schema field + derived field를 참조할 수 있음.
     - 'scope'는 context key + schema field + derived field를 참조할 수 있음."""

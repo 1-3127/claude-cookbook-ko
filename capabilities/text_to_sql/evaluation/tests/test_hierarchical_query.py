@@ -7,9 +7,7 @@ def get_assert(output, context):
     try:
         results = execute_sql(sql)
         execution_success = True
-        result_valid = (
-            len(results) > 0 and len(results[0]) == 4
-        )  # 부서, 직원 이름, 급여, 차이 비율
+        result_valid = len(results) > 0 and len(results[0]) == 4  # 부서, 직원 이름, 급여, 차이 비율
         if result_valid:
             for row in results:
                 if not (isinstance(row[2], (int, float)) and isinstance(row[3], (int, float))):

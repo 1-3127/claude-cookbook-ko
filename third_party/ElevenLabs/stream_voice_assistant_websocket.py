@@ -89,9 +89,7 @@ class AudioQueue:
     """
 
     # 오디오 buffer 설정 constant
-    PRE_BUFFER_SIZE = (
-        8192  # 재생 시작 전 최소 buffer 크기(초기 잡음 방지)
-    )
+    PRE_BUFFER_SIZE = 8192  # 재생 시작 전 최소 buffer 크기(초기 잡음 방지)
     BUFFER_CLEANUP_THRESHOLD = 100000  # 메모리 증가 방지를 위한 buffer 정리 전 byte 수
     REMAINING_BYTES_THRESHOLD = 1000  # 재생이 사실상 완료된 것으로 간주할 byte 수
 

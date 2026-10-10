@@ -101,9 +101,7 @@ def _rerank_results(query: str, results: list[dict], k: int = 3) -> list[dict]:
         reranked_results = [results[idx] for idx in relevant_indices[:k]]
         # 내림차순 relevance score 할당
         for i, result in enumerate(reranked_results):
-            result["relevance_score"] = (
-                100 - i
-            )  # 최고 score는 100, 순위마다 1씩 감소
+            result["relevance_score"] = 100 - i  # 최고 score는 100, 순위마다 1씩 감소
 
         return reranked_results
 

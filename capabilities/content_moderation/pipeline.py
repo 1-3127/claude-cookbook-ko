@@ -136,7 +136,7 @@ def compile_policies(
     policies: str, schema: dict, context_schema: dict, max_repair_rounds: int = 3
 ) -> tuple[dict, list[dict]]:
     """정책 산문을 rule document로 compile하고 re-prompting으로 static error 수정.
-    
+
     (document, transcript_of_attempts) 반환; transcript는 Notebook 독자에게
     validator가 무엇을 잡았고 model이 어떻게 수정했는지 보여줌."""
     messages: list[dict] = [
@@ -184,7 +184,7 @@ def compile_single_rule(
     description: str, doc: dict, schema: dict, context_schema: dict, max_repair_rounds: int = 2
 ) -> dict:
     """일상적인 영어로 된 rule description 하나를 기존 ruleset에 맞춰 compile.
-    
+
     추가 사항만 담긴 {"rules": [...], "derived_fields": {...}} 반환;
     적합한 기존 derived field를 재사용하고 반환 전 validate."""
     prompt = f"""You are a policy compiler for a content-review system. A reviewer wants to add ONE new
