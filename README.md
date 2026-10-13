@@ -24,44 +24,44 @@ Claude Cookbooks는 개발자 커뮤니티의 기여를 바탕으로 발전합�
 
 작업이 중복되지 않도록 기여하기 전에 기존 issue와 pull request를 검토해 주세요.
 
-새로운 예제나 가이드에 대한 아이디어가 있다면 [issue 페이지](https://github.com/anthropics/anthropic-cookbook/issues)에 공유해 주세요.
+새로운 예제나 가이드에 대한 아이디어가 있다면 [issue 페이지](https://github.com/1-3127/claude-cookbook-ko/issues)에 공유해 주세요.
 
 ## 레시피 목록
 
 ### 기능
-- [Classification](https://github.com/anthropics/anthropic-cookbook/tree/main/capabilities/classification): Claude를 사용한 텍스트와 데이터 classification 기법을 살펴봅니다.
-- [Retrieval Augmented Generation](https://github.com/anthropics/anthropic-cookbook/tree/main/capabilities/retrieval_augmented_generation): 외부 지식으로 Claude의 응답을 개선하는 방법을 배웁니다.
-- [Summarization](https://github.com/anthropics/anthropic-cookbook/tree/main/capabilities/summarization): Claude를 사용한 효과적인 텍스트 요약 기법을 알아봅니다.
+- [Classification](./capabilities/classification): Claude를 사용한 텍스트와 데이터 classification 기법을 살펴봅니다.
+- [Retrieval Augmented Generation](./capabilities/retrieval_augmented_generation): 외부 지식으로 Claude의 응답을 개선하는 방법을 배웁니다.
+- [Summarization](./capabilities/summarization): Claude를 사용한 효과적인 텍스트 요약 기법을 알아봅니다.
 
 ### Tool Use와 통합
-- [Tool use](https://github.com/anthropics/anthropic-cookbook/tree/main/tool_use): Claude를 외부 도구 및 함수와 통합하여 기능을 확장하는 방법을 배웁니다.
-  - [고객 서비스 agent](https://github.com/anthropics/anthropic-cookbook/blob/main/tool_use/customer_service_agent.ipynb)
-  - [계산기 통합](https://github.com/anthropics/anthropic-cookbook/blob/main/tool_use/calculator_tool.ipynb)
-  - [SQL query](https://github.com/anthropics/anthropic-cookbook/blob/main/misc/how_to_make_sql_queries.ipynb)
+- [Tool use](./tool_use): Claude를 외부 도구 및 함수와 통합하여 기능을 확장하는 방법을 배웁니다.
+  - [고객 서비스 agent](./tool_use/customer_service_agent.ipynb)
+  - [계산기 통합](./tool_use/calculator_tool.ipynb)
+  - [SQL query](./misc/how_to_make_sql_queries.ipynb)
 
 ### 서드파티 통합
-- [Retrieval augmented generation](https://github.com/anthropics/anthropic-cookbook/tree/main/third_party): 외부 데이터 소스로 Claude의 지식을 보완합니다.
-  - [Vector database (Pinecone)](https://github.com/anthropics/anthropic-cookbook/blob/main/third_party/Pinecone/rag_using_pinecone.ipynb)
-  - [Wikipedia](https://github.com/anthropics/anthropic-cookbook/blob/main/third_party/Wikipedia/wikipedia-search-cookbook.ipynb/)
-  - [웹 페이지](https://github.com/anthropics/anthropic-cookbook/blob/main/misc/read_web_pages_with_haiku.ipynb)
-- [Voyage AI를 사용한 Embeddings](https://github.com/anthropics/anthropic-cookbook/blob/main/third_party/VoyageAI/how_to_create_embeddings.md)
+- [Retrieval augmented generation](./third_party): 외부 데이터 소스로 Claude의 지식을 보완합니다.
+  - [Vector database (Pinecone)](./third_party/Pinecone/rag_using_pinecone.ipynb)
+  - [Wikipedia](./third_party/Wikipedia/wikipedia-search-cookbook.ipynb)
+  - [웹 페이지](./misc/read_web_pages_with_haiku.ipynb)
+- [Voyage AI를 사용한 Embeddings](./third_party/VoyageAI/how_to_create_embeddings.md)
 
 ### Multimodal 기능
-- [Claude의 Vision](https://github.com/anthropics/anthropic-cookbook/tree/main/multimodal):
-  - [이미지로 시작하기](https://github.com/anthropics/anthropic-cookbook/blob/main/multimodal/getting_started_with_vision.ipynb)
-  - [Vision 모범 사례](https://github.com/anthropics/anthropic-cookbook/blob/main/multimodal/best_practices_for_vision.ipynb)
-  - [차트와 그래프 해석하기](https://github.com/anthropics/anthropic-cookbook/blob/main/multimodal/reading_charts_graphs_powerpoints.ipynb)
-  - [양식에서 내용 추출하기](https://github.com/anthropics/anthropic-cookbook/blob/main/multimodal/how_to_transcribe_text.ipynb)
-- [Claude로 이미지 생성하기](https://github.com/anthropics/anthropic-cookbook/blob/main/misc/illustrated_responses.ipynb): Stable Diffusion과 함께 Claude를 사용하여 이미지를 생성합니다.
+- [Claude의 Vision](./multimodal):
+  - [이미지로 시작하기](./multimodal/getting_started_with_vision.ipynb)
+  - [Vision 모범 사례](./multimodal/best_practices_for_vision.ipynb)
+  - [차트와 그래프 해석하기](./multimodal/reading_charts_graphs_powerpoints.ipynb)
+  - [양식에서 내용 추출하기](./multimodal/how_to_transcribe_text.ipynb)
+- Claude로 이미지 생성하기: Stable Diffusion과 함께 Claude를 사용하여 이미지를 생성합니다.
 
 ### 고급 기법
-- [Sub-agent](https://github.com/anthropics/anthropic-cookbook/blob/main/multimodal/using_sub_agents.ipynb): Opus와 함께 Haiku를 sub-agent로 사용하는 방법을 배웁니다.
-- [Claude에 PDF 업로드하기](https://github.com/anthropics/anthropic-cookbook/blob/main/misc/pdf_upload_summarization.ipynb): PDF를 파싱하여 텍스트로 Claude에 전달합니다.
-- [자동화된 evaluation](https://github.com/anthropics/anthropic-cookbook/blob/main/misc/building_evals.ipynb): Claude를 사용하여 prompt evaluation 과정을 자동화합니다.
-- [JSON mode 활성화하기](https://github.com/anthropics/anthropic-cookbook/blob/main/misc/how_to_enable_json_mode.ipynb): Claude에서 일관된 JSON 출력을 얻도록 합니다.
-- [Moderation filter 만들기](https://github.com/anthropics/anthropic-cookbook/blob/main/misc/building_moderation_filter.ipynb): Claude를 사용하여 애플리케이션을 위한 content moderation filter를 만듭니다.
-- [Prompt caching](https://github.com/anthropics/anthropic-cookbook/blob/main/misc/prompt_caching.ipynb): Claude를 사용한 효율적인 prompt caching 기법을 배웁니다.
-- [비용 최적화](https://github.com/anthropics/anthropic-cookbook/blob/main/cost_optimization/cost_optimization.ipynb): Agent에 비용 최적화 체크리스트를 적용하면서 통과율과 작업당 비용을 측정하여 Pareto-optimal 구성을 찾습니다.
+- [Sub-agent](./multimodal/using_sub_agents.ipynb): Opus와 함께 Haiku를 sub-agent로 사용하는 방법을 배웁니다.
+- [Claude에 PDF 업로드하기](./misc/pdf_upload_summarization.ipynb): PDF를 파싱하여 텍스트로 Claude에 전달합니다.
+- [자동화된 evaluation](./misc/building_evals.ipynb): Claude를 사용하여 prompt evaluation 과정을 자동화합니다.
+- [JSON mode 활성화하기](./misc/how_to_enable_json_mode.ipynb): Claude에서 일관된 JSON 출력을 얻도록 합니다.
+- [Moderation filter 만들기](./misc/building_moderation_filter.ipynb): Claude를 사용하여 애플리케이션을 위한 content moderation filter를 만듭니다.
+- [Prompt caching](./misc/prompt_caching.ipynb): Claude를 사용한 효율적인 prompt caching 기법을 배웁니다.
+- [비용 최적화](./cost_optimization/cost_optimization.ipynb): Agent에 비용 최적화 체크리스트를 적용하면서 통과율과 작업당 비용을 측정하여 Pareto-optimal 구성을 찾습니다.
 
 ## 추가 자료
 
